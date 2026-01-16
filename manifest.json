@@ -1,0 +1,37 @@
+{
+    "name": "Base Invaders - Space Shooter",
+    "short_name": "Base Invaders",
+    "description": "Epic space shooter game - destroy enemy bases and survive!",
+    "start_url": "./",
+    "display": "standalone",
+    "background_color": "#0a0e27",
+    "theme_color": "#00d9ff",
+    "orientation": "portrait",
+    "icons": [
+      {
+        "src": "./icons/icon-192.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "any"
+      },
+      {
+        "src": "./icons/icon-512.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "any"
+      },
+      {
+        "src": "./icons/icon-192-maskable.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "maskable"
+      },
+      {
+        "src": "./icons/icon-512-maskable.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "maskable"
+      }
+    ]
+  }
+  

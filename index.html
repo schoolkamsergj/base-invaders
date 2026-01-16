@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#00d9ff">
+    <title>Base Invaders - Space Shooter</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="./icons/favicon.ico">
+    <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png">
+    
+    <!-- Apple Touch Icon for iOS -->
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json">
+    
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+</head>
+<body>
+    <div id="game-container">
+        <!-- Game canvas will be inserted here by Phaser -->
+    </div>
+    
+    <!-- Shop Overlay -->
+    <div id="shop-overlay" class="overlay hidden">
+        <div class="shop-container">
+            <div class="shop-header">
+                <h2>🛒 SHOP</h2>
+                <div id="shop-currency" class="shop-currency">
+                    <span id="shop-gold">🪙 0</span>
+                    <span id="shop-lightning">⚡ 0</span>
+                    <span id="shop-diamonds">💎 0</span>
+                </div>
+                <button id="close-shop" class="close-btn">✕</button>
+            </div>
+            <div class="shop-tabs">
+                <button class="tab-btn active" data-tab="spaceships">🚀 Spaceships</button>
+                <button class="tab-btn" data-tab="weapons">🔫 Weapons</button>
+                <button class="tab-btn" data-tab="powerups">⚡ Power-ups</button>
+                <button class="tab-btn" data-tab="upgrades">⬆️ Upgrades</button>
+            </div>
+            <div class="shop-content" id="shop-content">
+                <!-- Shop items will be dynamically generated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Pause Overlay -->
+    <div id="pause-overlay" class="overlay hidden">
+        <div class="pause-container">
+            <h2>⏸️ PAUSED</h2>
+            <button id="resume-btn" class="menu-btn">Resume</button>
+            <button id="main-menu-btn" class="menu-btn">Main Menu</button>
+            <button id="reset-game-btn" class="menu-btn reset-btn">Reset Game</button>
+        </div>
+    </div>
+
+    <!-- Game Over Overlay -->
+    <div id="gameover-overlay" class="overlay hidden">
+        <div class="gameover-container">
+            <h2>💥 GAME OVER</h2>
+            <div id="final-stats"></div>
+            <button id="restart-btn" class="menu-btn">Restart</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        console.log('Game starting...');
+        
+        // Error handling
+        window.addEventListener('error', function(e) {
+            console.error('JavaScript Error:', e.error);
+            console.error('File:', e.filename, 'Line:', e.lineno);
+        });
+        
+        // Check if Phaser is loaded
+        window.addEventListener('load', function() {
+            console.log('Page loaded');
+            if (typeof Phaser === 'undefined') {
+                console.error('Phaser.js failed to load!');
+                document.getElementById('game-container').innerHTML = 
+                    '<div style="color: white; text-align: center; padding: 50px;">' +
+                    '<h2>Error: Phaser.js not loaded</h2>' +
+                    '<p>Please check your internet connection and refresh the page.</p>' +
+                    '</div>';
+            } else {
+                console.log('Phaser loaded successfully');
+            }
+        });
+    </script>
+    <script src="vibration.js"></script>
+    <script src="ui.js"></script>
+    <script src="player.js"></script>
+    <script src="enemies.js"></script>
+    <script src="shop.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>

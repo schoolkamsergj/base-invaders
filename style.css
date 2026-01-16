@@ -1,0 +1,333 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: #000;
+    color: #fff;
+    overflow: hidden;
+    user-select: none;
+}
+
+#game-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #000;
+}
+
+canvas {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* Overlays */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.overlay.hidden {
+    display: none;
+}
+
+/* Shop Styles */
+.shop-container {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 2px solid #0052FF;
+    border-radius: 15px;
+    padding: 20px;
+    max-width: 90%;
+    max-height: 90%;
+    overflow-y: auto;
+    box-shadow: 0 0 30px rgba(0, 82, 255, 0.5);
+}
+
+.shop-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #0052FF;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.shop-header h2 {
+    color: #00ffff;
+    text-shadow: 0 0 10px #00ffff;
+    font-size: 2em;
+}
+
+.shop-currency {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.shop-currency span {
+    padding: 5px 10px;
+    border-radius: 5px;
+    background: rgba(0, 82, 255, 0.2);
+    border: 1px solid #0052FF;
+}
+
+#shop-gold {
+    color: #ffd700;
+    text-shadow: 0 0 5px #ffd700;
+}
+
+#shop-lightning {
+    color: #00ffff;
+    text-shadow: 0 0 5px #00ffff;
+}
+
+#shop-diamonds {
+    color: #ff00ff;
+    text-shadow: 0 0 5px #ff00ff;
+}
+
+.close-btn {
+    background: #ff4444;
+    border: none;
+    color: white;
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.close-btn:hover {
+    background: #ff6666;
+    transform: scale(1.1);
+    box-shadow: 0 0 15px #ff4444;
+}
+
+.shop-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    background: #2a2a4e;
+    border: 2px solid #0052FF;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.tab-btn:hover {
+    background: #3a3a5e;
+    border-color: #00ffff;
+}
+
+.tab-btn.active {
+    background: #0052FF;
+    border-color: #00ffff;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+}
+
+.shop-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.shop-item {
+    background: #1a1a2e;
+    border: 2px solid #333;
+    border-radius: 10px;
+    padding: 15px;
+    transition: all 0.3s;
+}
+
+.shop-item:hover {
+    border-color: #0052FF;
+    box-shadow: 0 0 15px rgba(0, 82, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.shop-item.owned {
+    border-color: #00ff00;
+    background: rgba(0, 255, 0, 0.1);
+}
+
+.shop-item-icon {
+    font-size: 48px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.shop-item-name {
+    font-size: 18px;
+    font-weight: bold;
+    color: #00ffff;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.shop-item-stats {
+    font-size: 12px;
+    color: #aaa;
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.shop-item-price {
+    font-size: 16px;
+    color: #ffd700;
+    text-align: center;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.shop-item-btn {
+    width: 100%;
+    padding: 10px;
+    background: #0052FF;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.shop-item-btn:hover:not(:disabled) {
+    background: #0066ff;
+    box-shadow: 0 0 10px rgba(0, 82, 255, 0.5);
+}
+
+.shop-item-btn:disabled {
+    background: #555;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.shop-item-btn.owned {
+    background: #00aa00;
+}
+
+/* Pause/Game Over Styles */
+.pause-container,
+.gameover-container {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 2px solid #00ffff;
+    border-radius: 15px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+}
+
+.pause-container h2,
+.gameover-container h2 {
+    color: #00ffff;
+    text-shadow: 0 0 10px #00ffff;
+    font-size: 2.5em;
+    margin-bottom: 30px;
+}
+
+.menu-btn {
+    background: #0052FF;
+    border: 2px solid #00ffff;
+    color: white;
+    padding: 15px 30px;
+    margin: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    transition: all 0.3s;
+    min-width: 200px;
+}
+
+.menu-btn:hover {
+    background: #0066ff;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    transform: scale(1.05);
+}
+
+.reset-btn {
+    background: linear-gradient(135deg, #cc0000 0%, #ff4400 100%) !important;
+    border: 2px solid #ff4444 !important;
+    color: #ffffff !important;
+    margin-top: 10px;
+    box-shadow: 0 0 15px rgba(255, 68, 68, 0.5);
+}
+
+.reset-btn:hover {
+    background: linear-gradient(135deg, #ff0000 0%, #ff6600 100%) !important;
+    border-color: #ff6666 !important;
+    box-shadow: 0 0 25px rgba(255, 68, 68, 0.8);
+    transform: scale(1.05);
+}
+
+#final-stats {
+    margin: 20px 0;
+    font-size: 18px;
+    color: #aaa;
+}
+
+/* Scrollbar Styling */
+.shop-container::-webkit-scrollbar {
+    width: 10px;
+}
+
+.shop-container::-webkit-scrollbar-track {
+    background: #1a1a2e;
+}
+
+.shop-container::-webkit-scrollbar-thumb {
+    background: #0052FF;
+    border-radius: 5px;
+}
+
+.shop-container::-webkit-scrollbar-thumb:hover {
+    background: #0066ff;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .shop-container {
+        padding: 15px;
+        max-width: 95%;
+    }
+    
+    .shop-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .shop-tabs {
+        flex-direction: column;
+    }
+    
+    .tab-btn {
+        width: 100%;
+    }
+}
