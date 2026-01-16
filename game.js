@@ -1998,6 +1998,53 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // EXIT GAME button handler in pause menu
+    document.getElementById('exit-game-btn')?.addEventListener('click', () => {
+        // Play click sound
+        if (window.game && window.game.scene) {
+            const gameScene = window.game.scene.getScene('GameScene');
+            if (gameScene && gameScene.playSound) {
+                gameScene.playSound('click');
+            }
+        }
+        
+        // Get GameScene to access gameState
+        if (window.game && window.game.scene) {
+            const gameScene = window.game.scene.getScene('GameScene');
+            if (gameScene && gameScene.gameState) {
+                // Save current score to localStorage as 'lastScore'
+                localStorage.setItem('lastScore', gameScene.gameState.score.toString());
+                
+                // Update high score in localStorage if current score is higher
+                const currentHighScore = parseInt(localStorage.getItem('highScore') || '0');
+                if (gameScene.gameState.score > currentHighScore) {
+                    localStorage.setItem('highScore', gameScene.gameState.score.toString());
+                    console.log('🏆 New high score:', gameScene.gameState.score);
+                }
+                
+                // Save timestamp as 'lastPlayed'
+                localStorage.setItem('lastPlayed', new Date().toISOString());
+                
+                // Save game data
+                if (gameScene.saveGameData) {
+                    gameScene.saveGameData();
+                }
+            }
+        }
+        
+        // Close pause overlay
+        document.getElementById('pause-overlay').classList.add('hidden');
+        
+        // Return to main menu (MenuScene)
+        if (window.game && window.game.scene) {
+            window.game.scene.stop('GameScene');
+            window.game.scene.start('MenuScene');
+        } else {
+            // If game not initialized, just reload page
+            location.reload();
+        }
+    });
+
     document.getElementById('restart-btn')?.addEventListener('click', () => {
         // Play click sound
         if (window.game && window.game.scene) {

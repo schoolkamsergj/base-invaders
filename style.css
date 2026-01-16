@@ -288,6 +288,21 @@ canvas {
     transform: scale(1.05);
 }
 
+.exit-btn {
+    background: linear-gradient(135deg, #ff6600 0%, #ff8800 100%) !important;
+    border: 2px solid #ff8844 !important;
+    color: #ffffff !important;
+    margin-top: 10px;
+    box-shadow: 0 0 15px rgba(255, 136, 68, 0.5);
+}
+
+.exit-btn:hover {
+    background: linear-gradient(135deg, #ff8800 0%, #ffaa00 100%) !important;
+    border-color: #ffaa66 !important;
+    box-shadow: 0 0 25px rgba(255, 136, 68, 0.8);
+    transform: scale(1.05);
+}
+
 #final-stats {
     margin: 20px 0;
     font-size: 18px;
