@@ -13,6 +13,9 @@ class UI {
         // Buttons
         this.createButtons();
         
+        // Daily Check-in button
+        this.createDailyCheckInButton();
+        
         // Shop button handler
         this.setupShopButton();
     }
@@ -238,6 +241,302 @@ class UI {
                 this.scene.playSound('click');
             }
             this.scene.togglePause();
+        });
+    }
+
+    createDailyCheckInButton() {
+        // Position: Top-right corner, next to diamonds display (x: width - 200, y: 20)
+        const buttonX = 80;
+        const buttonY = 170;
+
+        const buttonWidth = 120;
+        const buttonHeight = 40;
+        
+        // Button background graphics
+        this.checkInButtonBg = this.scene.add.graphics();
+        this.checkInButtonBg.setScrollFactor(0);
+        this.checkInButtonBg.setDepth(100);
+        
+        // Interactive rectangle (invisible, for click detection)
+        this.checkInButton = this.scene.add.rectangle(buttonX, buttonY, buttonWidth, buttonHeight, 0x00ffff, 0);
+        this.checkInButton.setScrollFactor(0);
+        this.checkInButton.setDepth(100);
+        this.checkInButton.setInteractive({ useHandCursor: true });
+        
+        // Button text
+        this.checkInButtonText = this.scene.add.text(buttonX, buttonY, '📅 CHECK-IN', {
+            fontSize: '14px',
+            fontWeight: 'bold',
+            color: '#ffffff',
+            align: 'center'
+        });
+        this.checkInButtonText.setOrigin(0.5);
+        this.checkInButtonText.setScrollFactor(0);
+        this.checkInButtonText.setDepth(101);
+        this.checkInButtonText.setInteractive({ useHandCursor: true });
+        
+        // Countdown text (shown when disabled)
+        this.checkInCountdownText = this.scene.add.text(buttonX, buttonY + 15, '', {
+            fontSize: '11px',
+            fontWeight: 'bold',
+            color: '#cccccc',
+            align: 'center'
+        });
+        this.checkInCountdownText.setOrigin(0.5);
+        this.checkInCountdownText.setScrollFactor(0);
+        this.checkInCountdownText.setDepth(101);
+        this.checkInCountdownText.setVisible(false);
+        
+        // Glow effect (shown when active)
+        this.checkInGlow = this.scene.add.graphics();
+        this.checkInGlow.setScrollFactor(0);
+        this.checkInGlow.setDepth(99);
+        this.checkInGlow.setBlendMode(Phaser.BlendModes.ADD);
+        
+        // Initialize button state
+        this.updateCheckInButtonState();
+        
+        // Click handler
+        const handleCheckIn = () => {
+            if (!this.isCheckInActive()) {
+                return; // Button is disabled
+            }
+            
+            // Play click sound
+            if (this.scene.playSound) {
+                this.scene.playSound('click');
+            }
+            
+           // Save current timestamp
+const now = Date.now();
+localStorage.setItem('lastCheckIn', now.toString());
+
+// Update streak system
+let totalDays = 0;
+const streakData = localStorage.getItem('checkInStreak');
+if (streakData) {
+    try {
+        const data = JSON.parse(streakData);
+        const lastDate = data.lastDate;
+        const today = new Date(now).toDateString();
+        const yesterday = new Date(now - 24 * 60 * 60 * 1000).toDateString();
+        
+        if (lastDate === yesterday) {
+            // Consecutive day
+            totalDays = (data.totalDays || 0) + 1;
+        } else if (lastDate !== today) {
+            // Missed a day - RESET to 1!
+            totalDays = 1;
+        } else {
+            totalDays = data.totalDays || 1;
+        }
+    } catch (e) {
+        totalDays = 1;
+    }
+} else {
+    totalDays = 1;
+}
+
+// Save streak
+localStorage.setItem('checkInStreak', JSON.stringify({
+    totalDays: totalDays,
+    lastDate: new Date(now).toDateString()
+}));
+
+// Calculate reward based on day in week
+const dayInWeek = (totalDays % 7) || 7; // 1-7
+const weekStreak = Math.floor(totalDays / 7);
+const baseRewards = [10, 15, 20, 25, 30, 35, 50]; // Days 1-7
+let reward = baseRewards[dayInWeek - 1];
+
+// Bonus for completing weeks (day 7)
+if (dayInWeek === 7 && weekStreak > 0) {
+    reward += weekStreak * 10; // +10 per week completed
+}
+
+// Add diamonds
+this.gameState.diamonds += reward;
+
+// Show notification
+let message = `+${reward} 💎 Day ${dayInWeek}/7`;
+if (dayInWeek === 7) {
+    if (weekStreak >= 1) {
+        message = `🔥 WEEK ${weekStreak} DONE! +${reward} 💎`;
+    } else {
+        message = `🔥 WEEK COMPLETE! +${reward} 💎`;
+    }
+}
+this.showNotification(message, buttonX, buttonY - 40);
+
+            
+            // Update button state
+            this.updateCheckInButtonState();
+        };
+        
+        this.checkInButton.on('pointerdown', handleCheckIn);
+        this.checkInButtonText.on('pointerdown', handleCheckIn);
+        
+        // Hover effect (only when active)
+        this.checkInButton.on('pointerover', () => {
+            if (this.isCheckInActive()) {
+                this.checkInButton.setScale(1.1);
+                this.checkInButtonText.setScale(1.1);
+            }
+        });
+        
+        this.checkInButton.on('pointerout', () => {
+            this.checkInButton.setScale(1);
+            this.checkInButtonText.setScale(1);
+        });
+        
+        // Update countdown every second
+        this.scene.time.addEvent({
+            delay: 1000,
+            callback: () => {
+                this.updateCheckInButtonState();
+            },
+            loop: true
+        });
+    }
+
+    isCheckInActive() {
+        const lastCheckIn = localStorage.getItem('lastCheckIn');
+        if (!lastCheckIn) {
+            return true; // Never checked in, button is active
+        }
+        
+        const lastCheckInTime = parseInt(lastCheckIn);
+        const now = Date.now();
+        const hoursPassed = (now - lastCheckInTime) / (1000 * 60 * 60);
+        
+        return hoursPassed >= 24;
+    }
+
+    getCheckInTimeRemaining() {
+        const lastCheckIn = localStorage.getItem('lastCheckIn');
+        if (!lastCheckIn) {
+            return null; // No cooldown
+        }
+        
+        const lastCheckInTime = parseInt(lastCheckIn);
+        const now = Date.now();
+        const msRemaining = (24 * 60 * 60 * 1000) - (now - lastCheckInTime);
+        
+        if (msRemaining <= 0) {
+            return null; // Cooldown expired
+        }
+        
+        const hours = Math.floor(msRemaining / (1000 * 60 * 60));
+        const minutes = Math.floor((msRemaining % (1000 * 60 * 60)) / (1000 * 60));
+        
+        return { hours, minutes };
+    }
+
+    getCheckInStreak() {
+        const streakData = localStorage.getItem('checkInStreak');
+        if (!streakData) {
+            return { totalDays: 0, weekStreak: 0, dayInWeek: 1 };
+        }
+        try {
+            const data = JSON.parse(streakData);
+            const totalDays = data.totalDays || 0;
+            const weekStreak = Math.floor(totalDays / 7);
+            const dayInWeek = (totalDays % 7) || 7;
+            return { totalDays, weekStreak, dayInWeek };
+        } catch (e) {
+            return { totalDays: 0, weekStreak: 0, dayInWeek: 1 };
+        }
+    }
+    
+
+    updateCheckInButtonState() {
+        const buttonX = 80;
+        const buttonY = 170;
+
+        const buttonWidth = 120;
+        const buttonHeight = 40;
+        const streakInfo = this.getCheckInStreak();
+
+        
+        const isActive = this.isCheckInActive();
+        const timeRemaining = this.getCheckInTimeRemaining();
+        
+        // Clear and redraw background
+        this.checkInButtonBg.clear();
+        this.checkInGlow.clear();
+        
+        if (isActive) {
+            // Active state: Cyan color with glow
+            this.checkInButtonBg.fillStyle(0x0052FF, 0.9);  // Cyan
+            this.checkInButtonBg.fillRoundedRect(buttonX - buttonWidth / 2, buttonY - buttonHeight / 2, buttonWidth, buttonHeight, 5);
+            this.checkInButtonBg.lineStyle(2, 0x00ffff, 1);
+            this.checkInButtonBg.strokeRoundedRect(buttonX - buttonWidth / 2, buttonY - buttonHeight / 2, buttonWidth, buttonHeight, 5);
+            
+            // Glow effect
+            this.checkInGlow.fillStyle(0x00ffff, 0.3);
+            this.checkInGlow.fillRoundedRect(buttonX - buttonWidth / 2 - 2, buttonY - buttonHeight / 2 - 2, buttonWidth + 4, buttonHeight + 4, 7);
+            
+            // Update text
+            const dayText = `DAY ${streakInfo.dayInWeek}/7`;
+            const streakText = streakInfo.weekStreak > 0 ? ` 🔥${streakInfo.weekStreak}` : '';
+            this.checkInButtonText.setText(`📅 ${dayText}${streakText}`);
+
+            this.checkInButtonText.setColor('#00ff00');
+            this.checkInCountdownText.setVisible(false);
+            
+            // Enable interaction
+            this.checkInButton.setInteractive({ useHandCursor: true });
+            this.checkInButtonText.setInteractive({ useHandCursor: true });
+        } else {
+            // Disabled state: Gray color with countdown
+            this.checkInButtonBg.fillStyle(0x666666, 0.7);  // Gray
+            this.checkInButtonBg.fillRoundedRect(buttonX - buttonWidth / 2, buttonY - buttonHeight / 2, buttonWidth, buttonHeight, 5);
+            this.checkInButtonBg.lineStyle(2, 0x888888, 1);
+            this.checkInButtonBg.strokeRoundedRect(buttonX - buttonWidth / 2, buttonY - buttonHeight / 2, buttonWidth, buttonHeight, 5);
+            
+            // Update text
+            
+            this.checkInButtonText.setColor('#ffffff');
+
+            
+            // Show countdown
+            if (timeRemaining) {
+                const timeStr = `${timeRemaining.hours}h ${timeRemaining.minutes}m`;
+                this.checkInCountdownText.setText(timeStr);
+                this.checkInCountdownText.setVisible(true);
+            } else {
+                this.checkInCountdownText.setVisible(false);
+            }
+            
+            // Disable interaction
+            this.checkInButton.disableInteractive();
+            this.checkInButtonText.disableInteractive();
+        }
+    }
+
+    showNotification(text, x, y) {
+        const notification = this.scene.add.text(x, y, text, {
+            fontSize: '18px',
+            fontWeight: 'bold',
+            color: '#00ffff',
+            stroke: '#000000',
+            strokeThickness: 3
+        });
+        notification.setOrigin(0.5);
+        notification.setScrollFactor(0);
+        notification.setDepth(10000);
+        notification.setShadow(0, 0, '#00ffff', 10, true);
+        
+        // Animate notification
+        this.scene.tweens.add({
+            targets: notification,
+            y: y - 50,
+            alpha: 0,
+            duration: 2000,
+            ease: 'Power2',
+            onComplete: () => {
+                notification.destroy();
+            }
         });
     }
 

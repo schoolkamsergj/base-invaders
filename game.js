@@ -638,12 +638,6 @@ class GameScene extends Phaser.Scene {
             console.log('🔘 Mute button created');
         }
 
-        // Create EXIT button (only once)
-        if (!this.exitButtonBg) {
-            this.createExitButton();
-            console.log('🚪 EXIT button created');
-        }
-
         // Mark as initialized
         this.soundInitialized = true;
         console.log('✅ Sound system initialization COMPLETE');
@@ -787,91 +781,6 @@ class GameScene extends Phaser.Scene {
             this.muteCross.setVisible(false);
             this.muteButtonBg.setFillStyle(0x333333, 0.7);  // Normal background
         }
-    }
-
-    createExitButton() {
-        // Position: top-left corner (20, 20) - button top-left corner at this position
-        const buttonX = 20 + 50;  // Center X of button (20 + half width)
-        const buttonY = 20 + 20;  // Center Y of button (20 + half height)
-        const buttonWidth = 100;
-        const buttonHeight = 40;
-        
-        // Button background graphics (red rounded rectangle)
-        this.exitButtonBg = this.add.graphics();
-        this.exitButtonBg.fillStyle(0xff4444, 1);  // Red color #ff4444
-        this.exitButtonBg.fillRoundedRect(20, 20, buttonWidth, buttonHeight, 5);
-        this.exitButtonBg.setScrollFactor(0);
-        this.exitButtonBg.setDepth(10000);
-        
-        // Interactive rectangle (invisible, for click detection)
-        this.exitButton = this.add.rectangle(buttonX, buttonY, buttonWidth, buttonHeight, 0xff4444, 0);
-        this.exitButton.setScrollFactor(0);
-        this.exitButton.setDepth(10000);
-        this.exitButton.setInteractive({ useHandCursor: true });
-        
-        // Button text (white text "🚪 EXIT")
-        this.exitButtonText = this.add.text(buttonX, buttonY, '🚪 EXIT', {
-            fontSize: '18px',
-            fontWeight: 'bold',
-            color: '#ffffff',
-            align: 'center'
-        });
-        this.exitButtonText.setOrigin(0.5);
-        this.exitButtonText.setScrollFactor(0);
-        this.exitButtonText.setDepth(10001);
-        this.exitButtonText.setInteractive({ useHandCursor: true });
-        
-        // Click handler
-        const handleExit = () => {
-            console.log('🚪 EXIT button clicked');
-            
-            // Save current score to localStorage as 'lastScore'
-            localStorage.setItem('lastScore', this.gameState.score.toString());
-            
-            // Update high score in localStorage if current score is higher
-            const currentHighScore = parseInt(localStorage.getItem('highScore') || '0');
-            if (this.gameState.score > currentHighScore) {
-                localStorage.setItem('highScore', this.gameState.score.toString());
-                console.log('🏆 New high score:', this.gameState.score);
-            }
-            
-            // Save timestamp of last play to localStorage as 'lastPlayed'
-            localStorage.setItem('lastPlayed', new Date().toISOString());
-            
-            // Save game data
-            this.saveGameData();
-            
-            // Restart the game scene after saving
-            this.scene.restart();
-        };
-        
-        this.exitButton.on('pointerdown', handleExit);
-        this.exitButtonText.on('pointerdown', handleExit);
-        
-        // Hover effect: Background color changes to lighter red on hover (#ff6666)
-        const updateButtonColor = (color) => {
-            this.exitButtonBg.clear();
-            this.exitButtonBg.fillStyle(color, 1);
-            this.exitButtonBg.fillRoundedRect(20, 20, buttonWidth, buttonHeight, 5);
-        };
-        
-        this.exitButton.on('pointerover', () => {
-            updateButtonColor(0xff6666);  // Lighter red #ff6666
-        });
-        
-        // Returns to normal red (#ff4444) when mouse leaves
-        this.exitButton.on('pointerout', () => {
-            updateButtonColor(0xff4444);  // Normal red #ff4444
-        });
-        
-        // Hover effect on text
-        this.exitButtonText.on('pointerover', () => {
-            updateButtonColor(0xff6666);  // Lighter red #ff6666
-        });
-        
-        this.exitButtonText.on('pointerout', () => {
-            updateButtonColor(0xff4444);  // Normal red #ff4444
-        });
     }
 
     toggleMute() {
