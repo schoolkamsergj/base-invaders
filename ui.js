@@ -333,29 +333,39 @@ if (streakData) {
     try {
         const data = JSON.parse(streakData);
         const lastDateKey = data.lastDate;
+        const previousStreak = data.totalDays || 0;
+        
+        console.log('[CHECK-IN DEBUG] Previous streak:', previousStreak);
         
         if (!lastDateKey) {
             // No previous date, start at day 1
             totalDays = 1;
+            console.log('[CHECK-IN DEBUG] No previous date, starting at day 1');
         } else {
             const daysSince = this.daysBetweenDayKeys(lastDateKey, todayKey);
+            console.log('[CHECK-IN DEBUG] Days since last check-in:', daysSince);
             
             if (daysSince === 1) {
                 // Consecutive day - increment streak
-                totalDays = (data.totalDays || 0) + 1;
+                totalDays = previousStreak + 1;
+                console.log('[CHECK-IN DEBUG] Consecutive day - BEFORE increment:', previousStreak, 'AFTER increment:', totalDays);
             } else if (daysSince === 0) {
                 // Same day - keep current streak (shouldn't happen, but handle gracefully)
-                totalDays = data.totalDays || 1;
+                totalDays = previousStreak || 1;
+                console.log('[CHECK-IN DEBUG] Same day - keeping streak:', totalDays);
             } else {
                 // Missed day(s) - reset to 1
                 totalDays = 1;
+                console.log('[CHECK-IN DEBUG] Missed days - reset to:', totalDays);
             }
         }
     } catch (e) {
         totalDays = 1;
+        console.error('[CHECK-IN DEBUG] Error parsing streak data:', e);
     }
 } else {
     totalDays = 1;
+    console.log('[CHECK-IN DEBUG] No streak data, starting at day 1');
 }
 
 // Save streak (infinite progression, no cap)
@@ -366,7 +376,9 @@ localStorage.setItem('checkInStreak', JSON.stringify({
 
 // Calculate reward based on infinite streak
 // IMPORTANT: Check milestone AFTER streak is incremented and saved
-const isMilestone = (totalDays % 7 === 0 && totalDays > 0); // Days 7, 14, 21, 28...
+console.log('[CHECK-IN DEBUG] Final streak value:', totalDays, '| Modulo 7:', totalDays % 7);
+const isMilestone = (totalDays % 7 === 0 && totalDays >= 7); // Days 7, 14, 21, 28...
+console.log('[CHECK-IN DEBUG] Is milestone?', isMilestone, '| Day:', totalDays);
 const dayInCycle = (totalDays % 7) || 7; // 1-7 (cycles for base rewards)
 const milestoneNumber = Math.floor(totalDays / 7); // Which milestone (1, 2, 3...)
 
@@ -390,9 +402,11 @@ let message;
 if (isMilestone) {
     message = `🎉 MILESTONE DAY ${totalDays}! +${reward} 💎`;
     // Show milestone celebration animation (AFTER streak is confirmed)
+    console.log('[CHECK-IN DEBUG] 🎉 TRIGGERING MILESTONE CELEBRATION for day:', totalDays);
     this.showMilestoneCelebration(totalDays);
 } else {
     message = `+${reward} 💎 Day Streak: ${totalDays}`;
+    console.log('[CHECK-IN DEBUG] Regular check-in, no milestone. Day:', totalDays);
 }
 this.showNotification(message, buttonX, buttonY - 40);
 
