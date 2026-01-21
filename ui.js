@@ -365,7 +365,8 @@ localStorage.setItem('checkInStreak', JSON.stringify({
 }));
 
 // Calculate reward based on infinite streak
-const isMilestone = (totalDays % 7 === 0); // Days 7, 14, 21, 28...
+// IMPORTANT: Check milestone AFTER streak is incremented and saved
+const isMilestone = (totalDays % 7 === 0 && totalDays > 0); // Days 7, 14, 21, 28...
 const dayInCycle = (totalDays % 7) || 7; // 1-7 (cycles for base rewards)
 const milestoneNumber = Math.floor(totalDays / 7); // Which milestone (1, 2, 3...)
 
@@ -388,7 +389,7 @@ this.gameState.diamonds += reward;
 let message;
 if (isMilestone) {
     message = `🎉 MILESTONE DAY ${totalDays}! +${reward} 💎`;
-    // Show milestone celebration animation
+    // Show milestone celebration animation (AFTER streak is confirmed)
     this.showMilestoneCelebration(totalDays);
 } else {
     message = `+${reward} 💎 Day Streak: ${totalDays}`;
@@ -599,14 +600,43 @@ this.showNotification(message, buttonX, buttonY - 40);
     }
 
     showMilestoneCelebration(dayNumber) {
-        // Play celebration sound
+        // 1. Store current sound states and mute all game sounds
+        const gameScene = this.scene;
+        const originalSoundStates = {
+            bgMusicVolume: null,
+            bgMusicWasPlaying: false,
+            soundsMuted: false
+        };
+        
+        // Store and mute background music
+        if (gameScene.bgMusic) {
+            originalSoundStates.bgMusicVolume = gameScene.bgMusic.volume || 0.2;
+            originalSoundStates.bgMusicWasPlaying = gameScene.bgMusic.isPlaying;
+            gameScene.bgMusic.setVolume(0); // Mute background music
+        }
+        
+        // Mute all game sound effects
+        if (gameScene.sounds) {
+            originalSoundStates.soundsMuted = true;
+            Object.keys(gameScene.sounds).forEach(key => {
+                if (gameScene.sounds[key] && typeof gameScene.sounds[key].setVolume === 'function') {
+                    gameScene.sounds[key].setVolume(0); // Mute all sound effects
+                }
+            });
+        }
+
+        // 2. Play celebration sound at full volume
         if (this.scene.playSound) {
+            // Temporarily enable celebration sound if it exists
+            if (gameScene.sounds && gameScene.sounds.celebration) {
+                gameScene.sounds.celebration.setVolume(0.5); // Play at full volume
+            }
             this.scene.playSound('celebration');
         } else {
             console.log("Add celebration.mp3 to assets/sounds/");
         }
 
-        // Create full-screen overlay
+        // 3. Create full-screen overlay
         const overlay = document.createElement('div');
         overlay.className = 'milestone-overlay';
         document.body.appendChild(overlay);
@@ -631,8 +661,32 @@ this.showNotification(message, buttonX, buttonY - 40);
         
         overlay.appendChild(characterImg);
 
-        // Clean up after animation completes (total duration ~2.5s)
+        // 4. Restore sounds after animation completes (total duration ~2.5s)
         setTimeout(() => {
+            // Restore background music
+            if (gameScene.bgMusic && originalSoundStates.bgMusicVolume !== null) {
+                gameScene.bgMusic.setVolume(originalSoundStates.bgMusicVolume);
+                // Resume if it was playing (unless muted)
+                if (originalSoundStates.bgMusicWasPlaying && !gameScene.isMuted) {
+                    if (!gameScene.bgMusic.isPlaying) {
+                        gameScene.bgMusic.play();
+                    }
+                }
+            }
+            
+            // Restore game sound effects
+            if (originalSoundStates.soundsMuted && gameScene.sounds) {
+                Object.keys(gameScene.sounds).forEach(key => {
+                    if (gameScene.sounds[key] && typeof gameScene.sounds[key].setVolume === 'function') {
+                        // Restore original volume (default 0.5 for sound effects)
+                        if (key !== 'celebration') {
+                            gameScene.sounds[key].setVolume(0.5);
+                        }
+                    }
+                });
+            }
+            
+            // Clean up overlay
             if (overlay && overlay.parentNode) {
                 overlay.parentNode.removeChild(overlay);
             }
