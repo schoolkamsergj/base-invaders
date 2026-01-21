@@ -244,6 +244,21 @@ class UI {
         });
     }
 
+    // Helper: Get stable local day key (YYYY-MM-DD)
+    getDayKey(date = new Date()) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    // Helper: Calculate days between two day keys (local dates)
+    daysBetweenDayKeys(key1, key2) {
+        const d1 = new Date(key1 + 'T00:00:00');
+        const d2 = new Date(key2 + 'T00:00:00');
+        return Math.floor((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
+    }
+
     createDailyCheckInButton() {
         // Position: Top-right corner, next to diamonds display (x: width - 200, y: 20)
         const buttonX = 80;
@@ -265,7 +280,7 @@ class UI {
         
         // Button text
         this.checkInButtonText = this.scene.add.text(buttonX, buttonY, '📅 CHECK-IN', {
-            fontSize: '14px',
+            fontSize: '13px',
             fontWeight: 'bold',
             color: '#ffffff',
             align: 'center'
@@ -307,9 +322,9 @@ class UI {
                 this.scene.playSound('click');
             }
             
-           // Save current timestamp
-const now = Date.now();
-localStorage.setItem('lastCheckIn', now.toString());
+           // Save current day key (YYYY-MM-DD format)
+const todayKey = this.getDayKey();
+localStorage.setItem('lastCheckIn', todayKey);
 
 // Update streak system
 let totalDays = 0;
@@ -317,18 +332,24 @@ const streakData = localStorage.getItem('checkInStreak');
 if (streakData) {
     try {
         const data = JSON.parse(streakData);
-        const lastDate = data.lastDate;
-        const today = new Date(now).toDateString();
-        const yesterday = new Date(now - 24 * 60 * 60 * 1000).toDateString();
+        const lastDateKey = data.lastDate;
         
-        if (lastDate === yesterday) {
-            // Consecutive day
-            totalDays = (data.totalDays || 0) + 1;
-        } else if (lastDate !== today) {
-            // Missed a day - RESET to 1!
+        if (!lastDateKey) {
+            // No previous date, start at day 1
             totalDays = 1;
         } else {
-            totalDays = data.totalDays || 1;
+            const daysSince = this.daysBetweenDayKeys(lastDateKey, todayKey);
+            
+            if (daysSince === 1) {
+                // Consecutive day - increment streak
+                totalDays = (data.totalDays || 0) + 1;
+            } else if (daysSince === 0) {
+                // Same day - keep current streak (shouldn't happen, but handle gracefully)
+                totalDays = data.totalDays || 1;
+            } else {
+                // Missed day(s) - reset to 1
+                totalDays = 1;
+            }
         }
     } catch (e) {
         totalDays = 1;
@@ -337,34 +358,38 @@ if (streakData) {
     totalDays = 1;
 }
 
-// Save streak
+// Save streak (infinite progression, no cap)
 localStorage.setItem('checkInStreak', JSON.stringify({
     totalDays: totalDays,
-    lastDate: new Date(now).toDateString()
+    lastDate: todayKey
 }));
 
-// Calculate reward based on day in week
-const dayInWeek = (totalDays % 7) || 7; // 1-7
-const weekStreak = Math.floor(totalDays / 7);
-const baseRewards = [10, 15, 20, 25, 30, 35, 50]; // Days 1-7
-let reward = baseRewards[dayInWeek - 1];
+// Calculate reward based on infinite streak
+const isMilestone = (totalDays % 7 === 0); // Days 7, 14, 21, 28...
+const dayInCycle = (totalDays % 7) || 7; // 1-7 (cycles for base rewards)
+const milestoneNumber = Math.floor(totalDays / 7); // Which milestone (1, 2, 3...)
 
-// Bonus for completing weeks (day 7)
-if (dayInWeek === 7 && weekStreak > 0) {
-    reward += weekStreak * 10; // +10 per week completed
+const baseRewards = [10, 15, 20, 25, 30, 35, 50]; // Days 1-7 base rewards
+let reward = baseRewards[dayInCycle - 1];
+
+// Milestone bonus (days 7, 14, 21, 28...)
+if (isMilestone) {
+    // Cap milestone bonus at day 21 (milestone 3)
+    const cappedMilestone = Math.min(milestoneNumber, 3);
+    // 2x base reward for milestone days
+    const milestoneBonus = reward; // Double the base reward
+    reward += milestoneBonus;
 }
 
 // Add diamonds
 this.gameState.diamonds += reward;
 
 // Show notification
-let message = `+${reward} 💎 Day ${dayInWeek}/7`;
-if (dayInWeek === 7) {
-    if (weekStreak >= 1) {
-        message = `🔥 WEEK ${weekStreak} DONE! +${reward} 💎`;
-    } else {
-        message = `🔥 WEEK COMPLETE! +${reward} 💎`;
-    }
+let message;
+if (isMilestone) {
+    message = `🎉 MILESTONE DAY ${totalDays}! +${reward} 💎`;
+} else {
+    message = `+${reward} 💎 Day Streak: ${totalDays}`;
 }
 this.showNotification(message, buttonX, buttonY - 40);
 
@@ -405,11 +430,9 @@ this.showNotification(message, buttonX, buttonY - 40);
             return true; // Never checked in, button is active
         }
         
-        const lastCheckInTime = parseInt(lastCheckIn);
-        const now = Date.now();
-        const hoursPassed = (now - lastCheckInTime) / (1000 * 60 * 60);
-        
-        return hoursPassed >= 24;
+        // Compare day keys - if lastCheckIn is not today, button is active
+        const todayKey = this.getDayKey();
+        return lastCheckIn !== todayKey;
     }
 
     getCheckInTimeRemaining() {
@@ -418,12 +441,22 @@ this.showNotification(message, buttonX, buttonY - 40);
             return null; // No cooldown
         }
         
-        const lastCheckInTime = parseInt(lastCheckIn);
-        const now = Date.now();
-        const msRemaining = (24 * 60 * 60 * 1000) - (now - lastCheckInTime);
+        // Compare day keys - if lastCheckIn is not today, no cooldown
+        const todayKey = this.getDayKey();
+        if (lastCheckIn !== todayKey) {
+            return null; // Cooldown expired (different day)
+        }
+        
+        // If checked in today, calculate time until midnight local (next day)
+        const now = new Date();
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(0, 0, 0, 0); // Midnight local time
+        
+        const msRemaining = tomorrow.getTime() - now.getTime();
         
         if (msRemaining <= 0) {
-            return null; // Cooldown expired
+            return null; // Already past midnight
         }
         
         const hours = Math.floor(msRemaining / (1000 * 60 * 60));
@@ -435,16 +468,33 @@ this.showNotification(message, buttonX, buttonY - 40);
     getCheckInStreak() {
         const streakData = localStorage.getItem('checkInStreak');
         if (!streakData) {
-            return { totalDays: 0, weekStreak: 0, dayInWeek: 1 };
+            return { totalDays: 0, nextMilestone: 7, isMilestone: false };
         }
         try {
             const data = JSON.parse(streakData);
+            const lastDateKey = data.lastDate;
+            
+            // Check if lastDate exists and is valid
+            if (!lastDateKey) {
+                return { totalDays: 0, nextMilestone: 7, isMilestone: false };
+            }
+            
+            // Get today's day key
+            const todayKey = this.getDayKey();
+            const daysSince = this.daysBetweenDayKeys(lastDateKey, todayKey);
+            
+            // Reset streak if lastDate is not yesterday (1) or today (0)
+            if (daysSince > 1 || daysSince < 0) {
+                return { totalDays: 0, nextMilestone: 7, isMilestone: false };
+            }
+            
+            // Return current streak data (infinite progression)
             const totalDays = data.totalDays || 0;
-            const weekStreak = Math.floor(totalDays / 7);
-            const dayInWeek = (totalDays % 7) || 7;
-            return { totalDays, weekStreak, dayInWeek };
+            const nextMilestone = Math.ceil(totalDays / 7) * 7; // Next multiple of 7
+            const isMilestone = (totalDays > 0 && totalDays % 7 === 0);
+            return { totalDays, nextMilestone, isMilestone };
         } catch (e) {
-            return { totalDays: 0, weekStreak: 0, dayInWeek: 1 };
+            return { totalDays: 0, nextMilestone: 7, isMilestone: false };
         }
     }
     
@@ -476,10 +526,16 @@ this.showNotification(message, buttonX, buttonY - 40);
             this.checkInGlow.fillStyle(0x00ffff, 0.3);
             this.checkInGlow.fillRoundedRect(buttonX - buttonWidth / 2 - 2, buttonY - buttonHeight / 2 - 2, buttonWidth + 4, buttonHeight + 4, 7);
             
-            // Update text
-            const dayText = `DAY ${streakInfo.dayInWeek}/7`;
-            const streakText = streakInfo.weekStreak > 0 ? ` 🔥${streakInfo.weekStreak}` : '';
-            this.checkInButtonText.setText(`📅 ${dayText}${streakText}`);
+            // Update text - show infinite streak
+            if (streakInfo.totalDays > 0) {
+                const streakText = `Day ${streakInfo.totalDays}`;
+                const milestoneText = !streakInfo.isMilestone 
+                    ? ` →${streakInfo.nextMilestone}` 
+                    : ' 🎉';
+                this.checkInButtonText.setText(`📅 ${streakText}${milestoneText}`);
+            } else {
+                this.checkInButtonText.setText('📅 CHECK-IN');
+            }
 
             this.checkInButtonText.setColor('#00ff00');
             this.checkInCountdownText.setVisible(false);
@@ -642,3 +698,122 @@ this.showNotification(message, buttonX, buttonY - 40);
         return Math.floor(num).toString();
     }
 }
+
+// Debug helper for Daily Check-in (dev only)
+(function() {
+    'use strict';
+    
+    // Helper to get day key (same as UI method - local time)
+    function getDayKey(date = new Date()) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+    
+    // Helper to calculate days between day keys (local dates)
+    function daysBetweenDayKeys(key1, key2) {
+        const d1 = new Date(key1 + 'T00:00:00');
+        const d2 = new Date(key2 + 'T00:00:00');
+        return Math.floor((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
+    }
+    
+    window.__strikeDebug = {
+        getState: function() {
+            const lastCheckIn = localStorage.getItem('lastCheckIn');
+            const streakData = localStorage.getItem('checkInStreak');
+            const todayKey = getDayKey();
+            
+            let streak = null;
+            let daysSince = null;
+            let nextMilestone = 7;
+            let isMilestone = false;
+            
+            if (streakData) {
+                try {
+                    streak = JSON.parse(streakData);
+                    if (streak.lastDate) {
+                        daysSince = daysBetweenDayKeys(streak.lastDate, todayKey);
+                    }
+                    if (streak.totalDays) {
+                        nextMilestone = Math.ceil(streak.totalDays / 7) * 7;
+                        isMilestone = (streak.totalDays % 7 === 0);
+                    }
+                } catch (e) {
+                    streak = { error: e.message };
+                }
+            }
+            
+            return {
+                lastCheckInDayKey: lastCheckIn || null,
+                todayDayKey: todayKey,
+                daysSinceLastCheckin: lastCheckIn ? daysBetweenDayKeys(lastCheckIn, todayKey) : null,
+                streak: streak,
+                streakDaysSince: daysSince,
+                totalDays: streak ? (streak.totalDays || 0) : 0,
+                nextMilestone: nextMilestone,
+                isMilestone: isMilestone,
+                canClaim: lastCheckIn !== todayKey
+            };
+        },
+        
+        setLastCheckinDaysAgo: function(n) {
+            if (typeof n !== 'number' || n < 0) {
+                console.error('__strikeDebug.setLastCheckinDaysAgo: n must be a non-negative number');
+                return;
+            }
+            
+            const today = new Date();
+            const targetDate = new Date(today);
+            targetDate.setDate(targetDate.getDate() - n);
+            const targetKey = getDayKey(targetDate);
+            
+            localStorage.setItem('lastCheckIn', targetKey);
+            
+            // Update streak's lastDate if it exists
+            const streakData = localStorage.getItem('checkInStreak');
+            if (streakData) {
+                try {
+                    const streak = JSON.parse(streakData);
+                    streak.lastDate = targetKey;
+                    localStorage.setItem('checkInStreak', JSON.stringify(streak));
+                } catch (e) {
+                    console.warn('Could not update streak lastDate:', e);
+                }
+            }
+            
+            // Refresh UI if game is running
+            if (window.game && window.game.scene) {
+                const gameScene = window.game.scene.getScene('GameScene');
+                if (gameScene && gameScene.ui && gameScene.ui.updateCheckInButtonState) {
+                    gameScene.ui.updateCheckInButtonState();
+                    console.log('UI refreshed. New state:', this.getState());
+                } else {
+                    console.log('UI not available. State updated:', this.getState());
+                }
+            } else {
+                console.log('Game not initialized. State updated:', this.getState());
+            }
+        },
+        
+        resetStrike: function() {
+            localStorage.removeItem('lastCheckIn');
+            localStorage.removeItem('checkInStreak');
+            
+            // Refresh UI if game is running
+            if (window.game && window.game.scene) {
+                const gameScene = window.game.scene.getScene('GameScene');
+                if (gameScene && gameScene.ui && gameScene.ui.updateCheckInButtonState) {
+                    gameScene.ui.updateCheckInButtonState();
+                    console.log('Strike reset. UI refreshed. New state:', this.getState());
+                } else {
+                    console.log('Strike reset. UI not available. New state:', this.getState());
+                }
+            } else {
+                console.log('Strike reset. Game not initialized. New state:', this.getState());
+            }
+        }
+    };
+    
+    console.log('Daily Check-in Debug Helper loaded. Use window.__strikeDebug');
+})();
