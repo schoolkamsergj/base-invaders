@@ -388,6 +388,8 @@ this.gameState.diamonds += reward;
 let message;
 if (isMilestone) {
     message = `🎉 MILESTONE DAY ${totalDays}! +${reward} 💎`;
+    // Show milestone celebration animation
+    this.showMilestoneCelebration(totalDays);
 } else {
     message = `+${reward} 💎 Day Streak: ${totalDays}`;
 }
@@ -594,6 +596,47 @@ this.showNotification(message, buttonX, buttonY - 40);
                 notification.destroy();
             }
         });
+    }
+
+    showMilestoneCelebration(dayNumber) {
+        // Play celebration sound
+        if (this.scene.playSound) {
+            this.scene.playSound('celebration');
+        } else {
+            console.log("Add celebration.mp3 to assets/sounds/");
+        }
+
+        // Create full-screen overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'milestone-overlay';
+        document.body.appendChild(overlay);
+
+        // Create character image element
+        const characterImg = document.createElement('img');
+        characterImg.className = 'milestone-character';
+        characterImg.src = './assets/milestone-character.png';
+        characterImg.alt = 'Milestone Celebration';
+        
+        // Fallback if image fails to load
+        characterImg.onerror = () => {
+            console.warn("milestone-character.png not found in assets/");
+            characterImg.style.display = 'none';
+            
+            // Show fallback text
+            const fallbackText = document.createElement('div');
+            fallbackText.className = 'milestone-text';
+            fallbackText.textContent = `🎉 DAY ${dayNumber} MILESTONE! 🎉`;
+            overlay.appendChild(fallbackText);
+        };
+        
+        overlay.appendChild(characterImg);
+
+        // Clean up after animation completes (total duration ~2.5s)
+        setTimeout(() => {
+            if (overlay && overlay.parentNode) {
+                overlay.parentNode.removeChild(overlay);
+            }
+        }, 2500);
     }
 
     setupShopButton() {

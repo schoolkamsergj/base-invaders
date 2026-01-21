@@ -301,6 +301,7 @@ class GameScene extends Phaser.Scene {
             this.load.audio('coin', 'assets/sounds/coin.mp3');
             this.load.audio('click', 'assets/sounds/click.mp3');
             this.load.audio('purchase', 'assets/sounds/purchase.mp3');
+            this.load.audio('celebration', 'assets/sounds/celebration.mp3');
             this.load.audio('bgMusic', 'assets/sounds/background.mp3');
             console.log('Sound file loading started');
         } catch (e) {
@@ -564,7 +565,7 @@ class GameScene extends Phaser.Scene {
         }
         
         // Create sound effects (will be null if files not found)
-        const soundKeys = ['shoot', 'explosion', 'hit', 'powerup', 'coin', 'click', 'purchase'];
+        const soundKeys = ['shoot', 'explosion', 'hit', 'powerup', 'coin', 'click', 'purchase', 'celebration'];
         let soundsCreated = 0;
         let soundsFailed = 0;
         
