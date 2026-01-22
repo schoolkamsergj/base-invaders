@@ -401,7 +401,7 @@ this.gameState.diamonds += reward;
 let message;
 if (isMilestone) {
     message = `🎉 MILESTONE DAY ${totalDays}! +${reward} 💎`;
-    console.log('[CHECK-IN DEBUG] Milestone day detected:', totalDays);
+    console.log('[CHECK-IN DEBUG] Milestone detected, will trigger celebration after UI update');
 } else {
     message = `+${reward} 💎 Day Streak: ${totalDays}`;
     console.log('[CHECK-IN DEBUG] Regular check-in, no milestone. Day:', totalDays);
@@ -412,12 +412,13 @@ this.showNotification(message, buttonX, buttonY - 40);
             // Update button state FIRST (so UI shows correct day)
             this.updateCheckInButtonState();
             
-            // Show milestone celebration AFTER UI has updated (300ms delay ensures DOM has rendered)
+            // IMPORTANT: Wait for DOM to repaint before showing milestone animation
+            // This ensures user sees "Day 7" text BEFORE character appears
             if (isMilestone) {
                 setTimeout(() => {
-                    console.log('[CHECK-IN DEBUG] 🎉 TRIGGERING MILESTONE CELEBRATION for day:', totalDays);
+                    console.log('[CHECK-IN DEBUG] 🎉 NOW showing milestone celebration for day:', totalDays);
                     this.showMilestoneCelebration(totalDays);
-                }, 300);
+                }, 500); // 500ms delay for DOM repaint + user to see new day number
             }
         };
         
