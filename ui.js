@@ -376,9 +376,11 @@ localStorage.setItem('checkInStreak', JSON.stringify({
 
 // Calculate reward based on infinite streak
 // IMPORTANT: Check milestone AFTER streak is incremented and saved
+// Check if NEXT day (after this claim) will be a milestone
+// User is currently on (totalDays - 1), claiming totalDays now
 console.log('[CHECK-IN DEBUG] Final streak value:', totalDays, '| Modulo 7:', totalDays % 7);
 const isMilestone = (totalDays % 7 === 0 && totalDays >= 7); // Days 7, 14, 21, 28...
-console.log('[CHECK-IN DEBUG] Is milestone?', isMilestone, '| Day:', totalDays);
+console.log('[CHECK-IN DEBUG] Claiming day:', totalDays, '| Is milestone?', isMilestone);
 const dayInCycle = (totalDays % 7) || 7; // 1-7 (cycles for base rewards)
 const milestoneNumber = Math.floor(totalDays / 7); // Which milestone (1, 2, 3...)
 
@@ -550,15 +552,18 @@ this.showNotification(message, buttonX, buttonY - 40);
             this.checkInGlow.fillStyle(0x00ffff, 0.3);
             this.checkInGlow.fillRoundedRect(buttonX - buttonWidth / 2 - 2, buttonY - buttonHeight / 2 - 2, buttonWidth + 4, buttonHeight + 4, 7);
             
-            // Update text - show infinite streak
-            if (streakInfo.totalDays > 0) {
-                const streakText = `Day ${streakInfo.totalDays}`;
-                const milestoneText = !streakInfo.isMilestone 
-                    ? ` →${streakInfo.nextMilestone}` 
-                    : ' 🎉';
-                this.checkInButtonText.setText(`📅 ${streakText}${milestoneText}`);
+            // Update text - show NEXT day that will be claimed (current + 1)
+            if (streakInfo.totalDays >= 0) {
+                const nextDay = streakInfo.totalDays + 1;
+                const isNextMilestone = (nextDay % 7 === 0 && nextDay >= 7);
+                
+                if (isNextMilestone) {
+                    this.checkInButtonText.setText(`📅 Day ${nextDay} 🎉`);
+                } else {
+                    this.checkInButtonText.setText(`📅 Day ${nextDay}`);
+                }
             } else {
-                this.checkInButtonText.setText('📅 CHECK-IN');
+                this.checkInButtonText.setText('📅 Day 1');
             }
 
             this.checkInButtonText.setColor('#00ff00');
