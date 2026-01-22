@@ -375,12 +375,9 @@ localStorage.setItem('checkInStreak', JSON.stringify({
 }));
 
 // Calculate reward based on infinite streak
-// IMPORTANT: Milestone appears when user is CLAIMING from a milestone day (7, 14, 21...)
-// NOT when REACHING a milestone day
-// Check if previous streak (before this claim) was a milestone day
-const previousStreak = totalDays - 1; // Day user was on before this claim
-const isMilestone = (previousStreak % 7 === 0 && previousStreak >= 7); // Previous was 7, 14, 21...
-console.log('[CHECK-IN DEBUG] Previous streak:', previousStreak, '| New streak:', totalDays, '| Is milestone?', isMilestone);
+// IMPORTANT: Milestone appears when user CLAIMS Day 7, 14, 21... (the day just claimed)
+const isMilestone = (totalDays % 7 === 0 && totalDays >= 7); // Days 7, 14, 21...
+console.log('[CHECK-IN DEBUG] Claimed day:', totalDays, '| Is milestone?', isMilestone);
 const dayInCycle = (totalDays % 7) || 7; // 1-7 (cycles for base rewards)
 const milestoneNumber = Math.floor(totalDays / 7); // Which milestone (1, 2, 3...)
 
@@ -552,24 +549,23 @@ this.showNotification(message, buttonX, buttonY - 40);
             this.checkInGlow.fillStyle(0x00ffff, 0.3);
             this.checkInGlow.fillRoundedRect(buttonX - buttonWidth / 2 - 2, buttonY - buttonHeight / 2 - 2, buttonWidth + 4, buttonHeight + 4, 7);
             
-            // Update text - show current day → next milestone
-            if (streakInfo.totalDays > 0) {
-                const currentDay = streakInfo.totalDays;
-                const nextDay = currentDay + 1;
-                // Show emoji if CURRENT day is milestone (user is claiming FROM milestone day)
-                const isCurrentMilestone = (currentDay % 7 === 0 && currentDay >= 7);
-                const nextMilestone = Math.ceil(nextDay / 7) * 7;
-                
-                if (isCurrentMilestone) {
-                    // Show: "Day 7 →14 🎉" (current is milestone → next milestone)
-                    this.checkInButtonText.setText(`📅 Day ${currentDay} →${nextMilestone} 🎉`);
-                } else {
-                    // Show: "Day 6 →7" or "Day 8 →14" (current → next milestone)
-                    this.checkInButtonText.setText(`📅 Day ${currentDay} →${nextMilestone}`);
-                }
+            // Calculate next day to claim (always starts from 1)
+            const currentStreak = streakInfo.totalDays || 0; // 0 if never claimed
+            const nextDay = currentStreak + 1; // Day 1, 2, 3... (the day user will claim)
+            
+            // Check if next claim is milestone
+            const isNextMilestone = (nextDay % 7 === 0 && nextDay >= 7);
+            
+            // Calculate next milestone after this claim
+            const nextMilestone = Math.ceil(nextDay / 7) * 7;
+            
+            // Build button text
+            if (isNextMilestone) {
+                // Next claim IS milestone (Day 7, 14, 21...)
+                this.checkInButtonText.setText(`📅 Day ${nextDay} →${nextDay + 7} 🎉`);
             } else {
-                // First time
-                this.checkInButtonText.setText('📅 Day 1');
+                // Regular day
+                this.checkInButtonText.setText(`📅 Day ${nextDay} →${nextMilestone}`);
             }
 
             this.checkInButtonText.setColor('#00ff00');
