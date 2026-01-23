@@ -290,6 +290,10 @@ class GameScene extends Phaser.Scene {
         this.load.image('enemyWeak', './assets/images/enemy_weak.png');
         this.load.image('enemyBoss', './assets/images/enemy_boss.png');
         
+        // Load mission system assets
+        this.load.image('bossJesse', './assets/images/boss_jesse.jpg');
+        this.load.image('baseCube', './assets/images/base_cube.jpg');
+        
         // Load sound effects - try multiple path formats
         console.log('Loading sound files...');
         try {
@@ -317,12 +321,18 @@ class GameScene extends Phaser.Scene {
             }
         });
         
+        // Enhanced error handling for all file types
         this.load.on('loaderror', (file) => {
+            console.error('❌ Failed to load:', file.key, 'at path:', file.src);
             if (file.type === 'audio') {
-                console.error('❌ Sound file FAILED to load:', file.key, 'Path:', file.src);
                 console.error('   Check if file exists at:', file.src);
-            } else {
-                console.warn('Failed to load:', file.key, 'Path:', file.src);
+            } else if (file.type === 'image') {
+                console.error('   Image file failed to load. Check path:', file.src);
+                if (file.key === 'bossJesse') {
+                    console.error('   Boss image will use red circle fallback');
+                } else if (file.key === 'baseCube') {
+                    console.error('   Base cube will use original design with "B" letter');
+                }
             }
         });
         
@@ -352,6 +362,8 @@ class GameScene extends Phaser.Scene {
             console.log('Player texture exists:', this.textures.exists('player'));
             console.log('EnemyWeak texture exists:', this.textures.exists('enemyWeak'));
             console.log('EnemyBoss texture exists:', this.textures.exists('enemyBoss'));
+            console.log('Boss texture exists:', this.textures.exists('bossJesse'));
+            console.log('Cube texture exists:', this.textures.exists('baseCube'));
         });
         
         console.log('Preload complete - loading spaceship sprites and sounds');
@@ -359,6 +371,18 @@ class GameScene extends Phaser.Scene {
 
     create() {
         console.log('Game create() started');
+        
+        // Verify textures loaded
+        console.log('=== Texture Verification ===');
+        console.log('Boss texture exists:', this.textures.exists('bossJesse'));
+        console.log('Cube texture exists:', this.textures.exists('baseCube'));
+        if (!this.textures.exists('bossJesse')) {
+            console.warn('⚠️ Boss image (boss_jesse.jpg) not found - will use red circle fallback');
+        }
+        if (!this.textures.exists('baseCube')) {
+            console.warn('⚠️ Base cube image (base_cube.jpg) not found - will use original design with "B" letter');
+        }
+        console.log('===========================');
         
         try {
             console.log('Scene width:', this.scale.width, 'height:', this.scale.height);
@@ -396,6 +420,17 @@ class GameScene extends Phaser.Scene {
 
             // Initialize boss flag
             this.bossActive = false;
+            
+            // Mission system
+            this.missionSystem = {
+                currentMission: 1,
+                currentWave: 1,
+                maxWaves: 5,
+                waveEnemiesKilled: 0,
+                waveEnemiesTotal: 0,
+                bossActive: false
+            };
+            this.gameState.missionSystem = this.missionSystem;
 
             // Player stats (from shop) - load before creating player
             this.playerStats = {
@@ -1344,6 +1379,30 @@ class GameScene extends Phaser.Scene {
             this.dropPowerUp(x, y);
         }
 
+        // Track wave progress (mission system)
+        if (this.missionSystem && !this.missionSystem.bossActive) {
+            if (enemy.type !== 'boss') {
+                this.missionSystem.waveEnemiesKilled++;
+                console.log(`Wave progress: ${this.missionSystem.waveEnemiesKilled}/${this.missionSystem.waveEnemiesTotal} enemies killed`);
+                // Check if wave is complete (use >= to handle edge cases)
+                if (this.missionSystem.waveEnemiesKilled >= this.missionSystem.waveEnemiesTotal) {
+                    console.log('Wave complete! Moving to next wave or boss...');
+                    // Delay to ensure all enemies are properly destroyed
+                    this.time.delayedCall(500, () => {
+                        this.completeWave();
+                    });
+                }
+            }
+        }
+        
+        // Handle boss defeat
+        if (enemy.type === 'boss' && this.missionSystem) {
+            console.log('Boss defeated! Completing mission...');
+            this.time.delayedCall(500, () => {
+                this.completeMission();
+            });
+        }
+
         // Check level up
         this.checkLevelUp();
     }
@@ -1351,31 +1410,53 @@ class GameScene extends Phaser.Scene {
     destroyEnemy(enemy, enemySprite) {
         if (!enemy || !enemySprite) return;
         
-        // Destroy all enemy visual components
-        if (enemy.sprite && enemy.sprite !== enemySprite && enemy.sprite.active) {
+        // CRITICAL: Remove from group FIRST before destroying
+        if (this.enemies.contains(enemySprite)) {
+            this.enemies.remove(enemySprite, true, true); // Remove and destroy
+        }
+        
+        // Destroy all visual components
+        if (enemy.sprite && enemy.sprite.active) {
             enemy.sprite.destroy();
         }
-        if (enemy.shadow && enemy.shadow.active) enemy.shadow.destroy();
-        if (enemy.glow && enemy.glow.active) enemy.glow.destroy();
-        if (enemy.outerGlow && enemy.outerGlow.active) enemy.outerGlow.destroy();
-        if (enemy.innerGlow && enemy.innerGlow.active) enemy.innerGlow.destroy();
-        if (enemy.engineGlow && enemy.engineGlow.active) enemy.engineGlow.destroy();
-        if (enemy.numberText && enemy.numberText.active) enemy.numberText.destroy();
-        if (enemy.letterB && enemy.letterB.active) enemy.letterB.destroy(); // Base cube "B" letter
+        if (enemy.letterB && enemy.letterB.active) {
+            enemy.letterB.destroy();
+        }
+        if (enemy.glow && enemy.glow.active) {
+            enemy.glow.destroy();
+        }
+        if (enemy.shadow && enemy.shadow.active) {
+            enemy.shadow.destroy();
+        }
+        if (enemy.outerGlow && enemy.outerGlow.active) {
+            enemy.outerGlow.destroy();
+        }
+        if (enemy.innerGlow && enemy.innerGlow.active) {
+            enemy.innerGlow.destroy();
+        }
+        if (enemy.engineGlow && enemy.engineGlow.active) {
+            enemy.engineGlow.destroy();
+        }
+        if (enemy.numberText && enemy.numberText.active) {
+            enemy.numberText.destroy();
+        }
         
         // Boss-specific components
         if (enemy.type === 'boss') {
-            if (enemy.healthBar && enemy.healthBar.active) enemy.healthBar.destroy();
-            if (enemy.healthBarBg && enemy.healthBarBg.active) enemy.healthBarBg.destroy();
+            if (enemy.healthBar && enemy.healthBar.active) {
+                enemy.healthBar.destroy();
+            }
+            if (enemy.healthBarBg && enemy.healthBarBg.active) {
+                enemy.healthBarBg.destroy();
+            }
         }
         
-        // Remove from enemies group and destroy sprite
+        // Destroy sprite separately if it still exists
         if (enemySprite && enemySprite.active) {
-            this.enemies.remove(enemySprite);
             enemySprite.destroy();
         }
         
-        // Clear enemy object reference
+        // Clear reference
         if (enemySprite) {
             enemySprite.enemyObject = null;
         }
@@ -1581,20 +1662,19 @@ class GameScene extends Phaser.Scene {
     }
 
     handleSpawning(time) {
-        if (time > this.spawnTimer) {
-            this.spawnRandomEnemy();
-            this.spawnTimer = time + this.enemySpawnRate;
-        }
+        // Mission system handles spawning via waves
+        // This method is kept for compatibility but wave system controls spawning
     }
 
     spawnRandomEnemy() {
-        const rand = Math.random();
-        const stage = this.gameState.stage;
+        // Only spawn if not in boss phase
+        if (this.missionSystem && this.missionSystem.bossActive) {
+            return;
+        }
         
-        if (stage % 10 === 0 && !this.bossActive && this.enemies.children.size === 0) {
-            this.spawnBoss();
-            this.bossActive = true;
-        } else if (rand < 0.4) {
+        const rand = Math.random();
+        
+        if (rand < 0.4) {
             this.spawnHexagon();
         } else if (rand < 0.7) {
             this.spawnBaseCube();
@@ -1631,20 +1711,112 @@ class GameScene extends Phaser.Scene {
     }
 
     spawnBoss() {
-        const hp = 500 + (this.gameState.stage - 1) * 100;
-        const boss = new BossEnemy(this, this.scale.width / 2, 100, hp);
+        if (!this.missionSystem) return;
+        
+        // Calculate boss HP based on mission
+        let bossHP;
+        if (this.missionSystem.currentMission === 1) {
+            bossHP = 500;
+        } else if (this.missionSystem.currentMission === 2) {
+            bossHP = 800;
+        } else {
+            bossHP = 1200 + (this.missionSystem.currentMission - 3) * 200;
+        }
+        
+        this.missionSystem.bossActive = true;
+        this.bossActive = true;
+        
+        const boss = new BossEnemy(this, this.scale.width / 2, 100, bossHP, this.missionSystem.currentMission);
         boss.sprite.enemyObject = boss; // Store reference
         this.enemies.add(boss.sprite);
+        
+        console.log(`BOSS SPAWNED! Mission ${this.missionSystem.currentMission}, HP: ${bossHP}`);
     }
 
     spawnEnemies() {
         console.log('Starting enemy spawns...');
-        // Initial wave
-        for (let i = 0; i < 5; i++) {
+        // Start first wave
+        this.startWave();
+    }
+    
+    startWave() {
+        if (!this.missionSystem) return;
+        
+        // Reset wave tracking
+        this.missionSystem.waveEnemiesKilled = 0;
+        this.missionSystem.bossActive = false;
+        
+        // Calculate enemies for this wave (scales with mission)
+        const baseEnemies = 5 + this.missionSystem.currentWave;
+        this.missionSystem.waveEnemiesTotal = baseEnemies + Math.floor(this.missionSystem.currentMission / 2);
+        
+        console.log(`Starting Mission ${this.missionSystem.currentMission} - Wave ${this.missionSystem.currentWave}/${this.missionSystem.maxWaves}`);
+        console.log(`Spawning ${this.missionSystem.waveEnemiesTotal} enemies`);
+        
+        // Spawn enemies with delay
+        for (let i = 0; i < this.missionSystem.waveEnemiesTotal; i++) {
             this.time.delayedCall(i * 500, () => {
                 this.spawnRandomEnemy();
             });
         }
+    }
+    
+    completeWave() {
+        if (!this.missionSystem) return;
+        
+        // Prevent multiple calls
+        if (this.missionSystem.bossActive) return;
+        
+        console.log(`Wave ${this.missionSystem.currentWave} complete!`);
+        
+        // Move to next wave or spawn boss
+        if (this.missionSystem.currentWave >= this.missionSystem.maxWaves) {
+            // All waves complete, spawn boss
+            console.log('All waves complete! Spawning boss...');
+            this.time.delayedCall(2000, () => {
+                // Ensure no enemies remain before spawning boss
+                if (this.enemies.children.size === 0) {
+                    this.spawnBoss();
+                } else {
+                    console.warn('Enemies still on screen, waiting...');
+                    this.time.delayedCall(1000, () => this.completeWave());
+                }
+            });
+        } else {
+            // Next wave
+            this.missionSystem.currentWave++;
+            this.time.delayedCall(2000, () => {
+                // Ensure no enemies remain before starting next wave
+                if (this.enemies.children.size === 0) {
+                    this.startWave();
+                } else {
+                    console.warn('Enemies still on screen, waiting...');
+                    this.time.delayedCall(1000, () => this.completeWave());
+                }
+            });
+        }
+    }
+    
+    completeMission() {
+        if (!this.missionSystem) return;
+        
+        console.log(`Mission ${this.missionSystem.currentMission} complete!`);
+        
+        // Award mission rewards
+        const missionReward = this.missionSystem.currentMission * 100;
+        this.gameState.gold += missionReward;
+        this.gameState.diamonds += Math.floor(this.missionSystem.currentMission / 2) + 1;
+        
+        // Next mission
+        this.missionSystem.currentMission++;
+        this.missionSystem.currentWave = 1;
+        this.missionSystem.bossActive = false;
+        this.bossActive = false;
+        
+        // Start next mission after delay
+        this.time.delayedCall(3000, () => {
+            this.startWave();
+        });
     }
 
     updateStage(time) {

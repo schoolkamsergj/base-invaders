@@ -750,8 +750,20 @@ this.showNotification(message, buttonX, buttonY - 40);
         this.lightningText.setText(`⚡ ${this.formatNumber(gameState.lightning)}`);
         this.diamondsText.setText(`💎 ${this.formatNumber(gameState.diamonds)}`);
         
-        // Update stage
-        this.stageText.setText(`STAGE ${gameState.stage}`);
+        // Update mission/wave display
+        if (gameState.missionSystem) {
+            if (gameState.missionSystem.bossActive) {
+                this.stageText.setText(`Mission ${gameState.missionSystem.currentMission} - BOSS ⚔️`);
+                this.stageText.setColor('#ff0000');
+            } else {
+                this.stageText.setText(`Mission ${gameState.missionSystem.currentMission} - Wave ${gameState.missionSystem.currentWave}/5`);
+                this.stageText.setColor('#00ffff');
+            }
+        } else {
+            // Fallback to stage if mission system not available
+            this.stageText.setText(`STAGE ${gameState.stage}`);
+            this.stageText.setColor('#00ffff');
+        }
         
         // Update score
         const multiplier = gameState.scoreMultiplier || 1;

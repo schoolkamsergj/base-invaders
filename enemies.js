@@ -129,86 +129,89 @@ class BaseCubeEnemy {
         this.maxHP = hp;
         this.hits = 0;
         
-        // Create 3D holographic Base cube
-        const size = 35;
+        const size = 40; // Slightly larger for better visibility
         
         // Shadow
         this.shadow = scene.add.ellipse(x, y + 25, size * 1.2, size * 0.4, 0x0000ff, 0.3);
         this.shadow.setDepth(4);
         this.shadow.setBlendMode(Phaser.BlendModes.MULTIPLY);
         
-        // Outer glow (holographic effect)
-        this.outerGlow = scene.add.graphics();
-        this.outerGlow.lineStyle(4, 0x00ffff, 0.6);
-        this.outerGlow.strokeRect(-size/2 - 3, -size/2 - 3, size + 6, size + 6);
-        this.outerGlow.x = x;
-        this.outerGlow.y = y;
-        this.outerGlow.setDepth(4);
-        this.outerGlow.setBlendMode(Phaser.BlendModes.ADD);
+        // PRIMARY: Original design (blue square with "B" letter)
+        // Only use image if it loads successfully
+        if (scene.textures.exists('baseCube')) {
+            // Image loaded successfully - use it
+            this.sprite = scene.add.image(x, y, 'baseCube');
+            this.sprite.setDisplaySize(size, size);
+            this.sprite.setOrigin(0.5);
+            this.letterB = null; // No letter needed with image
+        } else {
+            // ORIGINAL DESIGN: Blue square with "B" letter (PRIMARY)
+            console.warn('Base Cube image not loaded! Using original design with "B" letter.');
+            
+            // Create cube with blue gradient
+            this.sprite = scene.add.graphics();
+            this.sprite.fillGradientStyle(0x0052FF, 0x0033cc, 0x0088ff, 0x0052FF, 1);
+            this.sprite.fillRect(-size/2, -size/2, size, size);
+            this.sprite.lineStyle(3, 0x00ffff, 1);
+            this.sprite.strokeRect(-size/2, -size/2, size, size);
+            
+            // 3D face effect (top face)
+            this.sprite.fillStyle(0x0066ff, 0.8);
+            this.sprite.fillRect(-size/2, -size/2, size, size/3);
+            
+            this.sprite.x = x;
+            this.sprite.y = y;
+            
+            // Base "B" letter text (big, bold, visible, always centered)
+            this.letterB = scene.add.text(x, y, 'B', {
+                fontSize: '28px',
+                fontWeight: 'bold',
+                color: '#ffffff',
+                stroke: '#00ffff',
+                strokeThickness: 3
+            });
+            this.letterB.setOrigin(0.5);
+            this.letterB.setDepth(6);
+            this.letterB.setShadow(2, 2, '#00ffff', 5, true, true);
+        }
         
-        // Main cube with 3D gradient
-        this.sprite = scene.add.graphics();
-        this.sprite.fillGradientStyle(0x0052FF, 0x0033cc, 0x0088ff, 0x0052FF, 1);
-        this.sprite.fillRect(-size/2, -size/2, size, size);
-        this.sprite.lineStyle(3, 0x00ffff, 1);
-        this.sprite.strokeRect(-size/2, -size/2, size, size);
-        
-        // 3D face effect (top face)
-        this.sprite.fillStyle(0x0066ff, 0.8);
-        this.sprite.fillRect(-size/2, -size/2, size, size/3);
-        
-        this.sprite.x = x;
-        this.sprite.y = y;
         this.sprite.setDepth(5);
         
-        // Base "B" letter text (big, bold, visible)
-        this.letterB = scene.add.text(x, y, 'B', {
-            fontSize: '28px',
-            fontWeight: 'bold',
-            color: '#ffffff',
-            stroke: '#00ffff',
-            strokeThickness: 3
-        });
-        this.letterB.setOrigin(0.5);
-        this.letterB.setDepth(6);
-        this.letterB.setShadow(2, 2, '#00ffff', 5, true, true);
+        // Cyan glow circle with ADD blend mode (pulsing)
+        this.glow = scene.add.graphics();
+        this.glow.fillStyle(0x00ffff, 0.5);
+        this.glow.fillCircle(x, y, size + 10);
+        this.glow.setDepth(4);
+        this.glow.setBlendMode(Phaser.BlendModes.ADD);
         
-        // Inner glow
-        this.innerGlow = scene.add.graphics();
-        this.innerGlow.fillStyle(0x00ffff, 0.3);
-        this.innerGlow.fillRect(x - size/4, y - size/4, size/2, size/2);
-        this.innerGlow.setDepth(4);
-        this.innerGlow.setBlendMode(Phaser.BlendModes.ADD);
-        
-        // Physics
-        scene.physics.add.existing(this.sprite);
-        this.sprite.body.setVelocity(0, 60 + scene.gameState.stage * 5);
-        
-        // 3D rotation animation (X, Y, Z axes)
+        // Rotation animation: 360° in 2 seconds, infinite
         scene.tweens.add({
             targets: this.sprite,
             rotation: Math.PI * 2,
-            duration: 3000,
+            duration: 2000,
             repeat: -1,
             ease: 'Linear'
         });
         
+        // Scale pulse: 0.95 to 1.05 (as requested, not 0.9-1.1)
         scene.tweens.add({
-            targets: [this.outerGlow, this.innerGlow],
-            rotation: Math.PI * 2,
-            duration: 4000,
-            repeat: -1,
-            ease: 'Linear'
-        });
-        
-        // Pulsing holographic glow
-        scene.tweens.add({
-            targets: [this.outerGlow, this.innerGlow],
-            alpha: { from: 0.4, to: 0.8 },
+            targets: this.sprite,
             scale: { from: 0.95, to: 1.05 },
             duration: 1000,
             yoyo: true,
-            repeat: -1
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
+        
+        // Glow pulse: cyan glow expanding/contracting
+        scene.tweens.add({
+            targets: this.glow,
+            alpha: { from: 0.3, to: 0.7 },
+            scale: { from: 0.9, to: 1.1 },
+            duration: 1000,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
         });
         
         // Shadow animation
@@ -220,6 +223,10 @@ class BaseCubeEnemy {
             yoyo: true,
             repeat: -1
         });
+        
+        // Physics
+        scene.physics.add.existing(this.sprite);
+        this.sprite.body.setVelocity(0, 60 + scene.gameState.stage * 5);
         
         // Rewards
         this.rewards = {
@@ -234,18 +241,28 @@ class BaseCubeEnemy {
         this.hp -= amount;
         this.hits++;
         
-        // Flash on hit with glow
+        // Flash on hit
         this.scene.tweens.add({
-            targets: [this.sprite, this.outerGlow, this.innerGlow],
+            targets: this.sprite,
             tint: 0xffffff,
             duration: 100,
             yoyo: true
         });
         
+        // Glow flash
+        if (this.glow) {
+            this.scene.tweens.add({
+                targets: this.glow,
+                alpha: { from: 1, to: 0.3 },
+                duration: 100,
+                yoyo: true
+            });
+        }
+        
         // Pulse effect
         this.scene.tweens.add({
-            targets: this.outerGlow,
-            scale: { from: 1, to: 1.2 },
+            targets: this.sprite,
+            scale: { from: this.sprite.scaleX, to: this.sprite.scaleX * 1.2 },
             duration: 150,
             yoyo: true
         });
@@ -258,20 +275,16 @@ class BaseCubeEnemy {
     }
 
     update() {
-        // Update glow positions
-        if (this.outerGlow) {
-            this.outerGlow.x = this.sprite.x;
-            this.outerGlow.y = this.sprite.y;
-        }
-        if (this.innerGlow) {
-            this.innerGlow.x = this.sprite.x;
-            this.innerGlow.y = this.sprite.y;
+        // Update glow position
+        if (this.glow) {
+            this.glow.x = this.sprite.x;
+            this.glow.y = this.sprite.y;
         }
         if (this.shadow) {
             this.shadow.x = this.sprite.x;
             this.shadow.y = this.sprite.y + 25;
         }
-        // Update "B" letter position
+        // Update "B" letter position (if using original design)
         if (this.letterB) {
             this.letterB.x = this.sprite.x;
             this.letterB.y = this.sprite.y;
@@ -476,47 +489,66 @@ class SpaceshipEnemy {
 }
 
 class BossEnemy {
-    constructor(scene, x, y, hp) {
+    constructor(scene, x, y, hp, missionNumber = 1) {
         this.scene = scene;
         this.type = 'boss';
         this.hp = hp;
         this.maxHP = hp;
+        this.missionNumber = missionNumber;
         this.shootTimer = 0;
+        this.attackPatternTimer = 0;
+        this.currentAttackPattern = 0;
         this.moveDirection = 1;
         this.canDamage = true;
+        this.moveSpeed = 50;
         
-        // Create boss ship
-        // FIXED: Reduced boss size to match player (player is ~60px, boss should be ~70-80px)
-        this.sprite = scene.add.graphics();
-        const width = 70;  // Reduced from 120 to match player size
-        const height = 50;  // Reduced from 80 to match player size
+        // Use boss_jesse.jpg image or create fallback
+        if (!scene.textures.exists('bossJesse')) {
+            console.error('Boss image not loaded! Check path: assets/images/boss_jesse.jpg');
+            // Fallback: Use large red circle as fallback
+            this.sprite = scene.add.circle(x, y, 60, 0xff0000, 1);
+        } else {
+            // Image loaded successfully
+            this.sprite = scene.add.image(x, y, 'bossJesse');
+            this.sprite.setDisplaySize(120, 120); // Make boss bigger
+            this.sprite.setOrigin(0.5);
+            
+            // Make image circular (crop to circle using mask)
+            const maskGraphics = scene.make.graphics();
+            maskGraphics.fillCircle(0, 0, 60);
+            const mask = maskGraphics.createGeometryMask();
+            this.sprite.setMask(mask);
+        }
         
-        // Main body
-        this.sprite.fillStyle(0x880000, 1);
-        this.sprite.fillRect(x - width/2, y - height/2, width, height);
-        this.sprite.lineStyle(3, 0xff0000, 1);
-        this.sprite.strokeRect(x - width/2, y - height/2, width, height);
-        
-        // Wings
-        this.sprite.fillStyle(0x660000, 1);
-        this.sprite.fillRect(x - width/2 - 20, y - 10, 20, 20);
-        this.sprite.fillRect(x + width/2, y - 10, 20, 20);
-        
-        // Turrets
-        this.sprite.fillStyle(0xff4400, 1);
-        this.sprite.fillCircle(x - 40, y - 30, 8);
-        this.sprite.fillCircle(x + 40, y - 30, 8);
-        this.sprite.fillCircle(x, y - 30, 10);
-        
-        this.sprite.x = x;
-        this.sprite.y = y;
         this.sprite.setDepth(5);
         
-        // Health bar (scaled to match reduced boss size)
-        this.healthBarBg = scene.add.rectangle(x, y - 45, width + 15, 8, 0x000000, 0.8);
-        this.healthBar = scene.add.rectangle(x, y - 45, width + 15, 8, 0xff0000, 1);
-        this.healthBar.setOrigin(0.5);
+        // Add glow effect
+        this.glow = scene.add.graphics();
+        this.glow.lineStyle(8, 0xff00ff, 0.8);
+        this.glow.strokeCircle(x, y, 65);
+        this.glow.setDepth(4);
+        this.glow.setBlendMode(Phaser.BlendModes.ADD);
+        
+        // Pulsing glow animation
+        scene.tweens.add({
+            targets: this.glow,
+            alpha: { from: 0.5, to: 1 },
+            scale: { from: 0.95, to: 1.05 },
+            duration: 1000,
+            yoyo: true,
+            repeat: -1
+        });
+        
+        // Health bar with gradient (green→yellow→red)
+        const barWidth = 200;
+        const barHeight = 12;
+        this.healthBarBg = scene.add.rectangle(x, y - 80, barWidth, barHeight, 0x000000, 0.9);
         this.healthBarBg.setOrigin(0.5);
+        this.healthBarBg.setDepth(10);
+        
+        // Health bar fill (will be updated in update method)
+        this.healthBar = scene.add.graphics();
+        this.healthBar.setDepth(11);
         
         // Physics
         scene.physics.add.existing(this.sprite);
@@ -524,59 +556,103 @@ class BossEnemy {
         
         // Rewards
         this.rewards = {
-            gold: 1000,
-            diamonds: Phaser.Math.Between(5, 10),
-            score: 5000,
-            xp: 500
+            gold: 1000 + missionNumber * 200,
+            diamonds: Phaser.Math.Between(5, 10) + missionNumber,
+            score: 5000 + missionNumber * 1000,
+            xp: 500 + missionNumber * 100
         };
     }
 
     update(time, delta) {
         // Move side to side
-        this.sprite.x += this.moveDirection * 50 * (delta / 1000);
+        this.sprite.x += this.moveDirection * this.moveSpeed * (delta / 1000);
         if (this.sprite.x < 100 || this.sprite.x > this.scene.scale.width - 100) {
             this.moveDirection *= -1;
         }
         
-        // Update health bar
-        const healthPercent = this.hp / this.maxHP;
-        this.healthBar.width = (this.scene.scale.width - 40) * healthPercent;
-        this.healthBar.x = this.sprite.x;
-        this.healthBarBg.x = this.sprite.x;
-        
-        // Shoot patterns
-        if (time > this.shootTimer) {
-            this.shootPattern();
-            this.shootTimer = time + 1000;
+        // Update glow position
+        if (this.glow) {
+            this.glow.x = this.sprite.x;
+            this.glow.y = this.sprite.y;
         }
         
-        // Spawn minions occasionally
-        if (Math.random() < 0.01) {
-            this.scene.spawnSpaceship();
+        // Update health bar position and gradient
+        const healthPercent = Math.max(0, this.hp / this.maxHP);
+        const barWidth = 200;
+        const barHeight = 12;
+        const currentWidth = barWidth * healthPercent;
+        
+        this.healthBarBg.x = this.sprite.x;
+        this.healthBarBg.y = this.sprite.y - 80;
+        
+        // Clear and redraw health bar with gradient (green→yellow→red)
+        this.healthBar.clear();
+        if (currentWidth > 0) {
+            let color1, color2;
+            if (healthPercent > 0.6) {
+                // Green
+                color1 = 0x00ff00;
+                color2 = 0x88ff88;
+            } else if (healthPercent > 0.3) {
+                // Yellow
+                color1 = 0xffff00;
+                color2 = 0xffff88;
+            } else {
+                // Red
+                color1 = 0xff0000;
+                color2 = 0xff8888;
+            }
+            
+            this.healthBar.fillGradientStyle(color1, color1, color2, color2, 1);
+            this.healthBar.fillRect(
+                this.sprite.x - barWidth / 2,
+                this.sprite.y - 80 - barHeight / 2,
+                currentWidth,
+                barHeight
+            );
+        }
+        
+        // Attack patterns (cycle through 3 patterns)
+        if (time > this.attackPatternTimer) {
+            this.currentAttackPattern = (this.currentAttackPattern + 1) % 3;
+            this.attackPatternTimer = time + 3000; // Change pattern every 3 seconds
+        }
+        
+        // Shoot based on current pattern
+        if (time > this.shootTimer) {
+            if (this.currentAttackPattern === 0) {
+                this.attack1(); // Simple spread (3 bullets)
+            } else if (this.currentAttackPattern === 1) {
+                this.attack2(); // Wide spread (5 bullets)
+            } else {
+                this.attack3(); // Laser (7 fast bullets)
+            }
+            this.shootTimer = time + 800;
         }
     }
-
-    shootPattern() {
-        const patterns = [
-            () => {
-                // Single shot
-                this.shootBullet(this.sprite.x, this.sprite.y + 40, 0, 200);
-            },
-            () => {
-                // Triple shot
-                this.shootBullet(this.sprite.x, this.sprite.y + 40, -20, 200);
-                this.shootBullet(this.sprite.x, this.sprite.y + 40, 0, 200);
-                this.shootBullet(this.sprite.x, this.sprite.y + 40, 20, 200);
-            },
-            () => {
-                // Spread shot
-                for (let i = -2; i <= 2; i++) {
-                    this.shootBullet(this.sprite.x, this.sprite.y + 40, i * 15, 200);
-                }
-            }
-        ];
-        
-        Phaser.Math.RND.pick(patterns)();
+    
+    attack1() {
+        // Simple spread: 3 bullets
+        const angles = [-15, 0, 15];
+        angles.forEach(angle => {
+            this.shootBullet(this.sprite.x, this.sprite.y + 40, angle, 250);
+        });
+    }
+    
+    attack2() {
+        // Wide spread: 5 bullets
+        const angles = [-30, -15, 0, 15, 30];
+        angles.forEach(angle => {
+            this.shootBullet(this.sprite.x, this.sprite.y + 40, angle, 250);
+        });
+    }
+    
+    attack3() {
+        // Laser: 7 fast bullets
+        const angles = [-30, -20, -10, 0, 10, 20, 30];
+        angles.forEach(angle => {
+            this.shootBullet(this.sprite.x, this.sprite.y + 40, angle, 400); // Faster bullets
+        });
     }
 
     shootBullet(x, y, angle, speed) {
@@ -599,6 +675,16 @@ class BossEnemy {
             yoyo: true
         });
         
+        // Glow flash
+        if (this.glow) {
+            this.scene.tweens.add({
+                targets: this.glow,
+                alpha: { from: 1, to: 0.5 },
+                duration: 100,
+                yoyo: true
+            });
+        }
+        
         // Screen shake
         this.scene.cameras.main.shake(200, 0.02);
         
@@ -606,6 +692,9 @@ class BossEnemy {
         if (this.hp <= 0) {
             // Set boss flag (sprite cleanup handled in game.js)
             this.scene.bossActive = false;
+            if (this.scene.missionSystem) {
+                this.scene.missionSystem.bossActive = false;
+            }
             return true;
         }
         return false;
