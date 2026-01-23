@@ -291,8 +291,12 @@ class GameScene extends Phaser.Scene {
         this.load.image('enemyBoss', './assets/images/enemy_boss.png');
         
         // Load mission system assets
-        this.load.image('bossJesse', './assets/images/boss_jesse.jpg');
-        this.load.image('baseCube', './assets/images/base_cube.jpg');
+        // Try .png first (most common), fallback to .jpg if needed
+        this.load.image('bossJesse', './assets/images/boss_jesse.png');
+        this.load.image('baseCube', './assets/images/base_cube.png');
+        
+        // Fallback: Try .jpg if .png doesn't exist (will be handled by loaderror)
+        // Note: Phaser will try the exact path specified, so use the correct extension
         
         // Load sound effects - try multiple path formats
         console.log('Loading sound files...');
@@ -330,8 +334,10 @@ class GameScene extends Phaser.Scene {
                 console.error('   Image file failed to load. Check path:', file.src);
                 if (file.key === 'bossJesse') {
                     console.error('   Boss image will use red circle fallback');
+                    console.error('   Try: assets/images/boss_jesse.png or .jpg');
                 } else if (file.key === 'baseCube') {
                     console.error('   Base cube will use original design with "B" letter');
+                    console.error('   Try: assets/images/base_cube.png or .jpg');
                 }
             }
         });
@@ -377,10 +383,10 @@ class GameScene extends Phaser.Scene {
         console.log('Boss texture exists:', this.textures.exists('bossJesse'));
         console.log('Cube texture exists:', this.textures.exists('baseCube'));
         if (!this.textures.exists('bossJesse')) {
-            console.warn('⚠️ Boss image (boss_jesse.jpg) not found - will use red circle fallback');
+            console.warn('⚠️ Boss image (boss_jesse.png/.jpg) not found - will use red circle fallback');
         }
         if (!this.textures.exists('baseCube')) {
-            console.warn('⚠️ Base cube image (base_cube.jpg) not found - will use original design with "B" letter');
+            console.warn('⚠️ Base cube image (base_cube.png/.jpg) not found - will use original design with "B" letter');
         }
         console.log('===========================');
         
@@ -1723,14 +1729,63 @@ class GameScene extends Phaser.Scene {
             bossHP = 1200 + (this.missionSystem.currentMission - 3) * 200;
         }
         
-        this.missionSystem.bossActive = true;
-        this.bossActive = true;
+        // Show "BOSS INCOMING!" warning message
+        const warningText = this.add.text(
+            this.scale.width / 2, 
+            this.scale.height / 2,
+            '⚠️ BOSS INCOMING! ⚠️',
+            {
+                fontSize: '48px',
+                color: '#ff0000',
+                fontWeight: 'bold',
+                stroke: '#000000',
+                strokeThickness: 6
+            }
+        );
+        warningText.setOrigin(0.5);
+        warningText.setDepth(1000);
+        warningText.setScrollFactor(0);
         
-        const boss = new BossEnemy(this, this.scale.width / 2, 100, bossHP, this.missionSystem.currentMission);
-        boss.sprite.enemyObject = boss; // Store reference
-        this.enemies.add(boss.sprite);
-        
-        console.log(`BOSS SPAWNED! Mission ${this.missionSystem.currentMission}, HP: ${bossHP}`);
+        // Flash warning with scale animation
+        this.tweens.add({
+            targets: warningText,
+            alpha: 0,
+            scale: 1.5,
+            duration: 2000,
+            ease: 'Power2',
+            onComplete: () => {
+                warningText.destroy();
+                
+                // Spawn boss after warning (start off-screen at top)
+                this.missionSystem.bossActive = true;
+                this.bossActive = true;
+                
+                const boss = new BossEnemy(this, this.scale.width / 2, -100, bossHP, this.missionSystem.currentMission);
+                boss.sprite.enemyObject = boss; // Store reference
+                this.enemies.add(boss.sprite);
+                
+                // Boss enters from top (slide down animation with bounce)
+                this.tweens.add({
+                    targets: boss.sprite,
+                    y: 150,
+                    duration: 1500,
+                    ease: 'Bounce.easeOut',
+                    onComplete: () => {
+                        console.log(`BOSS ARRIVED! Mission ${this.missionSystem.currentMission}, HP: ${bossHP}`);
+                    }
+                });
+                
+                // Also animate boss glow if it exists
+                if (boss.glow) {
+                    this.tweens.add({
+                        targets: boss.glow,
+                        y: 150,
+                        duration: 1500,
+                        ease: 'Bounce.easeOut'
+                    });
+                }
+            }
+        });
     }
 
     spawnEnemies() {

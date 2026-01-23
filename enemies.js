@@ -140,8 +140,9 @@ class BaseCubeEnemy {
         // Only use image if it loads successfully
         if (scene.textures.exists('baseCube')) {
             // Image loaded successfully - use it
+            // CRITICAL: Scale down to match original size (40x40 pixels)
             this.sprite = scene.add.image(x, y, 'baseCube');
-            this.sprite.setDisplaySize(size, size);
+            this.sprite.setDisplaySize(40, 40); // Fixed size: 40x40 pixels
             this.sprite.setOrigin(0.5);
             this.letterB = null; // No letter needed with image
         } else {
@@ -502,20 +503,21 @@ class BossEnemy {
         this.canDamage = true;
         this.moveSpeed = 50;
         
-        // Use boss_jesse.jpg image or create fallback
+        // Use boss_jesse image or create fallback
         if (!scene.textures.exists('bossJesse')) {
-            console.error('Boss image not loaded! Check path: assets/images/boss_jesse.jpg');
-            // Fallback: Use large red circle as fallback
-            this.sprite = scene.add.circle(x, y, 60, 0xff0000, 1);
+            console.error('Boss image not loaded! Check path: assets/images/boss_jesse.png (or .jpg if renamed)');
+            // Fallback: Use red circle (40px radius = 80px diameter)
+            this.sprite = scene.add.circle(x, y, 40, 0xff0000, 1);
         } else {
             // Image loaded successfully
+            // CRITICAL: Scale to reasonable boss size (80x80 pixels)
             this.sprite = scene.add.image(x, y, 'bossJesse');
-            this.sprite.setDisplaySize(120, 120); // Make boss bigger
+            this.sprite.setDisplaySize(80, 80); // Fixed size: 80x80 pixels
             this.sprite.setOrigin(0.5);
             
-            // Make image circular (crop to circle using mask)
+            // Make circular mask (40px radius for 80px diameter)
             const maskGraphics = scene.make.graphics();
-            maskGraphics.fillCircle(0, 0, 60);
+            maskGraphics.fillCircle(x, y, 40);
             const mask = maskGraphics.createGeometryMask();
             this.sprite.setMask(mask);
         }
