@@ -291,7 +291,7 @@ class GameScene extends Phaser.Scene {
         this.load.image('enemyBoss', './assets/images/enemy_boss.png');
         
         // Load mission system assets
-        this.load.image('bossJesse', './assets/images/boss_jesse.jpg');
+        this.load.image('bossJesse', './assets/images/boss_jesse.png');
         this.load.image('baseCube', './assets/images/base_cube.jpg');
         
         // Load sound effects - try multiple path formats
@@ -330,7 +330,7 @@ class GameScene extends Phaser.Scene {
                 console.error('   Image file failed to load. Check path:', file.src);
                 if (file.key === 'bossJesse') {
                     console.error('   Boss image will use red circle fallback');
-                    console.error('   Expected: assets/images/boss_jesse.jpg');
+                    console.error('   Expected: assets/images/boss_jesse.png');
                 } else if (file.key === 'baseCube') {
                     console.error('   Base cube will use original design with "B" letter');
                     console.error('   Expected: assets/images/base_cube.jpg');
@@ -392,7 +392,7 @@ class GameScene extends Phaser.Scene {
         console.log('Boss texture exists:', this.textures.exists('bossJesse'));
         console.log('Cube texture exists:', this.textures.exists('baseCube'));
         if (!this.textures.exists('bossJesse')) {
-            console.warn('⚠️ Boss image (boss_jesse.jpg) not found - will use red circle fallback');
+            console.warn('⚠️ Boss image (boss_jesse.png) not found - will use red circle fallback');
         }
         if (!this.textures.exists('baseCube')) {
             console.warn('⚠️ Base cube image (base_cube.jpg) not found - will use original design with "B" letter');
