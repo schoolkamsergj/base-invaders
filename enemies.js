@@ -129,52 +129,40 @@ class BaseCubeEnemy {
         this.maxHP = hp;
         this.hits = 0;
         
-        const size = 40; // Slightly larger for better visibility
+        const size = 40;
         
         // Shadow
         this.shadow = scene.add.ellipse(x, y + 25, size * 1.2, size * 0.4, 0x0000ff, 0.3);
         this.shadow.setDepth(4);
         this.shadow.setBlendMode(Phaser.BlendModes.MULTIPLY);
         
-        // PRIMARY: Original design (blue square with "B" letter)
-        // Only use image if it loads successfully
-        if (scene.textures.exists('baseCube')) {
-            // Image loaded successfully - use it
-            // CRITICAL: Scale down to match original size (40x40 pixels)
-            this.sprite = scene.add.image(x, y, 'baseCube');
-            this.sprite.setDisplaySize(40, 40); // Fixed size: 40x40 pixels
-            this.sprite.setOrigin(0.5);
-            this.letterB = null; // No letter needed with image
-        } else {
-            // ORIGINAL DESIGN: Blue square with "B" letter (PRIMARY)
-            console.warn('Base Cube image not loaded! Using original design with "B" letter.');
-            
-            // Create cube with blue gradient
-            this.sprite = scene.add.graphics();
-            this.sprite.fillGradientStyle(0x0052FF, 0x0033cc, 0x0088ff, 0x0052FF, 1);
-            this.sprite.fillRect(-size/2, -size/2, size, size);
-            this.sprite.lineStyle(3, 0x00ffff, 1);
-            this.sprite.strokeRect(-size/2, -size/2, size, size);
-            
-            // 3D face effect (top face)
-            this.sprite.fillStyle(0x0066ff, 0.8);
-            this.sprite.fillRect(-size/2, -size/2, size, size/3);
-            
-            this.sprite.x = x;
-            this.sprite.y = y;
-            
-            // Base "B" letter text (big, bold, visible, always centered)
-            this.letterB = scene.add.text(x, y, 'B', {
-                fontSize: '28px',
-                fontWeight: 'bold',
-                color: '#ffffff',
-                stroke: '#00ffff',
-                strokeThickness: 3
-            });
-            this.letterB.setOrigin(0.5);
-            this.letterB.setDepth(6);
-            this.letterB.setShadow(2, 2, '#00ffff', 5, true, true);
-        }
+        // KEEP original blue square with "B" as PRIMARY (it looks better)
+        // Always use original design - don't use image
+        // Create cube with blue gradient
+        this.sprite = scene.add.graphics();
+        this.sprite.fillGradientStyle(0x0052FF, 0x0033cc, 0x0088ff, 0x0052FF, 1);
+        this.sprite.fillRect(-20, -20, 40, 40);
+        this.sprite.lineStyle(3, 0x00ffff, 1);
+        this.sprite.strokeRect(-20, -20, 40, 40);
+        
+        // 3D face effect (top face)
+        this.sprite.fillStyle(0x0066ff, 0.8);
+        this.sprite.fillRect(-20, -20, 40, size/3);
+        
+        this.sprite.x = x;
+        this.sprite.y = y;
+        
+        // B letter text (big, bold, visible, always centered)
+        this.letterB = scene.add.text(x, y, 'B', {
+            fontSize: '28px',
+            fontWeight: 'bold',
+            color: '#ffffff',
+            stroke: '#00ffff',
+            strokeThickness: 3
+        });
+        this.letterB.setOrigin(0.5);
+        this.letterB.setDepth(6);
+        this.letterB.setShadow(2, 2, '#00ffff', 5, true, true);
         
         this.sprite.setDepth(5);
         
@@ -503,23 +491,31 @@ class BossEnemy {
         this.canDamage = true;
         this.moveSpeed = 50;
         
-        // Use boss_jesse image or create fallback
-        if (!scene.textures.exists('bossJesse')) {
-            console.error('Boss image not loaded! Check path: assets/images/boss_jesse.png (or .jpg if renamed)');
-            // Fallback: Use red circle (40px radius = 80px diameter)
-            this.sprite = scene.add.circle(x, y, 40, 0xff0000, 1);
-        } else {
-            // Image loaded successfully
-            // CRITICAL: Scale to reasonable boss size (80x80 pixels)
+        // SIMPLIFIED BOSS - Remove mask, keep it simple
+        if (scene.textures.exists('bossJesse')) {
+            console.log('✅ Boss image found - using Jesse Pollak sprite');
             this.sprite = scene.add.image(x, y, 'bossJesse');
-            this.sprite.setDisplaySize(80, 80); // Fixed size: 80x80 pixels
+            
+            // CRITICAL: Use setScale instead of setDisplaySize for images
+            const targetSize = 80; // pixels
+            const originalWidth = this.sprite.width;
+            const scale = targetSize / originalWidth;
+            this.sprite.setScale(scale);
             this.sprite.setOrigin(0.5);
             
-            // Make circular mask (40px radius for 80px diameter)
-            const maskGraphics = scene.make.graphics();
-            maskGraphics.fillCircle(x, y, 40);
-            const mask = maskGraphics.createGeometryMask();
-            this.sprite.setMask(mask);
+            // NO MASK - masks cause invisibility issues
+            
+        } else {
+            console.warn('⚠️ Boss image not found - using fallback');
+            // Fallback: Red circle with emoji
+            this.sprite = scene.add.circle(x, y, 40, 0xff0000, 1);
+            
+            // Add emoji as face
+            this.bossEmoji = scene.add.text(x, y, '😈', {
+                fontSize: '48px'
+            });
+            this.bossEmoji.setOrigin(0.5);
+            this.bossEmoji.setDepth(11);
         }
         
         this.sprite.setDepth(5);
@@ -576,6 +572,11 @@ class BossEnemy {
         if (this.glow) {
             this.glow.x = this.sprite.x;
             this.glow.y = this.sprite.y;
+        }
+        // Update emoji position if using fallback
+        if (this.bossEmoji) {
+            this.bossEmoji.x = this.sprite.x;
+            this.bossEmoji.y = this.sprite.y;
         }
         
         // Update health bar position and gradient
