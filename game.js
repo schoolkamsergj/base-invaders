@@ -291,12 +291,8 @@ class GameScene extends Phaser.Scene {
         this.load.image('enemyBoss', './assets/images/enemy_boss.png');
         
         // Load mission system assets
-        // Try .png first (most common), fallback to .jpg if needed
-        this.load.image('bossJesse', './assets/images/boss_jesse.png');
-        this.load.image('baseCube', './assets/images/base_cube.png');
-        
-        // Fallback: Try .jpg if .png doesn't exist (will be handled by loaderror)
-        // Note: Phaser will try the exact path specified, so use the correct extension
+        this.load.image('bossJesse', './assets/images/boss_jesse.jpg');
+        this.load.image('baseCube', './assets/images/base_cube.jpg');
         
         // Load sound effects - try multiple path formats
         console.log('Loading sound files...');
@@ -334,10 +330,10 @@ class GameScene extends Phaser.Scene {
                 console.error('   Image file failed to load. Check path:', file.src);
                 if (file.key === 'bossJesse') {
                     console.error('   Boss image will use red circle fallback');
-                    console.error('   Try: assets/images/boss_jesse.png or .jpg');
+                    console.error('   Expected: assets/images/boss_jesse.jpg');
                 } else if (file.key === 'baseCube') {
                     console.error('   Base cube will use original design with "B" letter');
-                    console.error('   Try: assets/images/base_cube.png or .jpg');
+                    console.error('   Expected: assets/images/base_cube.jpg');
                 }
             }
         });
@@ -368,8 +364,21 @@ class GameScene extends Phaser.Scene {
             console.log('Player texture exists:', this.textures.exists('player'));
             console.log('EnemyWeak texture exists:', this.textures.exists('enemyWeak'));
             console.log('EnemyBoss texture exists:', this.textures.exists('enemyBoss'));
+            
+            // Texture verification for boss and cube
+            console.log('===== TEXTURE VERIFICATION =====');
             console.log('Boss texture exists:', this.textures.exists('bossJesse'));
             console.log('Cube texture exists:', this.textures.exists('baseCube'));
+            
+            if (this.textures.exists('bossJesse')) {
+                const tex = this.textures.get('bossJesse');
+                console.log('Boss image size:', tex.source.width, 'x', tex.source.height);
+            }
+            if (this.textures.exists('baseCube')) {
+                const tex = this.textures.get('baseCube');
+                console.log('Cube image size:', tex.source.width, 'x', tex.source.height);
+            }
+            console.log('================================');
         });
         
         console.log('Preload complete - loading spaceship sprites and sounds');
@@ -383,10 +392,10 @@ class GameScene extends Phaser.Scene {
         console.log('Boss texture exists:', this.textures.exists('bossJesse'));
         console.log('Cube texture exists:', this.textures.exists('baseCube'));
         if (!this.textures.exists('bossJesse')) {
-            console.warn('⚠️ Boss image (boss_jesse.png/.jpg) not found - will use red circle fallback');
+            console.warn('⚠️ Boss image (boss_jesse.jpg) not found - will use red circle fallback');
         }
         if (!this.textures.exists('baseCube')) {
-            console.warn('⚠️ Base cube image (base_cube.png/.jpg) not found - will use original design with "B" letter');
+            console.warn('⚠️ Base cube image (base_cube.jpg) not found - will use original design with "B" letter');
         }
         console.log('===========================');
         
@@ -1454,6 +1463,9 @@ class GameScene extends Phaser.Scene {
             }
             if (enemy.healthBarBg && enemy.healthBarBg.active) {
                 enemy.healthBarBg.destroy();
+            }
+            if (enemy.bossEmoji && enemy.bossEmoji.active) {
+                enemy.bossEmoji.destroy();
             }
         }
         
