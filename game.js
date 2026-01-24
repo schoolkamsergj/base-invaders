@@ -2018,7 +2018,7 @@ class GameScene extends Phaser.Scene {
         if (isNewHigh && typeof window.baseInvadersSubmitScore === 'function') {
             setTimeout(async () => {
                 const wantsSubmit = confirm(
-                    '🏆 New high score! Submit to the on-chain leaderboard?\n\n' +
+                    '🏆 New high score! Submit to global leaderboard?\n\n' +
                     'This requires a wallet transaction.'
                 );
                 if (!wantsSubmit) return;
