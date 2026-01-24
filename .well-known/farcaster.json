@@ -1,0 +1,30 @@
+{
+    "accountAssociation": {
+        "header": "",
+        "payload": "",
+        "signature": ""
+    },
+    "miniapp": {
+        "version": "1",
+        "name": "Base Invaders",
+        "homeUrl": "https://your-domain.vercel.app",
+        "iconUrl": "https://your-domain.vercel.app/icons/icon-512.png",
+        "splashImageUrl": "https://your-domain.vercel.app/icons/icon-192.png",
+        "splashBackgroundColor": "#000000",
+        "subtitle": "Cosmic Arcade Shooter",
+        "description": "Cosmic Arcade Shooter on Base blockchain",
+        "screenshotUrls": [
+            "https://your-domain.vercel.app/assets/images/player.png",
+            "https://your-domain.vercel.app/assets/images/enemy_boss.png",
+            "https://your-domain.vercel.app/assets/images/base_cube.jpg"
+        ],
+        "primaryCategory": "games",
+        "tags": ["arcade", "shooter", "space", "base", "blockchain"],
+        "heroImageUrl": "https://your-domain.vercel.app/assets/images/base_cube.jpg",
+        "tagline": "Fight waves and bosses on Base",
+        "ogTitle": "Base Invaders",
+        "ogDescription": "Cosmic Arcade Shooter on Base blockchain",
+        "ogImageUrl": "https://your-domain.vercel.app/assets/images/base_cube.jpg",
+        "noindex": true
+    }
+}
