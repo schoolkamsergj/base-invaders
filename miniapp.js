@@ -12,14 +12,65 @@ import { custom } from 'https://esm.sh/viem@latest';
 
 const CHECK_IN_CONTRACT = {
     chainId: base.id,
-    address: '0x0000000000000000000000000000000000000000',
+    address: '0xb13102BbC97C25ba39967208eDd20b109104AAF4',
     abi: [
         {
-            type: 'function',
-            name: 'checkIn',
-            stateMutability: 'nonpayable',
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: true,
+                    internalType: 'address',
+                    name: 'user',
+                    type: 'address'
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'timestamp',
+                    type: 'uint256'
+                }
+            ],
+            name: 'CheckedIn',
+            type: 'event'
+        },
+        {
             inputs: [],
-            outputs: []
+            name: 'checkIn',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function'
+        },
+        {
+            inputs: [],
+            name: 'COOLDOWN',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256'
+                }
+            ],
+            stateMutability: 'view',
+            type: 'function'
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: '',
+                    type: 'address'
+                }
+            ],
+            name: 'lastCheckIn',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256'
+                }
+            ],
+            stateMutability: 'view',
+            type: 'function'
         }
     ],
     functionName: 'checkIn',

@@ -1,0 +1,15 @@
+import type { Config, ResolvedRegister, SendCallsErrorType } from '@wagmi/core';
+import type { Compute } from '@wagmi/core/internal';
+import { type SendCallsData, type SendCallsMutate, type SendCallsMutateAsync, type SendCallsOptions, type SendCallsVariables } from '@wagmi/core/query';
+import type { ConfigParameter } from '../types/properties.js';
+import type { UseMutationReturnType } from '../utils/query.js';
+export type UseSendCallsParameters<config extends Config = Config, context = unknown> = Compute<ConfigParameter<config> & SendCallsOptions<config, context>>;
+export type UseSendCallsReturnType<config extends Config = Config, context = unknown> = Compute<UseMutationReturnType<SendCallsData, SendCallsErrorType, SendCallsVariables<config, config['chains'][number]['id']>, context, SendCallsMutate<config, context>, SendCallsMutateAsync<config, context>> & {
+    /** @deprecated use `mutate` instead */
+    sendCalls: SendCallsMutate<config, context>;
+    /** @deprecated use `mutateAsync` instead */
+    sendCallsAsync: SendCallsMutateAsync<config, context>;
+}>;
+/** https://wagmi.sh/react/api/hooks/useSendCalls */
+export declare function useSendCalls<config extends Config = ResolvedRegister['config'], context = unknown>(parameters?: UseSendCallsParameters<config, context>): UseSendCallsReturnType<config, context>;
+//# sourceMappingURL=useSendCalls.d.ts.map

@@ -1,0 +1,26 @@
+'use client';
+import { useMutation } from '@tanstack/react-query';
+import { connectMutationOptions, } from '@wagmi/core/query';
+import { useEffect } from 'react';
+import { useConfig } from './useConfig.js';
+import { useConnectors } from './useConnectors.js';
+/** https://wagmi.sh/react/api/hooks/useConnect */
+export function useConnect(parameters = {}) {
+    const config = useConfig(parameters);
+    const options = connectMutationOptions(config, parameters);
+    const mutation = useMutation(options);
+    // Reset mutation back to an idle state when the connector disconnects.
+    useEffect(() => {
+        return config.subscribe(({ status }) => status, (status, previousStatus) => {
+            if (previousStatus === 'connected' && status === 'disconnected')
+                mutation.reset();
+        });
+    }, [config, mutation.reset]);
+    return {
+        ...mutation,
+        connect: mutation.mutate,
+        connectAsync: mutation.mutateAsync,
+        connectors: useConnectors({ config }),
+    };
+}
+//# sourceMappingURL=useConnect.js.map

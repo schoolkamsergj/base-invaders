@@ -1,0 +1,16 @@
+'use client';
+import { getCallsStatusQueryOptions, } from '@wagmi/core/query';
+import { useQuery } from '../utils/query.js';
+import { useConfig } from './useConfig.js';
+import { useConnection } from './useConnection.js';
+/** https://wagmi.sh/react/api/hooks/useCallsStatus */
+export function useCallsStatus(parameters) {
+    const config = useConfig(parameters);
+    const { connector } = useConnection({ config });
+    const options = getCallsStatusQueryOptions(config, {
+        ...parameters,
+        connector: parameters.connector ?? connector,
+    });
+    return useQuery(options);
+}
+//# sourceMappingURL=useCallsStatus.js.map
