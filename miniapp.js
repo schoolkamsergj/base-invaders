@@ -80,18 +80,115 @@ const CHECK_IN_CONTRACT = {
 
 const LEADERBOARD_CONTRACT = {
     chainId: base.id,
-    address: '0x0000000000000000000000000000000000000000',
+    address: '0x76762B1535C3D2004a996e76c776e7C946aF03FB',
     abi: [
         {
+            anonymous: false,
             inputs: [
-                { internalType: 'uint256', name: 'score', type: 'uint256' },
-                { internalType: 'uint256', name: 'wave', type: 'uint256' },
-                { internalType: 'uint256', name: 'streak', type: 'uint256' },
-                { internalType: 'string', name: 'name', type: 'string' }
+                {
+                    indexed: true,
+                    internalType: 'address',
+                    name: 'player',
+                    type: 'address'
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'score',
+                    type: 'uint256'
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'wave',
+                    type: 'uint256'
+                },
+                {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'streak',
+                    type: 'uint256'
+                },
+                {
+                    indexed: false,
+                    internalType: 'string',
+                    name: 'name',
+                    type: 'string'
+                }
+            ],
+            name: 'ScoreSubmitted',
+            type: 'event'
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'uint256',
+                    name: 'score',
+                    type: 'uint256'
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'wave',
+                    type: 'uint256'
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'streak',
+                    type: 'uint256'
+                },
+                {
+                    internalType: 'string',
+                    name: 'name',
+                    type: 'string'
+                }
             ],
             name: 'submitScore',
             outputs: [],
             stateMutability: 'nonpayable',
+            type: 'function'
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256'
+                }
+            ],
+            name: 'entries',
+            outputs: [
+                {
+                    internalType: 'address',
+                    name: 'player',
+                    type: 'address'
+                },
+                {
+                    internalType: 'string',
+                    name: 'name',
+                    type: 'string'
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'score',
+                    type: 'uint256'
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'wave',
+                    type: 'uint256'
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'streak',
+                    type: 'uint256'
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'timestamp',
+                    type: 'uint256'
+                }
+            ],
+            stateMutability: 'view',
             type: 'function'
         },
         {
@@ -100,16 +197,72 @@ const LEADERBOARD_CONTRACT = {
             outputs: [
                 {
                     components: [
-                        { internalType: 'address', name: 'player', type: 'address' },
-                        { internalType: 'string', name: 'name', type: 'string' },
-                        { internalType: 'uint256', name: 'score', type: 'uint256' },
-                        { internalType: 'uint256', name: 'wave', type: 'uint256' },
-                        { internalType: 'uint256', name: 'timestamp', type: 'uint256' },
-                        { internalType: 'uint256', name: 'streak', type: 'uint256' }
+                        {
+                            internalType: 'address',
+                            name: 'player',
+                            type: 'address'
+                        },
+                        {
+                            internalType: 'string',
+                            name: 'name',
+                            type: 'string'
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'score',
+                            type: 'uint256'
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'wave',
+                            type: 'uint256'
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'streak',
+                            type: 'uint256'
+                        },
+                        {
+                            internalType: 'uint256',
+                            name: 'timestamp',
+                            type: 'uint256'
+                        }
                     ],
-                    internalType: 'struct BaseInvadersLeaderboard.PlayerEntry[]',
+                    internalType: 'struct BaseInvadersLeaderboard.Entry[]',
                     name: '',
                     type: 'tuple[]'
+                }
+            ],
+            stateMutability: 'view',
+            type: 'function'
+        },
+        {
+            inputs: [],
+            name: 'MAX_ENTRIES',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256'
+                }
+            ],
+            stateMutability: 'view',
+            type: 'function'
+        },
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: '',
+                    type: 'address'
+                }
+            ],
+            name: 'playerIndex',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256'
                 }
             ],
             stateMutability: 'view',
