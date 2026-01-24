@@ -75,6 +75,53 @@
             <button id="restart-btn" class="menu-btn">Restart</button>
         </div>
     </div>
+    
+    <!-- Leaderboard Overlay -->
+    <div id="leaderboard-overlay" class="overlay hidden">
+        <div class="leaderboard-container">
+            <div class="leaderboard-header">
+                <h2>🏆 LEADERBOARD</h2>
+                <div class="leaderboard-actions">
+                    <button id="refresh-leaderboard" class="menu-btn small-btn">Refresh</button>
+                    <button id="close-leaderboard" class="close-btn">✕</button>
+                </div>
+            </div>
+            <div class="leaderboard-section">
+                <h3 id="leaderboard-global-status">Global leaderboard (on-chain)</h3>
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Score</th>
+                            <th>Player</th>
+                            <th>Wave</th>
+                            <th>Date</th>
+                            <th>Streak</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-global-body">
+                        <tr><td colspan="5">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="leaderboard-section">
+                <h3>Personal best (local)</h3>
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Score</th>
+                            <th>Player</th>
+                            <th>Wave</th>
+                            <th>Date</th>
+                            <th>Streak</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-local-body">
+                        <tr><td colspan="5">Play a run to set your personal best.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script>
@@ -106,6 +153,7 @@
     <script src="player.js"></script>
     <script src="enemies.js"></script>
     <script src="shop.js"></script>
+    <script src="leaderboard.js"></script>
     <script src="game.js"></script>
     <script type="module" src="miniapp.js"></script>
 </body>

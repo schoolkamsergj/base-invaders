@@ -3,6 +3,7 @@ import {
     connect,
     createConfig,
     getAccount,
+    readContract,
     waitForTransactionReceipt,
     writeContract
 } from 'https://esm.sh/@wagmi/core@latest';
@@ -77,6 +78,46 @@ const CHECK_IN_CONTRACT = {
     args: []
 };
 
+const LEADERBOARD_CONTRACT = {
+    chainId: base.id,
+    address: '0x0000000000000000000000000000000000000000',
+    abi: [
+        {
+            inputs: [
+                { internalType: 'uint256', name: 'score', type: 'uint256' },
+                { internalType: 'uint256', name: 'wave', type: 'uint256' },
+                { internalType: 'uint256', name: 'streak', type: 'uint256' },
+                { internalType: 'string', name: 'name', type: 'string' }
+            ],
+            name: 'submitScore',
+            outputs: [],
+            stateMutability: 'nonpayable',
+            type: 'function'
+        },
+        {
+            inputs: [],
+            name: 'getTopPlayers',
+            outputs: [
+                {
+                    components: [
+                        { internalType: 'address', name: 'player', type: 'address' },
+                        { internalType: 'string', name: 'name', type: 'string' },
+                        { internalType: 'uint256', name: 'score', type: 'uint256' },
+                        { internalType: 'uint256', name: 'wave', type: 'uint256' },
+                        { internalType: 'uint256', name: 'timestamp', type: 'uint256' },
+                        { internalType: 'uint256', name: 'streak', type: 'uint256' }
+                    ],
+                    internalType: 'struct BaseInvadersLeaderboard.PlayerEntry[]',
+                    name: '',
+                    type: 'tuple[]'
+                }
+            ],
+            stateMutability: 'view',
+            type: 'function'
+        }
+    ]
+};
+
 let wagmiConfigPromise = null;
 let readyCalled = false;
 
@@ -122,6 +163,41 @@ async function checkInOnchain() {
     return waitForTransactionReceipt(config, { hash });
 }
 
+async function submitLeaderboardScore(score, wave, streak, name) {
+    if (!LEADERBOARD_CONTRACT.address || LEADERBOARD_CONTRACT.address === '0x0000000000000000000000000000000000000000') {
+        throw new Error('Leaderboard contract address is not configured.');
+    }
+
+    const config = await getWagmiConfig();
+    await connect(config, { connector: injected({ shimDisconnect: true }) });
+
+    const account = getAccount(config);
+    const hash = await writeContract(config, {
+        address: LEADERBOARD_CONTRACT.address,
+        abi: LEADERBOARD_CONTRACT.abi,
+        functionName: 'submitScore',
+        args: [score, wave, streak, name || ''],
+        chainId: LEADERBOARD_CONTRACT.chainId,
+        account: account.address
+    });
+
+    return waitForTransactionReceipt(config, { hash });
+}
+
+async function fetchLeaderboard() {
+    if (!LEADERBOARD_CONTRACT.address || LEADERBOARD_CONTRACT.address === '0x0000000000000000000000000000000000000000') {
+        throw new Error('Leaderboard contract address is not configured.');
+    }
+
+    const config = await getWagmiConfig();
+    return readContract(config, {
+        address: LEADERBOARD_CONTRACT.address,
+        abi: LEADERBOARD_CONTRACT.abi,
+        functionName: 'getTopPlayers',
+        chainId: LEADERBOARD_CONTRACT.chainId
+    });
+}
+
 async function markMiniAppReady() {
     if (readyCalled) return;
     readyCalled = true;
@@ -133,6 +209,8 @@ async function markMiniAppReady() {
 }
 
 window.baseInvadersOnchainCheckIn = checkInOnchain;
+window.baseInvadersSubmitScore = submitLeaderboardScore;
+window.baseInvadersGetLeaderboard = fetchLeaderboard;
 window.baseInvadersMiniAppSdk = sdk;
 
 window.addEventListener('base-invaders:game-ready', () => {

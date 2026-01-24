@@ -237,6 +237,64 @@ Improve stats`;
                 });
             }
         });
+
+        // LEADERBOARD button (below Reset Progress)
+        const leaderboardBtnX = width / 2 + 100;
+        const leaderboardBtnY = height / 2 + 220;
+        
+        const leaderboardBtnBg = this.add.graphics();
+        leaderboardBtnBg.fillStyle(0x0052FF, 0.8);
+        leaderboardBtnBg.fillRoundedRect(leaderboardBtnX - 100, leaderboardBtnY - 25, 200, 50, 10);
+        leaderboardBtnBg.lineStyle(2, 0x00ffff, 1);
+        leaderboardBtnBg.strokeRoundedRect(leaderboardBtnX - 100, leaderboardBtnY - 25, 200, 50, 10);
+        leaderboardBtnBg.setDepth(1);
+        
+        const leaderboardBtn = this.add.rectangle(leaderboardBtnX, leaderboardBtnY, 200, 50, 0x0052FF, 0);
+        leaderboardBtn.setInteractive({ useHandCursor: true });
+        leaderboardBtn.setDepth(2);
+        
+        const leaderboardText = this.add.text(leaderboardBtnX, leaderboardBtnY, 'Leaderboard', {
+            fontSize: '18px',
+            fontWeight: 'bold',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 2
+        });
+        leaderboardText.setOrigin(0.5);
+        leaderboardText.setDepth(3);
+        
+        leaderboardBtn.on('pointerover', () => {
+            leaderboardBtnBg.clear();
+            leaderboardBtnBg.fillStyle(0x0077ff, 0.9);
+            leaderboardBtnBg.fillRoundedRect(leaderboardBtnX - 100, leaderboardBtnY - 25, 200, 50, 10);
+            leaderboardBtnBg.lineStyle(2, 0x00ffff, 1);
+            leaderboardBtnBg.strokeRoundedRect(leaderboardBtnX - 100, leaderboardBtnY - 25, 200, 50, 10);
+            this.tweens.add({
+                targets: leaderboardText,
+                scale: 1.05,
+                duration: 150,
+                ease: 'Back.easeOut'
+            });
+        });
+        
+        leaderboardBtn.on('pointerout', () => {
+            leaderboardBtnBg.clear();
+            leaderboardBtnBg.fillStyle(0x0052FF, 0.8);
+            leaderboardBtnBg.fillRoundedRect(leaderboardBtnX - 100, leaderboardBtnY - 25, 200, 50, 10);
+            leaderboardBtnBg.lineStyle(2, 0x00ffff, 1);
+            leaderboardBtnBg.strokeRoundedRect(leaderboardBtnX - 100, leaderboardBtnY - 25, 200, 50, 10);
+            this.tweens.add({
+                targets: leaderboardText,
+                scale: 1,
+                duration: 150
+            });
+        });
+        
+        leaderboardBtn.on('pointerdown', () => {
+            if (window.baseInvadersLeaderboard && window.baseInvadersLeaderboard.open) {
+                window.baseInvadersLeaderboard.open();
+            }
+        });
     }
 
     createBackground() {
@@ -1928,12 +1986,65 @@ class GameScene extends Phaser.Scene {
         this.gameState.gameOver = true;
         this.scene.pause();
         this.saveGameData();
+        
+        const waveLevel = this.gameState.missionSystem
+            ? this.gameState.missionSystem.currentWave
+            : this.gameState.stage;
+        const streak = window.baseInvadersLeaderboard?.getCurrentStreak
+            ? window.baseInvadersLeaderboard.getCurrentStreak()
+            : 0;
+        const localEntry = {
+            score: this.gameState.score,
+            wave: waveLevel,
+            date: new Date().toISOString(),
+            streak
+        };
+        
+        const localHigh = window.baseInvadersLeaderboard?.getLocalHighScore
+            ? window.baseInvadersLeaderboard.getLocalHighScore()
+            : null;
+        const isNewHigh = !localHigh || this.gameState.score > (localHigh.score || 0);
+        if (isNewHigh && window.baseInvadersLeaderboard?.saveLocalHighScore) {
+            window.baseInvadersLeaderboard.saveLocalHighScore(localEntry);
+        }
+        
         document.getElementById('gameover-overlay').classList.remove('hidden');
         document.getElementById('final-stats').innerHTML = `
             <p>Final Score: ${this.gameState.score.toLocaleString()}</p>
             <p>Stage Reached: ${this.gameState.stage}</p>
             <p>Level: ${this.gameState.playerLevel}</p>
         `;
+        
+        if (isNewHigh && typeof window.baseInvadersSubmitScore === 'function') {
+            setTimeout(async () => {
+                const wantsSubmit = confirm(
+                    '🏆 New high score! Submit to the on-chain leaderboard?\n\n' +
+                    'This requires a wallet transaction.'
+                );
+                if (!wantsSubmit) return;
+                
+                try {
+                    let savedName = window.baseInvadersLeaderboard?.getSavedName
+                        ? window.baseInvadersLeaderboard.getSavedName()
+                        : '';
+                    const promptName = prompt('Enter a name for the leaderboard (optional):', savedName);
+                    const finalName = typeof promptName === 'string' ? promptName.trim() : '';
+                    if (window.baseInvadersLeaderboard?.setSavedName) {
+                        window.baseInvadersLeaderboard.setSavedName(finalName);
+                    }
+                    await window.baseInvadersSubmitScore(
+                        this.gameState.score,
+                        waveLevel,
+                        streak,
+                        finalName
+                    );
+                    alert('Leaderboard submission confirmed!');
+                } catch (error) {
+                    console.error('Leaderboard submission failed:', error);
+                    alert('Submission failed or was rejected.');
+                }
+            }, 200);
+        }
     }
 
     saveGameData() {
