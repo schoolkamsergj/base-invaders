@@ -1,4 +1,12 @@
 {
+  "name": "Base Destroyer",
+  "shortName": "BaseDestroyer",
+  "description": "Знищуй бази ворогів, збирай діаманти, щоденний check-in і глобальний лідерборд на Base! On-chain гра з Phaser.",
+  "iconUrl": "https://base-invaders-nine.vercel.app/assets/icon.png",
+  "homeUrl": "https://base-invaders-nine.vercel.app/",
+  "actionUrl": "https://base-invaders-nine.vercel.app/"
+}
+{
     "name": "Base Invaders - Space Shooter",
     "short_name": "Base Invaders",
     "description": "Epic space shooter game - destroy enemy bases and survive!",
