@@ -2007,6 +2007,7 @@ if (typeof Phaser === 'undefined') {
     const game = new Phaser.Game(config);
     window.game = game; // Make game accessible globally
     console.log('Phaser game created:', game);
+    window.dispatchEvent(new Event('base-invaders:game-ready'));
 }
 
 // UI Event Handlers (wait for DOM to be ready)

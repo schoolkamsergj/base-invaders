@@ -312,14 +312,43 @@ class UI {
         this.updateCheckInButtonState();
         
         // Click handler
-        const handleCheckIn = () => {
+        const handleCheckIn = async () => {
             if (!this.isCheckInActive()) {
                 return; // Button is disabled
             }
             
+            if (this.checkInPending) {
+                return;
+            }
+
             // Play click sound
             if (this.scene.playSound) {
                 this.scene.playSound('click');
+            }
+
+            if (typeof window.baseInvadersOnchainCheckIn !== 'function') {
+                this.showNotification('Wallet not ready for check-in', buttonX, buttonY - 40);
+                return;
+            }
+
+            this.checkInPending = true;
+            const originalText = this.checkInButtonText.text;
+            this.checkInButtonText.setText('📅 CHECK-IN...');
+            this.checkInButton.disableInteractive();
+            this.checkInButtonText.disableInteractive();
+            this.showNotification('Confirm check-in transaction', buttonX, buttonY - 40);
+
+            try {
+                await window.baseInvadersOnchainCheckIn();
+                this.showNotification('Onchain check-in confirmed', buttonX, buttonY - 40);
+            } catch (error) {
+                console.error('Check-in transaction failed:', error);
+                this.showNotification('Check-in failed or rejected', buttonX, buttonY - 40);
+                this.checkInButtonText.setText(originalText);
+                this.checkInButton.setInteractive({ useHandCursor: true });
+                this.checkInButtonText.setInteractive({ useHandCursor: true });
+                this.checkInPending = false;
+                return;
             }
             
            // Save current day key (YYYY-MM-DD format)
@@ -410,6 +439,7 @@ this.showNotification(message, buttonX, buttonY - 40);
             
             // Update button state FIRST (so UI shows correct day)
             this.updateCheckInButtonState();
+            this.checkInPending = false;
             
             // IMPORTANT: Wait for DOM to repaint before showing milestone animation
             // This ensures user sees "Day 7" text BEFORE character appears

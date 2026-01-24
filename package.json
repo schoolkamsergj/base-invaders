@@ -1,0 +1,17 @@
+{
+    "name": "base-invaders",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "npx serve .",
+        "start": "npx serve ."
+    },
+    "dependencies": {
+        "@farcaster/miniapp-sdk": "latest",
+        "@wagmi/core": "latest",
+        "phaser": "latest",
+        "viem": "latest",
+        "wagmi": "latest"
+    }
+}
