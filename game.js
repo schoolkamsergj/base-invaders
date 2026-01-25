@@ -2097,8 +2097,8 @@ if (typeof Phaser === 'undefined') {
 } else {
     const config = {
         type: Phaser.AUTO,
-        width: 800,
-        height: 600,
+        width: '100%',
+        height: '100%',
         parent: 'game-container',
         physics: {
             default: 'arcade',
@@ -2119,6 +2119,9 @@ if (typeof Phaser === 'undefined') {
     window.game = game; // Make game accessible globally
     console.log('Phaser game created:', game);
     window.dispatchEvent(new Event('base-invaders:game-ready'));
+    window.addEventListener('resize', () => {
+        game.scale.resize(window.innerWidth, window.innerHeight);
+    });
 }
 
 // UI Event Handlers (wait for DOM to be ready)
