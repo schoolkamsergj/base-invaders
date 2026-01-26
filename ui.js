@@ -494,41 +494,35 @@ class UI {
             const notifyX = this.checkInLayout?.x ?? buttonX;
             const notifyY = this.checkInLayout?.y ?? buttonY;
 
-            this.checkInPending = true;
-            const originalText = this.checkInButtonText.text;
-            this.checkInButtonText.setText('📅 CHECK-IN...');
-            this.checkInButton.disableInteractive();
-            this.checkInButtonText.disableInteractive();
-            this.showNotification('Confirm check-in transaction', notifyX, notifyY - 40);
-
-            let txSuccess = false;
-            if (typeof window.baseInvadersOnchainCheckIn === 'function') {
-                try {
-                    await window.baseInvadersOnchainCheckIn();
-                    this.showNotification('Onchain check-in confirmed', notifyX, notifyY - 40);
-                    txSuccess = true;
-                } catch (error) {
-                    console.error('Check-in transaction failed:', error);
-                    this.showNotification('Check-in failed or rejected', notifyX, notifyY - 40);
-                    this.checkInButtonText.setText(originalText);
-                    this.checkInButton.setInteractive({ useHandCursor: true });
-                    this.checkInButtonText.setInteractive({ useHandCursor: true });
-                    this.checkInPending = false;
-                    // Still save to localStorage even if tx fails (fallback)
-                    const todayKey = this.getDayKey();
-                    localStorage.setItem('lastCheckIn', todayKey);
-                    this.updateCheckInButtonState();
-                    this.startCountdownInterval();
-                    return;
-                }
-            } else {
-                // Fallback: save to localStorage even without wallet
-                this.showNotification('Check-in saved (offline)', notifyX, notifyY - 40);
-            }
-            
-            // Save current day key (YYYY-MM-DD format) - always save after success or fallback
+            // Save locally FIRST (always works)
             const todayKey = this.getDayKey();
             localStorage.setItem('lastCheckIn', todayKey);
+            console.log('✅ Check-in saved locally:', todayKey);
+
+            // Try on-chain if SDK available
+            if (typeof window.baseInvadersOnchainCheckIn === 'function') {
+                this.checkInPending = true;
+                this.checkInButtonText.setText('⛓️ SIGNING...');
+                this.checkInButton.disableInteractive();
+                this.checkInButtonText.disableInteractive();
+                
+                try {
+                    console.log('🔗 Calling onchain check-in...');
+                    await window.baseInvadersOnchainCheckIn();
+                    console.log('✅ Onchain success');
+                    this.showNotification('⛓️ Confirmed!', notifyX, notifyY - 40);
+                } catch (error) {
+                    console.error('❌ Onchain failed:', error);
+                    this.showNotification('⚠️ Saved locally', notifyX, notifyY - 40);
+                }
+                
+                this.checkInPending = false;
+                this.checkInButton.setInteractive({ useHandCursor: true });
+                this.checkInButtonText.setInteractive({ useHandCursor: true });
+            } else {
+                console.log('📴 SDK not available');
+                this.showNotification('💎 Saved locally', notifyX, notifyY - 40);
+            }
 
 // Update streak system
 let totalDays = 0;

@@ -388,12 +388,21 @@ async function fetchLeaderboard() {
 }
 
 async function markMiniAppReady() {
-    if (readyCalled) return;
+    if (readyCalled) {
+        console.log('⚠️ markMiniAppReady already called');
+        return;
+    }
     readyCalled = true;
+    
+    console.log('🚀 Initializing Base Mini Apps SDK...');
+    
     try {
         await sdk.actions.ready();
+        console.log('✅ SDK ready!');
+        console.log('✅ window.baseInvadersOnchainCheckIn:', typeof window.baseInvadersOnchainCheckIn);
+        window.dispatchEvent(new Event('base-invaders:wallet-connected'));
     } catch (error) {
-        console.warn('Mini app ready() failed:', error);
+        console.error('❌ SDK failed:', error);
     }
 }
 

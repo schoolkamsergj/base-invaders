@@ -653,6 +653,11 @@ class GameScene extends Phaser.Scene {
             }
             
             console.log('Game running');
+            
+            setTimeout(() => {
+                console.log('🎮 Dispatching base-invaders:game-ready event...');
+                window.dispatchEvent(new Event('base-invaders:game-ready'));
+            }, 500);
         } catch (e) {
             console.error('CRITICAL ERROR in create():', e);
             console.error('Stack:', e.stack);
