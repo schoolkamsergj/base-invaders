@@ -494,11 +494,6 @@ class UI {
             const notifyX = this.checkInLayout?.x ?? buttonX;
             const notifyY = this.checkInLayout?.y ?? buttonY;
 
-            if (typeof window.baseInvadersOnchainCheckIn !== 'function') {
-                this.showNotification('Wallet not ready for check-in', notifyX, notifyY - 40);
-                return;
-            }
-
             this.checkInPending = true;
             const originalText = this.checkInButtonText.text;
             this.checkInButtonText.setText('📅 CHECK-IN...');
@@ -506,22 +501,34 @@ class UI {
             this.checkInButtonText.disableInteractive();
             this.showNotification('Confirm check-in transaction', notifyX, notifyY - 40);
 
-            try {
-                await window.baseInvadersOnchainCheckIn();
-                this.showNotification('Onchain check-in confirmed', notifyX, notifyY - 40);
-            } catch (error) {
-                console.error('Check-in transaction failed:', error);
-                this.showNotification('Check-in failed or rejected', notifyX, notifyY - 40);
-                this.checkInButtonText.setText(originalText);
-                this.checkInButton.setInteractive({ useHandCursor: true });
-                this.checkInButtonText.setInteractive({ useHandCursor: true });
-                this.checkInPending = false;
-                return;
+            let txSuccess = false;
+            if (typeof window.baseInvadersOnchainCheckIn === 'function') {
+                try {
+                    await window.baseInvadersOnchainCheckIn();
+                    this.showNotification('Onchain check-in confirmed', notifyX, notifyY - 40);
+                    txSuccess = true;
+                } catch (error) {
+                    console.error('Check-in transaction failed:', error);
+                    this.showNotification('Check-in failed or rejected', notifyX, notifyY - 40);
+                    this.checkInButtonText.setText(originalText);
+                    this.checkInButton.setInteractive({ useHandCursor: true });
+                    this.checkInButtonText.setInteractive({ useHandCursor: true });
+                    this.checkInPending = false;
+                    // Still save to localStorage even if tx fails (fallback)
+                    const todayKey = this.getDayKey();
+                    localStorage.setItem('lastCheckIn', todayKey);
+                    this.updateCheckInButtonState();
+                    this.startCountdownInterval();
+                    return;
+                }
+            } else {
+                // Fallback: save to localStorage even without wallet
+                this.showNotification('Check-in saved (offline)', notifyX, notifyY - 40);
             }
             
-           // Save current day key (YYYY-MM-DD format)
-const todayKey = this.getDayKey();
-localStorage.setItem('lastCheckIn', todayKey);
+            // Save current day key (YYYY-MM-DD format) - always save after success or fallback
+            const todayKey = this.getDayKey();
+            localStorage.setItem('lastCheckIn', todayKey);
 
 // Update streak system
 let totalDays = 0;
@@ -609,6 +616,9 @@ if (isMilestone) {
             this.updateCheckInButtonState();
             this.checkInPending = false;
             
+            // Start countdown interval after check-in
+            this.startCountdownInterval();
+            
             // IMPORTANT: Wait for DOM to repaint before showing milestone animation
             // This ensures user sees "Day 7" text BEFORE character appears
             if (isMilestone) {
@@ -635,14 +645,23 @@ if (isMilestone) {
             this.checkInButtonText.setScale(1);
         });
         
-        // Update countdown every second
-        this.scene.time.addEvent({
-            delay: 1000,
-            callback: () => {
-                this.updateCheckInButtonState();
-            },
-            loop: true
-        });
+        // Start countdown interval on creation
+        this.startCountdownInterval();
+    }
+
+    startCountdownInterval() {
+        // Clear existing interval if any
+        if (this.countdownInterval) {
+            clearInterval(this.countdownInterval);
+        }
+        
+        // Update immediately
+        this.updateCheckInButtonState();
+        
+        // Update every second
+        this.countdownInterval = setInterval(() => {
+            this.updateCheckInButtonState();
+        }, 1000);
     }
 
     isCheckInActive() {
@@ -785,13 +804,15 @@ if (isMilestone) {
             this.checkInButtonText.setColor('#ffffff');
 
             
-            // Show countdown
+            // Show countdown or "Checked in" message
             if (timeRemaining) {
                 const timeStr = `${timeRemaining.hours}h ${timeRemaining.minutes}m`;
                 this.checkInCountdownText.setText(timeStr);
                 this.checkInCountdownText.setVisible(true);
             } else {
-                this.checkInCountdownText.setVisible(false);
+                // Show "Checked in" if checked in today but no time remaining (edge case)
+                this.checkInCountdownText.setText('Checked in');
+                this.checkInCountdownText.setVisible(true);
             }
             
             // Disable interaction

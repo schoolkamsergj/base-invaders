@@ -273,25 +273,47 @@ const LEADERBOARD_CONTRACT = {
 
 let wagmiConfigPromise = null;
 let readyCalled = false;
+let connectedAddress = null;
 
-async function getWagmiConfig() {
-    if (wagmiConfigPromise) return wagmiConfigPromise;
-
-    wagmiConfigPromise = (async () => {
+async function initializeMiniApp() {
+    try {
         const provider = await sdk.wallet.getEthereumProvider();
         if (!window.ethereum) {
             window.ethereum = provider;
         }
 
-        return createConfig({
+        const config = createConfig({
             chains: [base],
             connectors: [injected({ shimDisconnect: true })],
             transports: {
                 [base.id]: custom(provider)
             }
         });
-    })();
 
+        // Auto-connect Farcaster wallet
+        try {
+            await connect(config, { connector: injected({ shimDisconnect: true }) });
+            const account = getAccount(config);
+            if (account.address) {
+                connectedAddress = account.address;
+                window.dispatchEvent(new CustomEvent('base-invaders:wallet-connected', { detail: { address: account.address } }));
+                console.log('✅ Wallet connected:', account.address);
+            }
+        } catch (error) {
+            console.warn('Auto-connect failed (user may need to connect manually):', error);
+        }
+
+        return config;
+    } catch (error) {
+        console.error('Failed to initialize mini app:', error);
+        throw error;
+    }
+}
+
+async function getWagmiConfig() {
+    if (wagmiConfigPromise) return wagmiConfigPromise;
+
+    wagmiConfigPromise = initializeMiniApp();
     return wagmiConfigPromise;
 }
 
@@ -301,16 +323,30 @@ async function checkInOnchain() {
     }
 
     const config = await getWagmiConfig();
-    await connect(config, { connector: injected({ shimDisconnect: true }) });
-
+    
+    // Connect if not already connected
     const account = getAccount(config);
+    if (!account.address || !connectedAddress) {
+        await connect(config, { connector: injected({ shimDisconnect: true }) });
+        const newAccount = getAccount(config);
+        if (newAccount.address) {
+            connectedAddress = newAccount.address;
+            window.dispatchEvent(new CustomEvent('base-invaders:wallet-connected', { detail: { address: newAccount.address } }));
+        }
+    }
+
+    const finalAccount = getAccount(config);
+    if (!finalAccount.address) {
+        throw new Error('Wallet not connected. Please connect your wallet.');
+    }
+
     const hash = await writeContract(config, {
         address: CHECK_IN_CONTRACT.address,
         abi: CHECK_IN_CONTRACT.abi,
         functionName: CHECK_IN_CONTRACT.functionName,
         args: CHECK_IN_CONTRACT.args,
         chainId: CHECK_IN_CONTRACT.chainId,
-        account: account.address
+        account: finalAccount.address
     });
 
     return waitForTransactionReceipt(config, { hash });
@@ -368,10 +404,14 @@ window.baseInvadersMiniAppSdk = sdk;
 
 window.addEventListener('base-invaders:game-ready', () => {
     markMiniAppReady();
+    // Initialize wallet connection when game is ready
+    getWagmiConfig().catch(err => console.warn('Wallet init failed:', err));
 });
 
 window.addEventListener('load', () => {
     setTimeout(() => {
         markMiniAppReady();
+        // Initialize wallet connection on load
+        getWagmiConfig().catch(err => console.warn('Wallet init failed:', err));
     }, 0);
 });
