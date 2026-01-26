@@ -15,19 +15,19 @@ class MenuScene extends Phaser.Scene {
         this.createBackground();
 
         // Title - "BASE DESTROYER"
-        const title = this.add.text(width / 2, 80, 'BASE DESTROYER', {
+        this.titleText = this.add.text(width / 2, height * 0.15, 'BASE DESTROYER', {
             fontSize: '64px',
             fontWeight: 'bold',
             color: '#00d9ff',
             stroke: '#0088ff',
             strokeThickness: 4
         });
-        title.setOrigin(0.5);
-        title.setShadow(0, 0, '#00d9ff', 20, true, true);
+        this.titleText.setOrigin(0.5);
+        this.titleText.setShadow(0, 0, '#00d9ff', 20, true, true);
 
         // Animated glow effect on title
         this.tweens.add({
-            targets: title,
+            targets: this.titleText,
             alpha: { from: 0.8, to: 1 },
             scale: { from: 0.98, to: 1.02 },
             duration: 2000,
@@ -37,19 +37,13 @@ class MenuScene extends Phaser.Scene {
         });
 
         // Instructions panel (left side)
-        const instructionsBg = this.add.graphics();
-        instructionsBg.fillStyle(0x000033, 0.8);
-        instructionsBg.fillRoundedRect(20, 180, 360, 380, 10);
-        instructionsBg.lineStyle(2, 0x00d9ff, 1);
-        instructionsBg.strokeRoundedRect(20, 180, 360, 380, 10);
-        instructionsBg.setDepth(1);
+        this.instructionsBg = this.add.graphics();
+        this.instructionsBg.setDepth(1);
 
         // Add glow effect to instructions panel
-        const instructionsGlow = this.add.graphics();
-        instructionsGlow.lineStyle(4, 0x00d9ff, 0.3);
-        instructionsGlow.strokeRoundedRect(18, 178, 364, 384, 12);
-        instructionsGlow.setDepth(0);
-        instructionsGlow.setBlendMode(Phaser.BlendModes.ADD);
+        this.instructionsGlow = this.add.graphics();
+        this.instructionsGlow.setDepth(0);
+        this.instructionsGlow.setBlendMode(Phaser.BlendModes.ADD);
 
         const instructionsText = `🎮 CONTROLS
 ← → or A/D - Move
@@ -72,75 +66,60 @@ Buy new spaceships
 Upgrade weapons
 Improve stats`;
 
-        const instructions = this.add.text(40, 200, instructionsText, {
+        this.instructionsText = this.add.text(40, 200, instructionsText, {
             fontSize: '16px',
             color: '#ffffff',
             lineSpacing: 10,
             wordWrap: { width: 340 }
         });
-        instructions.setDepth(2);
-        instructions.setShadow(2, 2, '#000000', 2, true);
+        this.instructionsText.setDepth(2);
+        this.instructionsText.setShadow(2, 2, '#000000', 2, true);
 
         // START button (center-right)
-        const startBtnX = width / 2 + 100;
-        const startBtnY = height / 2 + 50;
+        this.startBtnBg = this.add.graphics();
+        this.startBtnBg.setDepth(1);
 
-        const startBtnBg = this.add.graphics();
-        startBtnBg.fillStyle(0x0052FF, 0.9);
-        startBtnBg.fillRoundedRect(startBtnX - 120, startBtnY - 40, 240, 80, 15);
-        startBtnBg.lineStyle(3, 0x00d9ff, 1);
-        startBtnBg.strokeRoundedRect(startBtnX - 120, startBtnY - 40, 240, 80, 15);
-        startBtnBg.setDepth(1);
+        this.startBtn = this.add.rectangle(width / 2, height / 2, 240, 80, 0x0052FF, 0);
+        this.startBtn.setInteractive({ useHandCursor: true });
+        this.startBtn.setDepth(2);
 
-        const startBtn = this.add.rectangle(startBtnX, startBtnY, 240, 80, 0x0052FF, 0);
-        startBtn.setInteractive({ useHandCursor: true });
-        startBtn.setDepth(2);
-
-        const startText = this.add.text(startBtnX, startBtnY, 'START', {
+        this.startText = this.add.text(width / 2, height / 2, 'START', {
             fontSize: '36px',
             fontWeight: 'bold',
             color: '#00ff00',
             stroke: '#00aa00',
             strokeThickness: 3
         });
-        startText.setOrigin(0.5);
-        startText.setDepth(3);
-        startText.setShadow(0, 0, '#00ff00', 15, true, true);
+        this.startText.setOrigin(0.5);
+        this.startText.setDepth(3);
+        this.startText.setShadow(0, 0, '#00ff00', 15, true, true);
 
         // Hover effect
-        startBtn.on('pointerover', () => {
-            startBtnBg.clear();
-            startBtnBg.fillStyle(0x0088ff, 0.9);
-            startBtnBg.fillRoundedRect(startBtnX - 120, startBtnY - 40, 240, 80, 15);
-            startBtnBg.lineStyle(3, 0x00ffff, 1);
-            startBtnBg.strokeRoundedRect(startBtnX - 120, startBtnY - 40, 240, 80, 15);
-            startText.setScale(1.1);
+        this.startBtn.on('pointerover', () => {
+            this.updateMenuButtonStyle(this.startBtnBg, this.startBtn, true);
+            this.startText.setScale(1.1);
             this.tweens.add({
-                targets: startText,
+                targets: this.startText,
                 scale: 1.15,
                 duration: 200,
                 ease: 'Back.easeOut'
             });
         });
 
-        startBtn.on('pointerout', () => {
-            startBtnBg.clear();
-            startBtnBg.fillStyle(0x0052FF, 0.9);
-            startBtnBg.fillRoundedRect(startBtnX - 120, startBtnY - 40, 240, 80, 15);
-            startBtnBg.lineStyle(3, 0x00d9ff, 1);
-            startBtnBg.strokeRoundedRect(startBtnX - 120, startBtnY - 40, 240, 80, 15);
+        this.startBtn.on('pointerout', () => {
+            this.updateMenuButtonStyle(this.startBtnBg, this.startBtn, false);
             this.tweens.add({
-                targets: startText,
+                targets: this.startText,
                 scale: 1,
                 duration: 200
             });
         });
 
         // Click to start game
-        startBtn.on('pointerdown', () => {
+        this.startBtn.on('pointerdown', () => {
             // Button press effect
             this.tweens.add({
-                targets: [startBtn, startText],
+                targets: [this.startBtn, this.startText],
                 scale: 0.95,
                 duration: 100,
                 yoyo: true,
@@ -160,60 +139,45 @@ Improve stats`;
         });
         
         // RESET PROGRESS button (below START button)
-        const resetBtnX = width / 2 + 100;
-        const resetBtnY = height / 2 + 150;  // Below START button
+        this.resetBtnBg = this.add.graphics();
+        this.resetBtnBg.setDepth(1);
         
-        const resetBtnBg = this.add.graphics();
-        resetBtnBg.fillStyle(0xcc0000, 0.8);  // Red color for destructive action
-        resetBtnBg.fillRoundedRect(resetBtnX - 100, resetBtnY - 25, 200, 50, 10);
-        resetBtnBg.lineStyle(2, 0xff4444, 1);  // Bright red border
-        resetBtnBg.strokeRoundedRect(resetBtnX - 100, resetBtnY - 25, 200, 50, 10);
-        resetBtnBg.setDepth(1);
+        this.resetBtn = this.add.rectangle(width / 2, height / 2, 200, 50, 0xcc0000, 0);
+        this.resetBtn.setInteractive({ useHandCursor: true });
+        this.resetBtn.setDepth(2);
         
-        const resetBtn = this.add.rectangle(resetBtnX, resetBtnY, 200, 50, 0xcc0000, 0);
-        resetBtn.setInteractive({ useHandCursor: true });
-        resetBtn.setDepth(2);
-        
-        const resetText = this.add.text(resetBtnX, resetBtnY, 'Reset Progress', {
+        this.resetText = this.add.text(width / 2, height / 2, 'Reset Progress', {
             fontSize: '18px',
             fontWeight: 'bold',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: 2
         });
-        resetText.setOrigin(0.5);
-        resetText.setDepth(3);
+        this.resetText.setOrigin(0.5);
+        this.resetText.setDepth(3);
         
         // Hover effect for reset button
-        resetBtn.on('pointerover', () => {
-            resetBtnBg.clear();
-            resetBtnBg.fillStyle(0xff0000, 0.9);  // Brighter red on hover
-            resetBtnBg.fillRoundedRect(resetBtnX - 100, resetBtnY - 25, 200, 50, 10);
-            resetBtnBg.lineStyle(2, 0xff6666, 1);
-            resetBtnBg.strokeRoundedRect(resetBtnX - 100, resetBtnY - 25, 200, 50, 10);
+        this.resetBtn.on('pointerover', () => {
+            this.updateResetButtonStyle(true);
             this.tweens.add({
-                targets: resetText,
+                targets: this.resetText,
                 scale: 1.1,
                 duration: 200,
                 ease: 'Back.easeOut'
             });
         });
         
-        resetBtn.on('pointerout', () => {
-            resetBtnBg.clear();
-            resetBtnBg.fillStyle(0xcc0000, 0.8);
-            resetBtnBg.fillRoundedRect(resetBtnX - 100, resetBtnY - 25, 200, 50, 10);
-            resetBtnBg.lineStyle(2, 0xff4444, 1);
-            resetBtnBg.strokeRoundedRect(resetBtnX - 100, resetBtnY - 25, 200, 50, 10);
+        this.resetBtn.on('pointerout', () => {
+            this.updateResetButtonStyle(false);
             this.tweens.add({
-                targets: resetText,
+                targets: this.resetText,
                 scale: 1,
                 duration: 200
             });
         });
         
         // Click handler with confirmation dialog
-        resetBtn.on('pointerdown', () => {
+        this.resetBtn.on('pointerdown', () => {
             // Confirmation dialog
             const confirmed = confirm('⚠️ Reset all progress?\n\nThis will:\n- Clear all currency (Gold, Lightning, Diamonds)\n- Reset all upgrades and purchases\n- Reset score and level\n\nThis cannot be undone!');
             
@@ -239,62 +203,140 @@ Improve stats`;
         });
 
         // LEADERBOARD button (below Reset Progress)
-        const leaderboardBtnX = width / 2 + 100;
-        const leaderboardBtnY = height / 2 + 220;
+        this.leaderboardBtnBg = this.add.graphics();
+        this.leaderboardBtnBg.setDepth(1);
         
-        const leaderboardBtnBg = this.add.graphics();
-        leaderboardBtnBg.fillStyle(0x0052FF, 0.8);
-        leaderboardBtnBg.fillRoundedRect(leaderboardBtnX - 100, leaderboardBtnY - 25, 200, 50, 10);
-        leaderboardBtnBg.lineStyle(2, 0x00ffff, 1);
-        leaderboardBtnBg.strokeRoundedRect(leaderboardBtnX - 100, leaderboardBtnY - 25, 200, 50, 10);
-        leaderboardBtnBg.setDepth(1);
+        this.leaderboardBtn = this.add.rectangle(width / 2, height / 2, 200, 50, 0x0052FF, 0);
+        this.leaderboardBtn.setInteractive({ useHandCursor: true });
+        this.leaderboardBtn.setDepth(2);
         
-        const leaderboardBtn = this.add.rectangle(leaderboardBtnX, leaderboardBtnY, 200, 50, 0x0052FF, 0);
-        leaderboardBtn.setInteractive({ useHandCursor: true });
-        leaderboardBtn.setDepth(2);
-        
-        const leaderboardText = this.add.text(leaderboardBtnX, leaderboardBtnY, 'Leaderboard', {
+        this.leaderboardText = this.add.text(width / 2, height / 2, 'Leaderboard', {
             fontSize: '18px',
             fontWeight: 'bold',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: 2
         });
-        leaderboardText.setOrigin(0.5);
-        leaderboardText.setDepth(3);
+        this.leaderboardText.setOrigin(0.5);
+        this.leaderboardText.setDepth(3);
         
-        leaderboardBtn.on('pointerover', () => {
-            leaderboardBtnBg.clear();
-            leaderboardBtnBg.fillStyle(0x0077ff, 0.9);
-            leaderboardBtnBg.fillRoundedRect(leaderboardBtnX - 100, leaderboardBtnY - 25, 200, 50, 10);
-            leaderboardBtnBg.lineStyle(2, 0x00ffff, 1);
-            leaderboardBtnBg.strokeRoundedRect(leaderboardBtnX - 100, leaderboardBtnY - 25, 200, 50, 10);
+        this.leaderboardBtn.on('pointerover', () => {
+            this.updateLeaderboardButtonStyle(true);
             this.tweens.add({
-                targets: leaderboardText,
+                targets: this.leaderboardText,
                 scale: 1.05,
                 duration: 150,
                 ease: 'Back.easeOut'
             });
         });
         
-        leaderboardBtn.on('pointerout', () => {
-            leaderboardBtnBg.clear();
-            leaderboardBtnBg.fillStyle(0x0052FF, 0.8);
-            leaderboardBtnBg.fillRoundedRect(leaderboardBtnX - 100, leaderboardBtnY - 25, 200, 50, 10);
-            leaderboardBtnBg.lineStyle(2, 0x00ffff, 1);
-            leaderboardBtnBg.strokeRoundedRect(leaderboardBtnX - 100, leaderboardBtnY - 25, 200, 50, 10);
+        this.leaderboardBtn.on('pointerout', () => {
+            this.updateLeaderboardButtonStyle(false);
             this.tweens.add({
-                targets: leaderboardText,
+                targets: this.leaderboardText,
                 scale: 1,
                 duration: 150
             });
         });
         
-        leaderboardBtn.on('pointerdown', () => {
+        this.leaderboardBtn.on('pointerdown', () => {
             if (window.baseInvadersLeaderboard && window.baseInvadersLeaderboard.open) {
                 window.baseInvadersLeaderboard.open();
             }
         });
+
+        this.updateMenuLayout(width, height);
+        this.scale.on('resize', (gameSize) => {
+            this.updateMenuLayout(gameSize.width, gameSize.height);
+        });
+    }
+
+    updateMenuButtonStyle(buttonBg, buttonRect, isHover) {
+        const width = buttonRect.width;
+        const height = buttonRect.height;
+        const x = buttonRect.x - width / 2;
+        const y = buttonRect.y - height / 2;
+        buttonBg.clear();
+        buttonBg.fillStyle(isHover ? 0x0088ff : 0x0052FF, isHover ? 0.9 : 0.8);
+        buttonBg.fillRoundedRect(x, y, width, height, Math.min(15, height * 0.2));
+        buttonBg.lineStyle(3, isHover ? 0x00ffff : 0x00d9ff, 1);
+        buttonBg.strokeRoundedRect(x, y, width, height, Math.min(15, height * 0.2));
+    }
+
+    updateResetButtonStyle(isHover) {
+        const width = this.resetBtn.width;
+        const height = this.resetBtn.height;
+        const x = this.resetBtn.x - width / 2;
+        const y = this.resetBtn.y - height / 2;
+        this.resetBtnBg.clear();
+        this.resetBtnBg.fillStyle(isHover ? 0xff0000 : 0xcc0000, isHover ? 0.9 : 0.8);
+        this.resetBtnBg.fillRoundedRect(x, y, width, height, Math.min(10, height * 0.2));
+        this.resetBtnBg.lineStyle(2, isHover ? 0xff6666 : 0xff4444, 1);
+        this.resetBtnBg.strokeRoundedRect(x, y, width, height, Math.min(10, height * 0.2));
+    }
+
+    updateLeaderboardButtonStyle(isHover) {
+        const width = this.leaderboardBtn.width;
+        const height = this.leaderboardBtn.height;
+        const x = this.leaderboardBtn.x - width / 2;
+        const y = this.leaderboardBtn.y - height / 2;
+        this.leaderboardBtnBg.clear();
+        this.leaderboardBtnBg.fillStyle(isHover ? 0x0077ff : 0x0052FF, isHover ? 0.9 : 0.8);
+        this.leaderboardBtnBg.fillRoundedRect(x, y, width, height, Math.min(10, height * 0.2));
+        this.leaderboardBtnBg.lineStyle(2, 0x00ffff, 1);
+        this.leaderboardBtnBg.strokeRoundedRect(x, y, width, height, Math.min(10, height * 0.2));
+    }
+
+    updateMenuLayout(width, height) {
+        const compact = width < 900;
+        const titleSize = Math.max(28, Math.min(width * 0.08, 64));
+        const textSize = Math.max(12, Math.min(width * 0.022, 18));
+        const buttonWidth = Math.max(180, Math.min(width * 0.45, 260));
+        const buttonHeight = Math.max(44, Math.min(height * 0.1, 80));
+        const buttonX = width * 0.5;
+        const startY = height * 0.62;
+        const resetY = height * 0.72;
+        const leaderboardY = height * 0.82;
+
+        this.titleText.setPosition(width / 2, height * 0.15);
+        this.titleText.setFontSize(`${titleSize}px`);
+
+        const panelWidth = compact ? width * 0.9 : Math.min(width * 0.45, 380);
+        const panelHeight = compact ? height * 0.32 : Math.min(height * 0.55, 420);
+        const panelX = width * 0.05;
+        const panelY = height * 0.25;
+
+        this.instructionsBg.clear();
+        this.instructionsBg.fillStyle(0x000033, 0.8);
+        this.instructionsBg.fillRoundedRect(panelX, panelY, panelWidth, panelHeight, 10);
+        this.instructionsBg.lineStyle(2, 0x00d9ff, 1);
+        this.instructionsBg.strokeRoundedRect(panelX, panelY, panelWidth, panelHeight, 10);
+
+        this.instructionsGlow.clear();
+        this.instructionsGlow.lineStyle(4, 0x00d9ff, 0.3);
+        this.instructionsGlow.strokeRoundedRect(panelX - 2, panelY - 2, panelWidth + 4, panelHeight + 4, 12);
+
+        this.instructionsText.setPosition(panelX + 16, panelY + 16);
+        this.instructionsText.setFontSize(`${textSize}px`);
+        this.instructionsText.setWordWrapWidth(panelWidth - 32, true);
+
+        this.startBtn.setPosition(buttonX, startY);
+        this.startBtn.setSize(buttonWidth, buttonHeight);
+        this.startText.setPosition(buttonX, startY);
+        this.startText.setFontSize(`${Math.max(18, buttonHeight * 0.45)}px`);
+        this.updateMenuButtonStyle(this.startBtnBg, this.startBtn, false);
+
+        this.resetBtn.setPosition(buttonX, resetY);
+        this.resetBtn.setSize(buttonWidth * 0.85, buttonHeight * 0.7);
+        this.resetText.setPosition(buttonX, resetY);
+        this.resetText.setFontSize(`${Math.max(12, buttonHeight * 0.28)}px`);
+        this.updateResetButtonStyle(false);
+
+        this.leaderboardBtn.setPosition(buttonX, leaderboardY);
+        this.leaderboardBtn.setSize(buttonWidth * 0.85, buttonHeight * 0.7);
+        this.leaderboardText.setPosition(buttonX, leaderboardY);
+        this.leaderboardText.setFontSize(`${Math.max(12, buttonHeight * 0.28)}px`);
+        this.updateLeaderboardButtonStyle(false);
     }
 
     createBackground() {
@@ -562,6 +604,12 @@ class GameScene extends Phaser.Scene {
                 console.error('Error creating UI:', e);
             }
 
+            this.scale.on('resize', () => {
+                if (this.updateMuteButtonPosition) {
+                    this.updateMuteButtonPosition();
+                }
+            });
+
             // Initialize Sound System
             // Sounds will start after first user interaction (browser autoplay policy)
             this.soundInitialized = false;
@@ -790,9 +838,8 @@ class GameScene extends Phaser.Scene {
     }
 
     createMuteButton() {
-        // Position: top-right corner, near pause button (40x40 pixels)
-        const buttonX = this.scale.width - 100;  // Left of pause button
-        const buttonY = 75;  // Same y as pause button
+        const buttonX = 0;
+        const buttonY = 0;
         
         // Button background (semi-transparent circle)
         this.muteButtonBg = this.add.circle(buttonX, buttonY, 20, 0x333333, 0.7);
@@ -823,12 +870,10 @@ class GameScene extends Phaser.Scene {
         
         // Cross line for muted state (visual X)
         this.muteCross = this.add.graphics();
-        this.muteCross.lineStyle(3, 0xff0000, 0.8);
-        this.muteCross.strokeLineShape(new Phaser.Geom.Line(buttonX - 12, buttonY - 12, buttonX + 12, buttonY + 12));
-        this.muteCross.strokeLineShape(new Phaser.Geom.Line(buttonX + 12, buttonY - 12, buttonX - 12, buttonY + 12));
         this.muteCross.setScrollFactor(0);
         this.muteCross.setDepth(102);
         this.muteCross.setVisible(false);
+        this.updateMuteButtonPosition();
         
         // Update visual state based on mute preference
         this.updateMuteButtonVisual();
@@ -874,6 +919,44 @@ class GameScene extends Phaser.Scene {
                 this.muteButtonBg.setFillStyle(bgColor, 0.7);
             });
         });
+    }
+
+    updateMuteButtonPosition() {
+        if (!this.muteButtonBg) return;
+        const width = this.scale.width;
+        const height = this.scale.height;
+        const margin = Math.max(10, width * 0.03);
+        const radius = Math.max(16, Math.min(width * 0.05, 22));
+        const buttonX = width - margin - radius;
+        const buttonY = margin + radius;
+
+        this.muteButtonBg.setPosition(buttonX, buttonY);
+        this.muteButtonBg.setRadius(radius);
+        const fontSize = Math.max(16, radius * 1.1);
+        this.muteIconUnmuted.setPosition(buttonX, buttonY);
+        this.muteIconUnmuted.setFontSize(`${fontSize}px`);
+        this.muteIconMuted.setPosition(buttonX, buttonY);
+        this.muteIconMuted.setFontSize(`${fontSize}px`);
+
+        this.muteCross.clear();
+        this.muteCross.lineStyle(3, 0xff0000, 0.8);
+        const lineOffset = radius * 0.6;
+        this.muteCross.strokeLineShape(
+            new Phaser.Geom.Line(
+                buttonX - lineOffset,
+                buttonY - lineOffset,
+                buttonX + lineOffset,
+                buttonY + lineOffset
+            )
+        );
+        this.muteCross.strokeLineShape(
+            new Phaser.Geom.Line(
+                buttonX + lineOffset,
+                buttonY - lineOffset,
+                buttonX - lineOffset,
+                buttonY + lineOffset
+            )
+        );
     }
 
     updateMuteButtonVisual() {
@@ -2109,7 +2192,7 @@ if (typeof Phaser === 'undefined') {
         },
         scene: [MenuScene, GameScene],
         scale: {
-            mode: Phaser.Scale.FIT,
+            mode: Phaser.Scale.RESIZE,
             autoCenter: Phaser.Scale.CENTER_BOTH
         }
     };

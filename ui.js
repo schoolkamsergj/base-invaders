@@ -18,6 +18,11 @@ class UI {
         
         // Shop button handler
         this.setupShopButton();
+
+        this.applyLayout();
+        this.scene.scale.on('resize', (gameSize) => {
+            this.applyLayout(gameSize.width, gameSize.height);
+        });
     }
 
     createTopBar() {
@@ -173,7 +178,7 @@ class UI {
 
     createButtons() {
         // Shop button (bottom left)
-        const shopBtn = this.scene.add.rectangle(
+        this.shopBtn = this.scene.add.rectangle(
             50,
             this.scene.scale.height - 30,
             80,
@@ -181,11 +186,11 @@ class UI {
             0x0052FF,
             0.8
         );
-        shopBtn.setScrollFactor(0);
-        shopBtn.setDepth(100);
-        shopBtn.setInteractive({ useHandCursor: true });
+        this.shopBtn.setScrollFactor(0);
+        this.shopBtn.setDepth(100);
+        this.shopBtn.setInteractive({ useHandCursor: true });
         
-        const shopBtnText = this.scene.add.text(
+        this.shopBtnText = this.scene.add.text(
             50,
             this.scene.scale.height - 30,
             '🛒 SHOP',
@@ -196,11 +201,11 @@ class UI {
                 align: 'center'
             }
         );
-        shopBtnText.setOrigin(0.5);
-        shopBtnText.setScrollFactor(0);
-        shopBtnText.setDepth(101);
+        this.shopBtnText.setOrigin(0.5);
+        this.shopBtnText.setScrollFactor(0);
+        this.shopBtnText.setDepth(101);
         
-        shopBtn.on('pointerdown', () => {
+        this.shopBtn.on('pointerdown', () => {
             // Play click sound
             if (this.scene.playSound) {
                 this.scene.playSound('click');
@@ -210,7 +215,7 @@ class UI {
         
         // Pause button (top right) - positioned with more spacing to avoid overlap
         // Level text is at y=40 with fontSize 16px, so pause button goes to y=75 with extra spacing
-        const pauseBtn = this.scene.add.rectangle(
+        this.pauseBtn = this.scene.add.rectangle(
             this.scene.scale.width - 50,
             75,  // Moved further down from Level text (y=40) with 35px spacing
             60,
@@ -218,11 +223,11 @@ class UI {
             0x666666,
             0.8
         );
-        pauseBtn.setScrollFactor(0);
-        pauseBtn.setDepth(100);
-        pauseBtn.setInteractive({ useHandCursor: true });
+        this.pauseBtn.setScrollFactor(0);
+        this.pauseBtn.setDepth(100);
+        this.pauseBtn.setInteractive({ useHandCursor: true });
         
-        const pauseBtnText = this.scene.add.text(
+        this.pauseBtnText = this.scene.add.text(
             this.scene.scale.width - 50,
             75,  // Moved further down with more spacing
             '⏸️',
@@ -231,17 +236,151 @@ class UI {
                 align: 'center'
             }
         );
-        pauseBtnText.setOrigin(0.5);
-        pauseBtnText.setScrollFactor(0);
-        pauseBtnText.setDepth(101);
+        this.pauseBtnText.setOrigin(0.5);
+        this.pauseBtnText.setScrollFactor(0);
+        this.pauseBtnText.setDepth(101);
         
-        pauseBtn.on('pointerdown', () => {
+        this.pauseBtn.on('pointerdown', () => {
             // Play click sound
             if (this.scene.playSound) {
                 this.scene.playSound('click');
             }
             this.scene.togglePause();
         });
+    }
+
+    getLayoutMetrics(width = this.scene.scale.width, height = this.scene.scale.height) {
+        const margin = Math.max(10, width * 0.03);
+        const topMargin = Math.max(8, height * 0.02);
+        const currencyFont = Math.max(14, Math.min(width * 0.045, 22));
+        const stageFont = Math.max(18, Math.min(width * 0.05, 30));
+        const scoreFont = Math.max(12, Math.min(width * 0.035, 20));
+        const levelFont = Math.max(11, Math.min(width * 0.03, 16));
+        const currencySpacing = Math.max(18, currencyFont * 1.5);
+        const healthBarHeight = Math.max(12, Math.min(height * 0.03, 20));
+        const healthBarWidth = Math.max(220, Math.min(width * 0.7, width - margin * 2));
+        const healthBarY = height - Math.max(24, height * 0.05);
+        const healthBarX = (width - healthBarWidth) / 2;
+        const shopWidth = Math.max(70, Math.min(width * 0.2, 120));
+        const shopHeight = Math.max(30, Math.min(height * 0.06, 40));
+        const pauseWidth = Math.max(50, Math.min(width * 0.12, 80));
+        const pauseHeight = Math.max(26, Math.min(height * 0.05, 36));
+        const shopFont = Math.max(12, Math.min(width * 0.032, 16));
+        const pauseFont = Math.max(14, Math.min(width * 0.04, 20));
+        const checkInWidth = Math.max(100, Math.min(width * 0.28, 160));
+        const checkInHeight = Math.max(34, Math.min(height * 0.06, 46));
+
+        return {
+            width,
+            height,
+            margin,
+            topMargin,
+            currencyFont,
+            stageFont,
+            scoreFont,
+            levelFont,
+            currencySpacing,
+            healthBarHeight,
+            healthBarWidth,
+            healthBarX,
+            healthBarY,
+            shopWidth,
+            shopHeight,
+            pauseWidth,
+            pauseHeight,
+            shopFont,
+            pauseFont,
+            checkInWidth,
+            checkInHeight
+        };
+    }
+
+    applyLayout(width = this.scene.scale.width, height = this.scene.scale.height) {
+        this.layout = this.getLayoutMetrics(width, height);
+        const layout = this.layout;
+
+        // Currency container and text
+        this.currencyContainer.setPosition(layout.margin, layout.topMargin);
+        this.goldText.setFontSize(`${layout.currencyFont}px`);
+        this.lightningText.setFontSize(`${layout.currencyFont}px`);
+        this.diamondsText.setFontSize(`${layout.currencyFont}px`);
+        this.goldText.setPosition(0, 0);
+        this.lightningText.setPosition(0, layout.currencySpacing);
+        this.diamondsText.setPosition(0, layout.currencySpacing * 2);
+
+        // Stage text (center)
+        this.stageText.setPosition(layout.width / 2, layout.topMargin);
+        this.stageText.setFontSize(`${layout.stageFont}px`);
+
+        // Score and level (right)
+        this.scoreText.setPosition(layout.width - layout.margin, layout.topMargin);
+        this.scoreText.setFontSize(`${layout.scoreFont}px`);
+        this.levelText.setPosition(layout.width - layout.margin, layout.topMargin + layout.scoreFont * 1.4);
+        this.levelText.setFontSize(`${layout.levelFont}px`);
+
+        // Pause button (below score/level)
+        const pauseY =
+            layout.topMargin +
+            layout.scoreFont * 1.4 +
+            layout.levelFont * 1.6 +
+            layout.pauseHeight / 2 +
+            6;
+        this.pauseBtn.setPosition(layout.width - layout.margin - layout.pauseWidth / 2, pauseY);
+        this.pauseBtn.setSize(layout.pauseWidth, layout.pauseHeight);
+        this.pauseBtnText.setPosition(this.pauseBtn.x, this.pauseBtn.y);
+        this.pauseBtnText.setFontSize(`${layout.pauseFont}px`);
+
+        // Shop button (bottom left)
+        const shopY = layout.height - layout.margin - layout.shopHeight / 2;
+        this.shopBtn.setPosition(layout.margin + layout.shopWidth / 2, shopY);
+        this.shopBtn.setSize(layout.shopWidth, layout.shopHeight);
+        this.shopBtnText.setPosition(this.shopBtn.x, this.shopBtn.y);
+        this.shopBtnText.setFontSize(`${layout.shopFont}px`);
+
+        // Health bar
+        this.barWidth = layout.healthBarWidth;
+        this.barHeight = layout.healthBarHeight;
+        this.barX = layout.healthBarX;
+        this.barY = layout.healthBarY;
+
+        this.healthBarBg.clear();
+        this.healthBarBg.fillStyle(0x000000, 0.9);
+        this.healthBarBg.fillRoundedRect(
+            this.barX - 2,
+            this.barY - this.barHeight / 2 - 2,
+            this.barWidth + 4,
+            this.barHeight + 4,
+            5
+        );
+        this.healthBarBg.lineStyle(2, 0x00ffff, 1);
+        this.healthBarBg.strokeRoundedRect(
+            this.barX - 2,
+            this.barY - this.barHeight / 2 - 2,
+            this.barWidth + 4,
+            this.barHeight + 4,
+            5
+        );
+
+        this.healthText.setPosition(this.barX + this.barWidth / 2, this.barY);
+        this.healthText.setFontSize(`${Math.max(12, layout.healthBarHeight)}px`);
+
+        // Daily check-in button
+        const checkInX = layout.margin + layout.checkInWidth / 2;
+        const checkInY = layout.topMargin + layout.currencySpacing * 3 + layout.checkInHeight / 2 + Math.max(8, height * 0.01);
+        this.checkInLayout = {
+            x: checkInX,
+            y: checkInY,
+            width: layout.checkInWidth,
+            height: layout.checkInHeight
+        };
+        this.checkInButton.setPosition(checkInX, checkInY);
+        this.checkInButton.setSize(layout.checkInWidth, layout.checkInHeight);
+        this.checkInButtonText.setPosition(checkInX, checkInY);
+        this.checkInButtonText.setFontSize(`${Math.max(11, layout.checkInHeight * 0.35)}px`);
+        this.checkInCountdownText.setPosition(checkInX, checkInY + layout.checkInHeight * 0.35);
+        this.checkInCountdownText.setFontSize(`${Math.max(10, layout.checkInHeight * 0.28)}px`);
+
+        this.updateCheckInButtonState();
     }
 
     // Helper: Get stable local day key (YYYY-MM-DD)
@@ -260,12 +399,11 @@ class UI {
     }
 
     createDailyCheckInButton() {
-        // Position: Top-right corner, next to diamonds display (x: width - 200, y: 20)
-        const buttonX = 80;
-        const buttonY = 170;
-
+        const buttonX = this.scene.scale.width * 0.1;
+        const buttonY = this.scene.scale.height * 0.25;
         const buttonWidth = 120;
         const buttonHeight = 40;
+        this.checkInLayout = { x: buttonX, y: buttonY, width: buttonWidth, height: buttonHeight };
         
         // Button background graphics
         this.checkInButtonBg = this.scene.add.graphics();
@@ -326,8 +464,11 @@ class UI {
                 this.scene.playSound('click');
             }
 
+            const notifyX = this.checkInLayout?.x ?? buttonX;
+            const notifyY = this.checkInLayout?.y ?? buttonY;
+
             if (typeof window.baseInvadersOnchainCheckIn !== 'function') {
-                this.showNotification('Wallet not ready for check-in', buttonX, buttonY - 40);
+                this.showNotification('Wallet not ready for check-in', notifyX, notifyY - 40);
                 return;
             }
 
@@ -336,14 +477,14 @@ class UI {
             this.checkInButtonText.setText('📅 CHECK-IN...');
             this.checkInButton.disableInteractive();
             this.checkInButtonText.disableInteractive();
-            this.showNotification('Confirm check-in transaction', buttonX, buttonY - 40);
+            this.showNotification('Confirm check-in transaction', notifyX, notifyY - 40);
 
             try {
                 await window.baseInvadersOnchainCheckIn();
-                this.showNotification('Onchain check-in confirmed', buttonX, buttonY - 40);
+                this.showNotification('Onchain check-in confirmed', notifyX, notifyY - 40);
             } catch (error) {
                 console.error('Check-in transaction failed:', error);
-                this.showNotification('Check-in failed or rejected', buttonX, buttonY - 40);
+                this.showNotification('Check-in failed or rejected', notifyX, notifyY - 40);
                 this.checkInButtonText.setText(originalText);
                 this.checkInButton.setInteractive({ useHandCursor: true });
                 this.checkInButtonText.setInteractive({ useHandCursor: true });
@@ -434,7 +575,7 @@ if (isMilestone) {
     message = `+${reward} 💎 Day Streak: ${totalDays}`;
     console.log('[CHECK-IN DEBUG] Regular check-in, no milestone. Day:', totalDays);
 }
-this.showNotification(message, buttonX, buttonY - 40);
+            this.showNotification(message, this.checkInLayout.x, this.checkInLayout.y - 40);
 
             
             // Update button state FIRST (so UI shows correct day)
@@ -553,11 +694,12 @@ this.showNotification(message, buttonX, buttonY - 40);
     
 
     updateCheckInButtonState() {
-        const buttonX = 80;
-        const buttonY = 170;
+        const layout = this.checkInLayout || { x: 80, y: 170, width: 120, height: 40 };
+        const buttonX = layout.x;
+        const buttonY = layout.y;
 
-        const buttonWidth = 120;
-        const buttonHeight = 40;
+        const buttonWidth = layout.width;
+        const buttonHeight = layout.height;
         const streakInfo = this.getCheckInStreak();
 
         
