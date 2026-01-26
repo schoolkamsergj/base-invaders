@@ -408,12 +408,12 @@ class UI {
         // Button background graphics
         this.checkInButtonBg = this.scene.add.graphics();
         this.checkInButtonBg.setScrollFactor(0);
-        this.checkInButtonBg.setDepth(100);
+        this.checkInButtonBg.setDepth(105);
         
         // Interactive rectangle (invisible, for click detection)
         this.checkInButton = this.scene.add.rectangle(buttonX, buttonY, buttonWidth, buttonHeight, 0x00ffff, 0);
         this.checkInButton.setScrollFactor(0);
-        this.checkInButton.setDepth(100);
+        this.checkInButton.setDepth(105);
         this.checkInButton.setInteractive({ useHandCursor: true });
         
         // Button text
@@ -425,7 +425,7 @@ class UI {
         });
         this.checkInButtonText.setOrigin(0.5);
         this.checkInButtonText.setScrollFactor(0);
-        this.checkInButtonText.setDepth(101);
+        this.checkInButtonText.setDepth(106);
         this.checkInButtonText.setInteractive({ useHandCursor: true });
         
         // Countdown text (shown when disabled)
@@ -451,6 +451,9 @@ class UI {
         
         // Click handler
         const handleCheckIn = async () => {
+            console.log('🎯 CHECK-IN CLICKED!');
+            console.log('isActive:', this.isCheckInActive);
+            console.log('isPending:', this.checkInPending);
             if (!this.isCheckInActive()) {
                 return; // Button is disabled
             }
@@ -592,8 +595,8 @@ if (isMilestone) {
             }
         };
         
-        this.checkInButton.on('pointerdown', handleCheckIn);
-        this.checkInButtonText.on('pointerdown', handleCheckIn);
+        this.checkInButton.on('pointerdown', handleCheckIn, this);
+        this.checkInButtonText.on('pointerdown', handleCheckIn, this);
         
         // Hover effect (only when active)
         this.checkInButton.on('pointerover', () => {
@@ -976,12 +979,12 @@ if (isMilestone) {
             // STRICT check: barX must be >= 100, barY must be in bottom half of screen
             if (this.barX && this.barY && this.barWidth && this.barHeight && 
                 this.barX >= 100 && this.barY > this.scene.scale.height / 2 && currentWidth > 0) {
-                this.healthBar.fillGradientStyle(color1, color1, color2, color2, 1);
+                this.healthBar.fillStyle(color1, 0.9);
                 this.healthBar.fillRoundedRect(this.barX, this.barY - this.barHeight/2, currentWidth, this.barHeight, 3);
                 
                 // Glow effect (only if bar is drawn) - same strict coordinates
                 if (this.barX >= 100 && this.barY > this.scene.scale.height / 2) {
-                    this.healthBarGlow.fillStyle(color1, 0.3);
+                    this.healthBarGlow.fillStyle(color1, 0.5);
                     this.healthBarGlow.fillRoundedRect(this.barX - 2, this.barY - this.barHeight/2 - 2, currentWidth + 4, this.barHeight + 4, 5);
                 }
             }
