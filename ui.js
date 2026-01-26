@@ -344,8 +344,8 @@ class UI {
         this.pauseBtnText.setPosition(this.pauseBtn.x, this.pauseBtn.y);
         this.pauseBtnText.setFontSize(`${layout.pauseFont}px`);
 
-        // Shop button (bottom left, above health bar)
-        const shopY = layout.healthBarY - layout.healthBarHeight - layout.margin - layout.shopHeight / 2;
+        // Shop button (bottom left)
+        const shopY = layout.height - layout.margin - layout.shopHeight / 2;
         this.shopBtn.setPosition(layout.margin + layout.shopWidth / 2, shopY);
         this.shopBtn.setSize(layout.shopWidth, layout.shopHeight);
         this.shopBtnText.setPosition(this.shopBtn.x, this.shopBtn.y);
@@ -396,13 +396,6 @@ class UI {
 
         this.attachCheckInHandlers();
         this.updateCheckInButtonState();
-        
-        // Update mute button position after layout
-        if (this.scene.updateMuteButtonPosition) {
-            this.scene.time.delayedCall(50, () => {
-                this.scene.updateMuteButtonPosition();
-            });
-        }
     }
 
     attachCheckInHandlers() {
@@ -1020,15 +1013,19 @@ if (isMilestone) {
                 color2 = 0xff8888;
             }
             
-            // Draw health bar - always draw if coordinates are valid
+            // Draw gradient health bar (ensure valid coordinates - prevent drawing at 0,0 or top-left)
+            // barX should be 100 (left margin), barY should be at bottom (height - 30)
+            // STRICT check: barX must be >= 100, barY must be in bottom half of screen
             if (this.barX && this.barY && this.barWidth && this.barHeight && 
-                this.barX > 0 && this.barY > 0 && currentWidth > 0) {
+                this.barX >= 100 && this.barY > this.scene.scale.height / 2 && currentWidth > 0) {
                 this.healthBar.fillStyle(color1, 0.9);
                 this.healthBar.fillRoundedRect(this.barX, this.barY - this.barHeight/2, currentWidth, this.barHeight, 3);
                 
-                // Glow effect
-                this.healthBarGlow.fillStyle(color1, 0.5);
-                this.healthBarGlow.fillRoundedRect(this.barX - 2, this.barY - this.barHeight/2 - 2, currentWidth + 4, this.barHeight + 4, 5);
+                // Glow effect (only if bar is drawn) - same strict coordinates
+                if (this.barX >= 100 && this.barY > this.scene.scale.height / 2) {
+                    this.healthBarGlow.fillStyle(color1, 0.5);
+                    this.healthBarGlow.fillRoundedRect(this.barX - 2, this.barY - this.barHeight/2 - 2, currentWidth + 4, this.barHeight + 4, 5);
+                }
             }
             
             if (this.healthText) {

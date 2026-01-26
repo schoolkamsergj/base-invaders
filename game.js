@@ -293,13 +293,16 @@ Improve stats`;
         const textSize = Math.max(12, Math.min(width * 0.022, 18));
         const buttonWidth = Math.max(180, Math.min(width * 0.45, 260));
         const buttonHeight = Math.max(44, Math.min(height * 0.1, 80));
-        const buttonX = compact ? width * 0.7 : width * 0.65;
+        const buttonX = width * 0.5;
+        const startY = height * 0.62;
+        const resetY = height * 0.72;
+        const leaderboardY = height * 0.82;
 
         this.titleText.setPosition(width / 2, height * 0.15);
         this.titleText.setFontSize(`${titleSize}px`);
 
-        const panelWidth = compact ? width * 0.85 : Math.min(width * 0.4, 360);
-        const panelHeight = compact ? height * 0.35 : Math.min(height * 0.5, 400);
+        const panelWidth = compact ? width * 0.9 : Math.min(width * 0.45, 380);
+        const panelHeight = compact ? height * 0.32 : Math.min(height * 0.55, 420);
         const panelX = width * 0.05;
         const panelY = height * 0.25;
 
@@ -317,31 +320,22 @@ Improve stats`;
         this.instructionsText.setFontSize(`${textSize}px`);
         this.instructionsText.setWordWrapWidth(panelWidth - 32, true);
 
-        // Position buttons BELOW instructions panel (not overlapping)
-        const instructionsBottom = panelY + panelHeight;
-        const buttonSpacing = buttonHeight * 1.2;
-        const startY = instructionsBottom + buttonSpacing;
-        const resetY = startY + buttonSpacing;
-        const leaderboardY = resetY + buttonSpacing;
-
         this.startBtn.setPosition(buttonX, startY);
         this.startBtn.setSize(buttonWidth, buttonHeight);
         this.startText.setPosition(buttonX, startY);
         this.startText.setFontSize(`${Math.max(18, buttonHeight * 0.45)}px`);
         this.updateMenuButtonStyle(this.startBtnBg, this.startBtn, false);
 
-        // Reset button - wider to fit text
-        const resetBtnWidth = Math.max(buttonWidth * 0.95, 200);
         this.resetBtn.setPosition(buttonX, resetY);
-        this.resetBtn.setSize(resetBtnWidth, buttonHeight * 0.75);
+        this.resetBtn.setSize(buttonWidth * 0.85, buttonHeight * 0.7);
         this.resetText.setPosition(buttonX, resetY);
-        this.resetText.setFontSize(`${Math.max(11, buttonHeight * 0.32)}px`);
+        this.resetText.setFontSize(`${Math.max(12, buttonHeight * 0.28)}px`);
         this.updateResetButtonStyle(false);
 
         this.leaderboardBtn.setPosition(buttonX, leaderboardY);
-        this.leaderboardBtn.setSize(buttonWidth * 0.9, buttonHeight * 0.75);
+        this.leaderboardBtn.setSize(buttonWidth * 0.85, buttonHeight * 0.7);
         this.leaderboardText.setPosition(buttonX, leaderboardY);
-        this.leaderboardText.setFontSize(`${Math.max(11, buttonHeight * 0.32)}px`);
+        this.leaderboardText.setFontSize(`${Math.max(12, buttonHeight * 0.28)}px`);
         this.updateLeaderboardButtonStyle(false);
     }
 
@@ -613,14 +607,6 @@ class GameScene extends Phaser.Scene {
             this.scale.on('resize', () => {
                 if (this.updateMuteButtonPosition) {
                     this.updateMuteButtonPosition();
-                }
-                // Update mute button after UI layout updates
-                if (this.ui && this.ui.pauseBtn) {
-                    this.time.delayedCall(100, () => {
-                        if (this.updateMuteButtonPosition) {
-                            this.updateMuteButtonPosition();
-                        }
-                    });
                 }
             });
 
@@ -946,10 +932,8 @@ class GameScene extends Phaser.Scene {
         const height = this.scale.height;
         const margin = Math.max(10, width * 0.03);
         const radius = Math.max(16, Math.min(width * 0.05, 22));
-        // Position below pause button (not covering Score/Level)
-        const pauseBtnY = this.ui?.pauseBtn?.y || (margin + 80);
         const buttonX = width - margin - radius;
-        const buttonY = pauseBtnY + 40; // Below pause button
+        const buttonY = margin + radius;
 
         this.muteButtonBg.setPosition(buttonX, buttonY);
         this.muteButtonBg.setRadius(radius);
