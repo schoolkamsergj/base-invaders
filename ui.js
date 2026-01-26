@@ -23,6 +23,20 @@ class UI {
         this.scene.scale.on('resize', (gameSize) => {
             this.applyLayout(gameSize.width, gameSize.height);
         });
+
+        window.addEventListener('load', () => {
+            this.updateCheckInButtonState();
+        });
+        window.addEventListener('focus', () => {
+            this.updateCheckInButtonState();
+        });
+        window.addEventListener('base-invaders:game-ready', () => {
+            this.attachCheckInHandlers();
+            this.updateCheckInButtonState();
+        });
+        window.addEventListener('base-invaders:wallet-connected', () => {
+            this.updateCheckInButtonState();
+        });
     }
 
     createTopBar() {
@@ -374,13 +388,22 @@ class UI {
             height: layout.checkInHeight
         };
         this.checkInButton.setPosition(checkInX, checkInY);
-        this.checkInButton.setSize(layout.checkInWidth, layout.checkInHeight);
+        this.checkInButton.setSize(layout.checkInWidth * 1.2, layout.checkInHeight * 1.2);
         this.checkInButtonText.setPosition(checkInX, checkInY);
         this.checkInButtonText.setFontSize(`${Math.max(11, layout.checkInHeight * 0.35)}px`);
         this.checkInCountdownText.setPosition(checkInX, checkInY + layout.checkInHeight * 0.35);
         this.checkInCountdownText.setFontSize(`${Math.max(10, layout.checkInHeight * 0.28)}px`);
 
+        this.attachCheckInHandlers();
         this.updateCheckInButtonState();
+    }
+
+    attachCheckInHandlers() {
+        if (!this.checkInButton || !this.checkInButtonText || !this.handleCheckIn) return;
+        this.checkInButton.removeAllListeners('pointerdown');
+        this.checkInButtonText.removeAllListeners('pointerdown');
+        this.checkInButton.on('pointerdown', this.handleCheckIn, this);
+        this.checkInButtonText.on('pointerdown', this.handleCheckIn, this);
     }
 
     // Helper: Get stable local day key (YYYY-MM-DD)
@@ -437,13 +460,13 @@ class UI {
         });
         this.checkInCountdownText.setOrigin(0.5);
         this.checkInCountdownText.setScrollFactor(0);
-        this.checkInCountdownText.setDepth(101);
+        this.checkInCountdownText.setDepth(106);
         this.checkInCountdownText.setVisible(false);
         
         // Glow effect (shown when active)
         this.checkInGlow = this.scene.add.graphics();
         this.checkInGlow.setScrollFactor(0);
-        this.checkInGlow.setDepth(99);
+        this.checkInGlow.setDepth(104);
         this.checkInGlow.setBlendMode(Phaser.BlendModes.ADD);
         
         // Initialize button state
@@ -451,6 +474,7 @@ class UI {
         
         // Click handler
         const handleCheckIn = async () => {
+            console.log('Check-in button clicked');
             console.log('🎯 CHECK-IN CLICKED!');
             console.log('isActive:', this.isCheckInActive);
             console.log('isPending:', this.checkInPending);
@@ -595,8 +619,8 @@ if (isMilestone) {
             }
         };
         
-        this.checkInButton.on('pointerdown', handleCheckIn, this);
-        this.checkInButtonText.on('pointerdown', handleCheckIn, this);
+        this.handleCheckIn = handleCheckIn;
+        this.attachCheckInHandlers();
         
         // Hover effect (only when active)
         this.checkInButton.on('pointerover', () => {
