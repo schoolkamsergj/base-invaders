@@ -1437,23 +1437,36 @@ class GameScene extends Phaser.Scene {
             this.handleUserInteraction();
         });
         
-        // Mouse/Touch drag
+        // Touch controls: left/right movement based on screen side
+        this.touchDirection = 0; // -1 = left, 0 = stop, 1 = right
+        this.updateCenterX();
+        
+        // Update centerX on resize
+        this.scale.on('resize', () => {
+            this.updateCenterX();
+        });
+        
         this.input.on('pointerdown', (pointer) => {
-            this.isDragging = true;
+            if (!this.gameState.paused && !this.gameState.gameOver) {
+                // Determine which side of screen is touched
+                this.updateCenterX();
+                this.touchDirection = pointer.x < this.centerX ? -1 : 1;
+            }
             // Ensure audio context is active
             this.handleUserInteraction();
         });
 
         this.input.on('pointermove', (pointer) => {
-            if (this.isDragging && !this.gameState.paused && !this.gameState.gameOver) {
-                const clampedX = Phaser.Math.Clamp(pointer.x, 30, this.scale.width - 30);
-                const clampedY = Phaser.Math.Clamp(pointer.y, 100, this.scale.height - 100);
-                this.player.setPosition(clampedX, clampedY);
+            if (!this.gameState.paused && !this.gameState.gameOver) {
+                // Update direction as finger moves
+                this.updateCenterX();
+                this.touchDirection = pointer.x < this.centerX ? -1 : 1;
             }
         });
 
         this.input.on('pointerup', () => {
-            this.isDragging = false;
+            // Stop movement when finger is released
+            this.touchDirection = 0;
         });
 
         // Keyboard controls
@@ -1470,6 +1483,10 @@ class GameScene extends Phaser.Scene {
             this.handleUserInteraction();  // Ensure audio context is active
             this.togglePause();
         });
+    }
+
+    updateCenterX() {
+        this.centerX = this.scale.width / 2;
     }
 
     update(time, delta) {
@@ -1497,6 +1514,17 @@ class GameScene extends Phaser.Scene {
             try {
                 if (this.player && this.player.update) {
                     this.player.update(time, delta, this.cursors, this.wasd, this.playerStats);
+                    
+                    // Touch-based movement (left/right only based on screen side)
+                    if (this.touchDirection !== 0 && !this.gameState.paused && !this.gameState.gameOver) {
+                        const moveSpeed = (this.playerStats.speed || 300) * (delta / 1000);
+                        const newX = Phaser.Math.Clamp(
+                            this.player.sprite.x + (this.touchDirection * moveSpeed),
+                            30,
+                            this.scale.width - 30
+                        );
+                        this.player.setX(newX);
+                    }
                 }
             } catch (e) {
                 console.warn('Error updating player:', e);
