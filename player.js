@@ -189,6 +189,7 @@ class Player {
         // Keyboard movement
         let moveSpeed = (stats.speed || 300) * (delta / 1000);
         
+        // Horizontal movement (left/right)
         if (cursors.left.isDown || wasd.A.isDown) {
             this.sprite.x = Phaser.Math.Clamp(this.sprite.x - moveSpeed, 30, this.scene.scale.width - 30);
             // Tilt effect
@@ -198,8 +199,15 @@ class Player {
             // Tilt effect
             this.sprite.setRotation(0.1);
         } else {
-            // Return to center
+            // Return to center rotation
             this.sprite.setRotation(Phaser.Math.Linear(this.sprite.rotation, 0, 0.1));
+        }
+        
+        // Vertical movement (up/down)
+        if (cursors.up.isDown || wasd.W.isDown) {
+            this.sprite.y = Phaser.Math.Clamp(this.sprite.y - moveSpeed, 100, this.scene.scale.height - 100);
+        } else if (cursors.down.isDown || wasd.S.isDown) {
+            this.sprite.y = Phaser.Math.Clamp(this.sprite.y + moveSpeed, 100, this.scene.scale.height - 100);
         }
         
         // Update shadow position (glow is disabled to prevent ghost artifacts)

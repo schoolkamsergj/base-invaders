@@ -536,6 +536,7 @@ Collect diamonds and upgrade your ship.`;
         // Full instructions text
         const fullInstructions = `🎮 CONTROLS
 ← → or A/D - Move left/right
+↑ ↓ or W/S - Move up/down
 SPACE - Auto-shoot
 ESC - Pause game
 
