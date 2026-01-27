@@ -44,7 +44,7 @@ Collect diamonds and upgrade your ship.
 
 Good luck! ⭐`;
 
-        this.welcomeText = this.add.text(width / 2, height * 0.35, welcomeText, {
+        this.welcomeText = this.add.text(width / 2, height * 0.28, welcomeText, {
             fontSize: '18px',
             color: '#ffffff',
             align: 'center',
@@ -59,11 +59,11 @@ Good luck! ⭐`;
         this.startBtnBg = this.add.graphics();
         this.startBtnBg.setDepth(1);
 
-        this.startBtn = this.add.rectangle(width / 2, height / 2, 240, 80, 0x0052FF, 0);
+        this.startBtn = this.add.rectangle(width / 2, height * 0.48, 240, 80, 0x0052FF, 0);
         this.startBtn.setInteractive({ useHandCursor: true });
         this.startBtn.setDepth(2);
-
-        this.startText = this.add.text(width / 2, height / 2, 'START', {
+        
+        this.startText = this.add.text(width / 2, height * 0.48, 'START', {
             fontSize: '36px',
             fontWeight: 'bold',
             color: '#00ff00',
@@ -119,7 +119,7 @@ Good luck! ⭐`;
         });
         
         // INSTRUCTIONS button (below START button)
-        const instructionsBtnY = height / 2 + 100; // Below START
+        const instructionsBtnY = height * 0.62; // Below START
 
         this.instructionsBtnBg = this.add.graphics();
         this.instructionsBtnBg.setDepth(1);
@@ -184,7 +184,7 @@ Good luck! ⭐`;
         });
         
         // RESET PROGRESS button (below Instructions button)
-        const resetBtnY = height * 0.72;
+        const resetBtnY = height * 0.76;
         this.resetBtnBg = this.add.graphics();
         this.resetBtnBg.setDepth(1);
         
@@ -356,9 +356,9 @@ Good luck! ⭐`;
         const buttonWidth = Math.max(180, Math.min(width * 0.45, 260));
         const buttonHeight = Math.max(44, Math.min(height * 0.1, 80));
         const buttonX = width * 0.5;
-        const startY = height * 0.62;
-        const instructionsY = startY + 90; // Between START and Reset
-        const resetY = height * 0.72;
+        const startY = height * 0.48;
+        const instructionsY = height * 0.62;
+        const resetY = height * 0.76;
         const leaderboardY = height * 0.82;
 
         this.titleText.setPosition(width / 2, height * 0.15);
@@ -366,7 +366,7 @@ Good luck! ⭐`;
 
         // Welcome text (centered, above buttons)
         if (this.welcomeText) {
-            this.welcomeText.setPosition(width / 2, height * 0.35);
+            this.welcomeText.setPosition(width / 2, height * 0.28);
             this.welcomeText.setFontSize(`${textSize}px`);
             this.welcomeText.setWordWrapWidth(Math.min(400, width * 0.8), true);
         }
