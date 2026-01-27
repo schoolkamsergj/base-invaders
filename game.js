@@ -1437,18 +1437,46 @@ class GameScene extends Phaser.Scene {
             this.handleUserInteraction();
         });
         
-        // Mouse/Touch drag
+        // Touch drag-style controls: relative movement based on finger delta
+        this.isDragging = false;
+        this.touchStartX = 0;
+        this.touchStartY = 0;
+        this.playerStartX = 0;
+        this.playerStartY = 0;
+        
         this.input.on('pointerdown', (pointer) => {
-            this.isDragging = true;
+            if (!this.gameState.paused && !this.gameState.gameOver && this.player) {
+                this.isDragging = true;
+                // Save initial touch position
+                this.touchStartX = pointer.x;
+                this.touchStartY = pointer.y;
+                // Save initial player position
+                this.playerStartX = this.player.sprite.x;
+                this.playerStartY = this.player.sprite.y;
+            }
             // Ensure audio context is active
             this.handleUserInteraction();
         });
 
         this.input.on('pointermove', (pointer) => {
-            if (this.isDragging && !this.gameState.paused && !this.gameState.gameOver) {
-                const clampedX = Phaser.Math.Clamp(pointer.x, 30, this.scale.width - 30);
-                const clampedY = Phaser.Math.Clamp(pointer.y, 100, this.scale.height - 100);
-                this.player.setPosition(clampedX, clampedY);
+            if (this.isDragging && !this.gameState.paused && !this.gameState.gameOver && this.player) {
+                // Calculate delta (relative movement)
+                const deltaX = pointer.x - this.touchStartX;
+                const deltaY = pointer.y - this.touchStartY;
+                
+                // Move player by delta from initial position
+                const newX = Phaser.Math.Clamp(
+                    this.playerStartX + deltaX,
+                    30,
+                    this.scale.width - 30
+                );
+                const newY = Phaser.Math.Clamp(
+                    this.playerStartY + deltaY,
+                    100,
+                    this.scale.height - 100
+                );
+                
+                this.player.setPosition(newX, newY);
             }
         });
 
