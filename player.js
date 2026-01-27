@@ -172,6 +172,22 @@ class Player {
         if (this.engineTrail) this.engineTrail.setPosition(x, this.sprite.y + 20);
     }
 
+    setY(y) {
+        this.sprite.y = y;
+        if (this.shadow) this.shadow.y = y + 25;
+        if (this.engineTrail) this.engineTrail.setPosition(this.sprite.x, y + 20);
+    }
+
+    setPosition(x, y) {
+        this.sprite.x = x;
+        this.sprite.y = y;
+        if (this.shadow) {
+            this.shadow.x = x;
+            this.shadow.y = y + 25;
+        }
+        if (this.engineTrail) this.engineTrail.setPosition(x, y + 20);
+    }
+
     update(time, delta, cursors, wasd, stats) {
         // Initialize engine trail if particle texture is ready
         if (!this.engineTrail && this.scene.textures.exists('particle')) {

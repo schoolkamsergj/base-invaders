@@ -1446,7 +1446,9 @@ class GameScene extends Phaser.Scene {
 
         this.input.on('pointermove', (pointer) => {
             if (this.isDragging && !this.gameState.paused && !this.gameState.gameOver) {
-                this.player.setX(Phaser.Math.Clamp(pointer.x, 30, this.scale.width - 30));
+                const clampedX = Phaser.Math.Clamp(pointer.x, 30, this.scale.width - 30);
+                const clampedY = Phaser.Math.Clamp(pointer.y, 100, this.scale.height - 100);
+                this.player.setPosition(clampedX, clampedY);
             }
         });
 
