@@ -17,10 +17,12 @@ class MenuScene extends Phaser.Scene {
         // Title - "BASE DESTROYER"
         this.titleText = this.add.text(width / 2, height * 0.15, 'BASE DESTROYER', {
             fontSize: '64px',
+            fontFamily: 'Arial, sans-serif',
             fontWeight: 'bold',
             color: '#00d9ff',
             stroke: '#0088ff',
-            strokeThickness: 4
+            strokeThickness: 4,
+            resolution: 2
         });
         this.titleText.setOrigin(0.5);
         this.titleText.setShadow(0, 0, '#00d9ff', 20, true, true);
@@ -36,39 +38,65 @@ class MenuScene extends Phaser.Scene {
             ease: 'Sine.easeInOut'
         });
 
-        // Welcome message (short, centered)
+        // Welcome message (БЕЗ "Good luck!")
         const welcomeText = `Welcome, Commander! 🚀
 
 Defend the base from alien invaders.
-Collect diamonds and upgrade your ship.
+Collect diamonds and upgrade your ship.`;
 
-Good luck! ⭐`;
-
-        this.welcomeText = this.add.text(width / 2, height * 0.28, welcomeText, {
-            fontSize: '18px',
+        this.welcomeText = this.add.text(width / 2, height * 0.25, welcomeText, {
+            fontSize: '20px',
+            fontFamily: 'Arial, sans-serif',
             color: '#ffffff',
             align: 'center',
-            lineSpacing: 8,
-            wordWrap: { width: Math.min(400, width * 0.8) }
+            lineSpacing: 10,
+            resolution: 2,
+            wordWrap: { width: Math.min(450, width * 0.85) }
         });
         this.welcomeText.setOrigin(0.5, 0);
         this.welcomeText.setDepth(2);
-        this.welcomeText.setShadow(2, 2, '#000000', 2, true);
+        this.welcomeText.setShadow(2, 2, '#000000', 3, true);
+
+        // "Good luck! ⭐" - ОКРЕМИЙ елемент
+        this.goodLuckText = this.add.text(width / 2, height * 0.40, 'Good luck! ⭐', {
+            fontSize: '22px',
+            fontFamily: 'Arial, sans-serif',
+            fontWeight: 'bold',
+            color: '#ffd700',
+            align: 'center',
+            resolution: 2
+        });
+        this.goodLuckText.setOrigin(0.5);
+        this.goodLuckText.setDepth(2);
+        this.goodLuckText.setShadow(0, 0, '#ffd700', 10, true, true);
+
+        // Анімація для goodLuckText
+        this.tweens.add({
+            targets: this.goodLuckText,
+            alpha: { from: 0.7, to: 1 },
+            scale: { from: 0.95, to: 1.05 },
+            duration: 1500,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
 
         // START button (center-right)
         this.startBtnBg = this.add.graphics();
         this.startBtnBg.setDepth(1);
 
-        this.startBtn = this.add.rectangle(width / 2, height * 0.48, 240, 80, 0x0052FF, 0);
+        this.startBtn = this.add.rectangle(width / 2, height * 0.52, 260, 85, 0x0052FF, 0);
         this.startBtn.setInteractive({ useHandCursor: true });
         this.startBtn.setDepth(2);
         
-        this.startText = this.add.text(width / 2, height * 0.48, 'START', {
+        this.startText = this.add.text(width / 2, height * 0.52, 'START', {
             fontSize: '36px',
+            fontFamily: 'Arial, sans-serif',
             fontWeight: 'bold',
             color: '#00ff00',
             stroke: '#00aa00',
-            strokeThickness: 3
+            strokeThickness: 3,
+            resolution: 2
         });
         this.startText.setOrigin(0.5);
         this.startText.setDepth(3);
@@ -119,7 +147,7 @@ Good luck! ⭐`;
         });
         
         // INSTRUCTIONS button (below START button)
-        const instructionsBtnY = height * 0.62; // Below START
+        const instructionsBtnY = height * 0.64; // Below START
 
         this.instructionsBtnBg = this.add.graphics();
         this.instructionsBtnBg.setDepth(1);
@@ -127,8 +155,8 @@ Good luck! ⭐`;
         this.instructionsBtn = this.add.rectangle(
             width / 2,
             instructionsBtnY,
-            240,
-            60,
+            260,
+            65,
             0x2196F3, // Blue color
             0
         );
@@ -138,13 +166,15 @@ Good luck! ⭐`;
         this.instructionsBtnText = this.add.text(
             width / 2,
             instructionsBtnY,
-            '📖 How to Play',
+            'How to Play',
             {
-                fontSize: '24px',
+                fontSize: '26px',
+                fontFamily: 'Arial, sans-serif',
                 fontWeight: 'bold',
                 color: '#ffffff',
                 stroke: '#0066cc',
-                strokeThickness: 2
+                strokeThickness: 2,
+                resolution: 2
             }
         );
         this.instructionsBtnText.setOrigin(0.5);
@@ -184,20 +214,22 @@ Good luck! ⭐`;
         });
         
         // RESET PROGRESS button (below Instructions button)
-        const resetBtnY = height * 0.76;
+        const resetBtnY = height * 0.75;
         this.resetBtnBg = this.add.graphics();
         this.resetBtnBg.setDepth(1);
         
-        this.resetBtn = this.add.rectangle(width / 2, resetBtnY, 200, 50, 0xcc0000, 0);
+        this.resetBtn = this.add.rectangle(width / 2, resetBtnY, 230, 55, 0xcc0000, 0);
         this.resetBtn.setInteractive({ useHandCursor: true });
         this.resetBtn.setDepth(2);
         
         this.resetText = this.add.text(width / 2, resetBtnY, 'Reset Progress', {
-            fontSize: '18px',
+            fontSize: '20px',
+            fontFamily: 'Arial, sans-serif',
             fontWeight: 'bold',
             color: '#ffffff',
             stroke: '#000000',
-            strokeThickness: 2
+            strokeThickness: 2,
+            resolution: 2
         });
         this.resetText.setOrigin(0.5);
         this.resetText.setDepth(3);
@@ -249,19 +281,22 @@ Good luck! ⭐`;
         });
 
         // LEADERBOARD button (below Reset Progress)
+        const leaderboardBtnY = height * 0.85;
         this.leaderboardBtnBg = this.add.graphics();
         this.leaderboardBtnBg.setDepth(1);
         
-        this.leaderboardBtn = this.add.rectangle(width / 2, height / 2, 200, 50, 0x0052FF, 0);
+        this.leaderboardBtn = this.add.rectangle(width / 2, leaderboardBtnY, 230, 55, 0x0052FF, 0);
         this.leaderboardBtn.setInteractive({ useHandCursor: true });
         this.leaderboardBtn.setDepth(2);
         
-        this.leaderboardText = this.add.text(width / 2, height / 2, 'Leaderboard', {
-            fontSize: '18px',
+        this.leaderboardText = this.add.text(width / 2, leaderboardBtnY, 'Leaderboard', {
+            fontSize: '20px',
+            fontFamily: 'Arial, sans-serif',
             fontWeight: 'bold',
             color: '#ffffff',
             stroke: '#000000',
-            strokeThickness: 2
+            strokeThickness: 2,
+            resolution: 2
         });
         this.leaderboardText.setOrigin(0.5);
         this.leaderboardText.setDepth(3);
@@ -352,50 +387,56 @@ Good luck! ⭐`;
     updateMenuLayout(width, height) {
         const compact = width < 900;
         const titleSize = Math.max(28, Math.min(width * 0.08, 64));
-        const textSize = Math.max(12, Math.min(width * 0.022, 18));
-        const buttonWidth = Math.max(180, Math.min(width * 0.45, 260));
-        const buttonHeight = Math.max(44, Math.min(height * 0.1, 80));
+        const textSize = Math.max(14, Math.min(width * 0.025, 20));
         const buttonX = width * 0.5;
-        const startY = height * 0.48;
-        const instructionsY = height * 0.62;
-        const resetY = height * 0.76;
-        const leaderboardY = height * 0.82;
+        const startY = height * 0.52;
+        const instructionsY = height * 0.64;
+        const resetY = height * 0.75;
+        const leaderboardY = height * 0.85;
 
         this.titleText.setPosition(width / 2, height * 0.15);
         this.titleText.setFontSize(`${titleSize}px`);
 
         // Welcome text (centered, above buttons)
         if (this.welcomeText) {
-            this.welcomeText.setPosition(width / 2, height * 0.28);
+            this.welcomeText.setPosition(width / 2, height * 0.25);
             this.welcomeText.setFontSize(`${textSize}px`);
-            this.welcomeText.setWordWrapWidth(Math.min(400, width * 0.8), true);
+            this.welcomeText.setWordWrapWidth(Math.min(450, width * 0.85), true);
         }
 
+        // Good luck text
+        if (this.goodLuckText) {
+            this.goodLuckText.setPosition(width / 2, height * 0.40);
+        }
+
+        // START button
         this.startBtn.setPosition(buttonX, startY);
-        this.startBtn.setSize(buttonWidth, buttonHeight);
+        this.startBtn.setSize(260, 85);
         this.startText.setPosition(buttonX, startY);
-        this.startText.setFontSize(`${Math.max(18, buttonHeight * 0.45)}px`);
+        this.startText.setFontSize('36px');
         this.updateMenuButtonStyle(this.startBtnBg, this.startBtn, false);
 
         // Instructions button
         if (this.instructionsBtn) {
             this.instructionsBtn.setPosition(buttonX, instructionsY);
-            this.instructionsBtn.setSize(buttonWidth * 0.9, buttonHeight * 0.75);
+            this.instructionsBtn.setSize(260, 65);
             this.instructionsBtnText.setPosition(buttonX, instructionsY);
-            this.instructionsBtnText.setFontSize(`${Math.max(14, buttonHeight * 0.35)}px`);
+            this.instructionsBtnText.setFontSize('26px');
             this.updateInstructionsButtonStyle(false);
         }
 
+        // Reset button
         this.resetBtn.setPosition(buttonX, resetY);
-        this.resetBtn.setSize(buttonWidth * 0.85, buttonHeight * 0.7);
+        this.resetBtn.setSize(230, 55);
         this.resetText.setPosition(buttonX, resetY);
-        this.resetText.setFontSize(`${Math.max(12, buttonHeight * 0.28)}px`);
+        this.resetText.setFontSize('20px');
         this.updateResetButtonStyle(false);
 
+        // Leaderboard button
         this.leaderboardBtn.setPosition(buttonX, leaderboardY);
-        this.leaderboardBtn.setSize(buttonWidth * 0.85, buttonHeight * 0.7);
+        this.leaderboardBtn.setSize(230, 55);
         this.leaderboardText.setPosition(buttonX, leaderboardY);
-        this.leaderboardText.setFontSize(`${Math.max(12, buttonHeight * 0.28)}px`);
+        this.leaderboardText.setFontSize('20px');
         this.updateLeaderboardButtonStyle(false);
     }
 
@@ -482,9 +523,11 @@ Good luck! ⭐`;
             '📖 HOW TO PLAY',
             {
                 fontSize: '28px',
+                fontFamily: 'Arial, sans-serif',
                 fontWeight: 'bold',
                 color: '#2196F3',
-                align: 'center'
+                align: 'center',
+                resolution: 2
             }
         );
         this.instructionsTitle.setOrigin(0.5);
@@ -522,76 +565,20 @@ Good luck, Commander! 🚀`;
             fullInstructions,
             {
                 fontSize: '16px',
+                fontFamily: 'Arial, sans-serif',
                 color: '#333333',
                 align: 'left',
                 lineSpacing: 6,
+                resolution: 2,
                 wordWrap: { width: panelWidth - 60 }
             }
         );
         this.instructionsContent.setOrigin(0.5, 0);
         this.instructionsContent.setDepth(1002);
         
-        // Close button
-        const closeBtnY = height / 2 + panelHeight / 2 - 50;
-        
-        this.closeInstructionsBtnBg = this.add.graphics();
-        this.closeInstructionsBtnBg.fillStyle(0x4CAF50, 0.9);
-        this.closeInstructionsBtnBg.fillRoundedRect(
-            width / 2 - 80,
-            closeBtnY - 20,
-            160,
-            40,
-            8
-        );
-        this.closeInstructionsBtnBg.lineStyle(2, 0x66BB6A, 1);
-        this.closeInstructionsBtnBg.strokeRoundedRect(
-            width / 2 - 80,
-            closeBtnY - 20,
-            160,
-            40,
-            8
-        );
-        this.closeInstructionsBtnBg.setDepth(1002);
-        
-        this.closeInstructionsBtn = this.add.text(
-            width / 2,
-            closeBtnY,
-            'Got it! ✓',
-            {
-                fontSize: '20px',
-                fontWeight: 'bold',
-                color: '#ffffff'
-            }
-        );
-        this.closeInstructionsBtn.setOrigin(0.5);
-        this.closeInstructionsBtn.setDepth(1003);
-        this.closeInstructionsBtn.setInteractive({ useHandCursor: true });
-        
-        // Close on button click
-        this.closeInstructionsBtn.on('pointerdown', () => {
-            this.closeInstructionsOverlay();
-        });
-        
         // Close on overlay click
         this.overlay.on('pointerdown', () => {
             this.closeInstructionsOverlay();
-        });
-        
-        // Hover effect on close button
-        this.closeInstructionsBtn.on('pointerover', () => {
-            this.tweens.add({
-                targets: this.closeInstructionsBtn,
-                scale: 1.1,
-                duration: 150
-            });
-        });
-        
-        this.closeInstructionsBtn.on('pointerout', () => {
-            this.tweens.add({
-                targets: this.closeInstructionsBtn,
-                scale: 1,
-                duration: 150
-            });
         });
         
         // Fade in animation
@@ -600,8 +587,6 @@ Good luck, Commander! 🚀`;
         this.instructionsPanelBorder.setAlpha(0);
         this.instructionsTitle.setAlpha(0);
         this.instructionsContent.setAlpha(0);
-        this.closeInstructionsBtnBg.setAlpha(0);
-        this.closeInstructionsBtn.setAlpha(0);
         
         this.tweens.add({
             targets: this.overlay,
@@ -625,7 +610,7 @@ Good luck, Commander! 🚀`;
         });
         
         this.tweens.add({
-            targets: [this.instructionsTitle, this.instructionsContent, this.closeInstructionsBtnBg, this.closeInstructionsBtn],
+            targets: [this.instructionsTitle, this.instructionsContent],
             alpha: 1,
             duration: 300,
             delay: 250
@@ -639,9 +624,7 @@ Good luck, Commander! 🚀`;
             this.instructionsPanel,
             this.instructionsPanelBorder,
             this.instructionsTitle,
-            this.instructionsContent,
-            this.closeInstructionsBtnBg,
-            this.closeInstructionsBtn
+            this.instructionsContent
         ];
         
         this.tweens.add({
