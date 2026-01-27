@@ -243,6 +243,9 @@ canvas {
     padding: 40px;
     text-align: center;
     box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+    max-width: 400px;
+    width: 90%;
+    margin: 0 auto;
 }
 
 .pause-container h2,

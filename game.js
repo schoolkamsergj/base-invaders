@@ -493,7 +493,7 @@ Collect diamonds and upgrade your ship.`;
         
         // Instructions panel (white box)
         const panelWidth = Math.min(500, width * 0.9);
-        const panelHeight = Math.min(550, height * 0.85);
+        const panelHeight = Math.min(650, height * 0.9);
         
         this.instructionsPanel = this.add.rectangle(
             width / 2,
