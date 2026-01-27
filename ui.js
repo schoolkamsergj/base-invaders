@@ -1048,14 +1048,14 @@ if (isMilestone) {
             
             // Draw gradient health bar (ensure valid coordinates - prevent drawing at 0,0 or top-left)
             // barX should be 100 (left margin), barY should be at bottom (height - 30)
-            // STRICT check: barX must be >= 100, barY must be in bottom half of screen
+            // STRICT check: barX must be >= 50, barY must be >= 50
             if (this.barX && this.barY && this.barWidth && this.barHeight && 
-                this.barX >= 100 && this.barY > this.scene.scale.height / 2 && currentWidth > 0) {
+                this.barX >= 50 && this.barY >= 50 && currentWidth > 0) {
                 this.healthBar.fillStyle(color1, 0.9);
                 this.healthBar.fillRoundedRect(this.barX, this.barY - this.barHeight/2, currentWidth, this.barHeight, 3);
                 
                 // Glow effect (only if bar is drawn) - same strict coordinates
-                if (this.barX >= 100 && this.barY > this.scene.scale.height / 2) {
+                if (this.barX >= 50 && this.barY >= 50) {
                     this.healthBarGlow.fillStyle(color1, 0.5);
                     this.healthBarGlow.fillRoundedRect(this.barX - 2, this.barY - this.barHeight/2 - 2, currentWidth + 4, this.barHeight + 4, 5);
                 }

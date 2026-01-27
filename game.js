@@ -184,14 +184,15 @@ Good luck! ⭐`;
         });
         
         // RESET PROGRESS button (below Instructions button)
+        const resetBtnY = height * 0.72;
         this.resetBtnBg = this.add.graphics();
         this.resetBtnBg.setDepth(1);
         
-        this.resetBtn = this.add.rectangle(width / 2, height / 2, 200, 50, 0xcc0000, 0);
+        this.resetBtn = this.add.rectangle(width / 2, resetBtnY, 200, 50, 0xcc0000, 0);
         this.resetBtn.setInteractive({ useHandCursor: true });
         this.resetBtn.setDepth(2);
         
-        this.resetText = this.add.text(width / 2, height / 2, 'Reset Progress', {
+        this.resetText = this.add.text(width / 2, resetBtnY, 'Reset Progress', {
             fontSize: '18px',
             fontWeight: 'bold',
             color: '#ffffff',
@@ -859,7 +860,7 @@ class GameScene extends Phaser.Scene {
             // Create player
             try {
                 const playerX = this.scale.width / 2;
-                const playerY = this.scale.height - 80;
+                const playerY = this.scale.height - 120;
                 console.log('Creating player at:', playerX, playerY);
                 console.log('Player texture exists:', this.textures.exists('player'));
                 this.player = new Player(this, playerX, playerY);
