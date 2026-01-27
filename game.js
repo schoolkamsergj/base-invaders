@@ -36,44 +36,24 @@ class MenuScene extends Phaser.Scene {
             ease: 'Sine.easeInOut'
         });
 
-        // Instructions panel (left side)
-        this.instructionsBg = this.add.graphics();
-        this.instructionsBg.setDepth(1);
+        // Welcome message (short, centered)
+        const welcomeText = `Welcome, Commander! 🚀
 
-        // Add glow effect to instructions panel
-        this.instructionsGlow = this.add.graphics();
-        this.instructionsGlow.setDepth(0);
-        this.instructionsGlow.setBlendMode(Phaser.BlendModes.ADD);
+Defend the base from alien invaders.
+Collect diamonds and upgrade your ship.
 
-        const instructionsText = `🎮 CONTROLS
-← → or A/D - Move
-SPACE - Auto-shoot
-ESC - Pause/Menu
+Good luck! ⭐`;
 
-🎯 OBJECTIVE
-Destroy enemies and bases
-Collect diamonds 💎
-Pickup power-ups ⚡
-Upgrade in shop
-
-👾 ENEMIES
-🔴 Red spheres - weak
-🔷 Hexagons - medium (HP shown)
-🟦 Blue cubes - BASES
-
-🛒 SHOP
-Buy new spaceships
-Upgrade weapons
-Improve stats`;
-
-        this.instructionsText = this.add.text(40, 200, instructionsText, {
-            fontSize: '16px',
+        this.welcomeText = this.add.text(width / 2, height * 0.35, welcomeText, {
+            fontSize: '18px',
             color: '#ffffff',
-            lineSpacing: 10,
-            wordWrap: { width: 340 }
+            align: 'center',
+            lineSpacing: 8,
+            wordWrap: { width: Math.min(400, width * 0.8) }
         });
-        this.instructionsText.setDepth(2);
-        this.instructionsText.setShadow(2, 2, '#000000', 2, true);
+        this.welcomeText.setOrigin(0.5, 0);
+        this.welcomeText.setDepth(2);
+        this.welcomeText.setShadow(2, 2, '#000000', 2, true);
 
         // START button (center-right)
         this.startBtnBg = this.add.graphics();
@@ -138,7 +118,72 @@ Improve stats`;
             this.scene.start('GameScene');
         });
         
-        // RESET PROGRESS button (below START button)
+        // INSTRUCTIONS button (below START button)
+        const instructionsBtnY = height / 2 + 100; // Below START
+
+        this.instructionsBtnBg = this.add.graphics();
+        this.instructionsBtnBg.setDepth(1);
+
+        this.instructionsBtn = this.add.rectangle(
+            width / 2,
+            instructionsBtnY,
+            240,
+            60,
+            0x2196F3, // Blue color
+            0
+        );
+        this.instructionsBtn.setInteractive({ useHandCursor: true });
+        this.instructionsBtn.setDepth(2);
+
+        this.instructionsBtnText = this.add.text(
+            width / 2,
+            instructionsBtnY,
+            '📖 How to Play',
+            {
+                fontSize: '24px',
+                fontWeight: 'bold',
+                color: '#ffffff',
+                stroke: '#0066cc',
+                strokeThickness: 2
+            }
+        );
+        this.instructionsBtnText.setOrigin(0.5);
+        this.instructionsBtnText.setDepth(3);
+
+        // Hover effect
+        this.instructionsBtn.on('pointerover', () => {
+            this.updateInstructionsButtonStyle(true);
+            this.tweens.add({
+                targets: this.instructionsBtnText,
+                scale: 1.1,
+                duration: 200,
+                ease: 'Back.easeOut'
+            });
+        });
+
+        this.instructionsBtn.on('pointerout', () => {
+            this.updateInstructionsButtonStyle(false);
+            this.tweens.add({
+                targets: this.instructionsBtnText,
+                scale: 1,
+                duration: 200
+            });
+        });
+
+        // Click to show instructions overlay
+        this.instructionsBtn.on('pointerdown', () => {
+            this.tweens.add({
+                targets: [this.instructionsBtn, this.instructionsBtnText],
+                scale: 0.95,
+                duration: 100,
+                yoyo: true,
+                onComplete: () => {
+                    this.showInstructionsOverlay();
+                }
+            });
+        });
+        
+        // RESET PROGRESS button (below Instructions button)
         this.resetBtnBg = this.add.graphics();
         this.resetBtnBg.setDepth(1);
         
@@ -287,6 +332,22 @@ Improve stats`;
         this.leaderboardBtnBg.strokeRoundedRect(x, y, width, height, Math.min(10, height * 0.2));
     }
 
+    updateInstructionsButtonStyle(isHover) {
+        const width = this.instructionsBtn.width;
+        const height = this.instructionsBtn.height;
+        const x = this.instructionsBtn.x - width / 2;
+        const y = this.instructionsBtn.y - height / 2;
+        
+        this.instructionsBtnBg.clear();
+        this.instructionsBtnBg.fillStyle(
+            isHover ? 0x42a5f5 : 0x2196F3, 
+            isHover ? 0.9 : 0.8
+        );
+        this.instructionsBtnBg.fillRoundedRect(x, y, width, height, Math.min(15, height * 0.2));
+        this.instructionsBtnBg.lineStyle(3, isHover ? 0x90caf9 : 0x64b5f6, 1);
+        this.instructionsBtnBg.strokeRoundedRect(x, y, width, height, Math.min(15, height * 0.2));
+    }
+
     updateMenuLayout(width, height) {
         const compact = width < 900;
         const titleSize = Math.max(28, Math.min(width * 0.08, 64));
@@ -295,36 +356,34 @@ Improve stats`;
         const buttonHeight = Math.max(44, Math.min(height * 0.1, 80));
         const buttonX = width * 0.5;
         const startY = height * 0.62;
+        const instructionsY = startY + 90; // Between START and Reset
         const resetY = height * 0.72;
         const leaderboardY = height * 0.82;
 
         this.titleText.setPosition(width / 2, height * 0.15);
         this.titleText.setFontSize(`${titleSize}px`);
 
-        const panelWidth = compact ? width * 0.9 : Math.min(width * 0.45, 380);
-        const panelHeight = compact ? height * 0.32 : Math.min(height * 0.55, 420);
-        const panelX = width * 0.05;
-        const panelY = height * 0.25;
-
-        this.instructionsBg.clear();
-        this.instructionsBg.fillStyle(0x000033, 0.8);
-        this.instructionsBg.fillRoundedRect(panelX, panelY, panelWidth, panelHeight, 10);
-        this.instructionsBg.lineStyle(2, 0x00d9ff, 1);
-        this.instructionsBg.strokeRoundedRect(panelX, panelY, panelWidth, panelHeight, 10);
-
-        this.instructionsGlow.clear();
-        this.instructionsGlow.lineStyle(4, 0x00d9ff, 0.3);
-        this.instructionsGlow.strokeRoundedRect(panelX - 2, panelY - 2, panelWidth + 4, panelHeight + 4, 12);
-
-        this.instructionsText.setPosition(panelX + 16, panelY + 16);
-        this.instructionsText.setFontSize(`${textSize}px`);
-        this.instructionsText.setWordWrapWidth(panelWidth - 32, true);
+        // Welcome text (centered, above buttons)
+        if (this.welcomeText) {
+            this.welcomeText.setPosition(width / 2, height * 0.35);
+            this.welcomeText.setFontSize(`${textSize}px`);
+            this.welcomeText.setWordWrapWidth(Math.min(400, width * 0.8), true);
+        }
 
         this.startBtn.setPosition(buttonX, startY);
         this.startBtn.setSize(buttonWidth, buttonHeight);
         this.startText.setPosition(buttonX, startY);
         this.startText.setFontSize(`${Math.max(18, buttonHeight * 0.45)}px`);
         this.updateMenuButtonStyle(this.startBtnBg, this.startBtn, false);
+
+        // Instructions button
+        if (this.instructionsBtn) {
+            this.instructionsBtn.setPosition(buttonX, instructionsY);
+            this.instructionsBtn.setSize(buttonWidth * 0.9, buttonHeight * 0.75);
+            this.instructionsBtnText.setPosition(buttonX, instructionsY);
+            this.instructionsBtnText.setFontSize(`${Math.max(14, buttonHeight * 0.35)}px`);
+            this.updateInstructionsButtonStyle(false);
+        }
 
         this.resetBtn.setPosition(buttonX, resetY);
         this.resetBtn.setSize(buttonWidth * 0.85, buttonHeight * 0.7);
@@ -371,6 +430,229 @@ Improve stats`;
             if (star.y > this.scale.height) {
                 star.y = -10;
                 star.x = Phaser.Math.Between(0, this.scale.width);
+            }
+        });
+    }
+
+    showInstructionsOverlay() {
+        const width = this.scale.width;
+        const height = this.scale.height;
+        
+        // Semi-transparent black overlay (background)
+        this.overlay = this.add.rectangle(
+            0, 0,
+            width * 2, height * 2,
+            0x000000,
+            0.85
+        );
+        this.overlay.setOrigin(0, 0);
+        this.overlay.setDepth(1000);
+        this.overlay.setInteractive(); // Block clicks behind it
+        
+        // Instructions panel (white box)
+        const panelWidth = Math.min(500, width * 0.9);
+        const panelHeight = Math.min(550, height * 0.85);
+        
+        this.instructionsPanel = this.add.rectangle(
+            width / 2,
+            height / 2,
+            panelWidth,
+            panelHeight,
+            0xffffff
+        );
+        this.instructionsPanel.setDepth(1001);
+        
+        // Panel border
+        this.instructionsPanelBorder = this.add.graphics();
+        this.instructionsPanelBorder.lineStyle(3, 0x2196F3, 1);
+        this.instructionsPanelBorder.strokeRoundedRect(
+            width / 2 - panelWidth / 2,
+            height / 2 - panelHeight / 2,
+            panelWidth,
+            panelHeight,
+            10
+        );
+        this.instructionsPanelBorder.setDepth(1001);
+        
+        // Title
+        this.instructionsTitle = this.add.text(
+            width / 2,
+            height / 2 - panelHeight / 2 + 30,
+            '📖 HOW TO PLAY',
+            {
+                fontSize: '28px',
+                fontWeight: 'bold',
+                color: '#2196F3',
+                align: 'center'
+            }
+        );
+        this.instructionsTitle.setOrigin(0.5);
+        this.instructionsTitle.setDepth(1002);
+        
+        // Full instructions text
+        const fullInstructions = `🎮 CONTROLS
+← → or A/D - Move left/right
+SPACE - Auto-shoot
+ESC - Pause game
+
+🎯 OBJECTIVE
+-  Destroy enemies and bases
+-  Collect diamonds 💎
+-  Pick up power-ups ⚡
+-  Upgrade your ship in shop
+-  Complete missions and defeat bosses
+
+👾 ENEMIES
+🔴 Red spheres - Weak (fast)
+🔷 Hexagons - Medium (shows HP)
+🟦 Blue cubes - BASES (destroy these!)
+
+🛒 SHOP
+-  Buy new spaceships
+-  Upgrade weapons
+-  Improve stats
+-  Increase fire rate & damage
+
+Good luck, Commander! 🚀`;
+        
+        this.instructionsContent = this.add.text(
+            width / 2,
+            height / 2 - panelHeight / 2 + 80,
+            fullInstructions,
+            {
+                fontSize: '16px',
+                color: '#333333',
+                align: 'left',
+                lineSpacing: 6,
+                wordWrap: { width: panelWidth - 60 }
+            }
+        );
+        this.instructionsContent.setOrigin(0.5, 0);
+        this.instructionsContent.setDepth(1002);
+        
+        // Close button
+        const closeBtnY = height / 2 + panelHeight / 2 - 50;
+        
+        this.closeInstructionsBtnBg = this.add.graphics();
+        this.closeInstructionsBtnBg.fillStyle(0x4CAF50, 0.9);
+        this.closeInstructionsBtnBg.fillRoundedRect(
+            width / 2 - 80,
+            closeBtnY - 20,
+            160,
+            40,
+            8
+        );
+        this.closeInstructionsBtnBg.lineStyle(2, 0x66BB6A, 1);
+        this.closeInstructionsBtnBg.strokeRoundedRect(
+            width / 2 - 80,
+            closeBtnY - 20,
+            160,
+            40,
+            8
+        );
+        this.closeInstructionsBtnBg.setDepth(1002);
+        
+        this.closeInstructionsBtn = this.add.text(
+            width / 2,
+            closeBtnY,
+            'Got it! ✓',
+            {
+                fontSize: '20px',
+                fontWeight: 'bold',
+                color: '#ffffff'
+            }
+        );
+        this.closeInstructionsBtn.setOrigin(0.5);
+        this.closeInstructionsBtn.setDepth(1003);
+        this.closeInstructionsBtn.setInteractive({ useHandCursor: true });
+        
+        // Close on button click
+        this.closeInstructionsBtn.on('pointerdown', () => {
+            this.closeInstructionsOverlay();
+        });
+        
+        // Close on overlay click
+        this.overlay.on('pointerdown', () => {
+            this.closeInstructionsOverlay();
+        });
+        
+        // Hover effect on close button
+        this.closeInstructionsBtn.on('pointerover', () => {
+            this.tweens.add({
+                targets: this.closeInstructionsBtn,
+                scale: 1.1,
+                duration: 150
+            });
+        });
+        
+        this.closeInstructionsBtn.on('pointerout', () => {
+            this.tweens.add({
+                targets: this.closeInstructionsBtn,
+                scale: 1,
+                duration: 150
+            });
+        });
+        
+        // Fade in animation
+        this.overlay.setAlpha(0);
+        this.instructionsPanel.setScale(0.8);
+        this.instructionsPanelBorder.setAlpha(0);
+        this.instructionsTitle.setAlpha(0);
+        this.instructionsContent.setAlpha(0);
+        this.closeInstructionsBtnBg.setAlpha(0);
+        this.closeInstructionsBtn.setAlpha(0);
+        
+        this.tweens.add({
+            targets: this.overlay,
+            alpha: 1,
+            duration: 200
+        });
+        
+        this.tweens.add({
+            targets: [this.instructionsPanel, this.instructionsPanelBorder],
+            alpha: 1,
+            duration: 300,
+            delay: 100
+        });
+        
+        this.tweens.add({
+            targets: this.instructionsPanel,
+            scale: 1,
+            duration: 300,
+            delay: 100,
+            ease: 'Back.easeOut'
+        });
+        
+        this.tweens.add({
+            targets: [this.instructionsTitle, this.instructionsContent, this.closeInstructionsBtnBg, this.closeInstructionsBtn],
+            alpha: 1,
+            duration: 300,
+            delay: 250
+        });
+    }
+
+    closeInstructionsOverlay() {
+        // Fade out and destroy
+        const elements = [
+            this.overlay,
+            this.instructionsPanel,
+            this.instructionsPanelBorder,
+            this.instructionsTitle,
+            this.instructionsContent,
+            this.closeInstructionsBtnBg,
+            this.closeInstructionsBtn
+        ];
+        
+        this.tweens.add({
+            targets: elements,
+            alpha: 0,
+            duration: 200,
+            onComplete: () => {
+                elements.forEach(el => {
+                    if (el && el.destroy) {
+                        el.destroy();
+                    }
+                });
             }
         });
     }
