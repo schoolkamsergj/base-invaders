@@ -7,12 +7,26 @@
     <title>Base Invaders - Space Shooter</title>
     <meta name="description" content="Cosmic Arcade Shooter on Base blockchain">
     <meta name="base:app_id" content="69751e8e3a92926b661fd3d0" />
+    
+    <!-- Farcaster Mini App Embed -->
+    <meta property="fc:frame" content="vNext" />
+    <meta property="fc:frame:image" content="https://base-invaders-nine.vercel.app/og-image.png" />
+    <meta property="fc:frame:button:1" content="Play Game 🚀" />
+    <meta property="fc:frame:button:1:action" content="launch_frame" />
+    <meta property="fc:frame:button:1:target" content="https://base-invaders-nine.vercel.app" />
+    
+    <!-- Open Graph -->
     <meta property="og:title" content="Base Invaders">
     <meta property="og:description" content="Cosmic Arcade Shooter on Base blockchain">
-    <meta property="og:image" content="https://your-domain.vercel.app/assets/images/base_cube.jpg">
-    <meta property="og:url" content="https://your-domain.vercel.app">
+    <meta property="og:image" content="https://base-invaders-nine.vercel.app/og-image.png">
+    <meta property="og:url" content="https://base-invaders-nine.vercel.app">
+    <meta property="og:type" content="website">
+    
+    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="fc:miniapp" content='{"version":"next","imageUrl":"https://your-domain.vercel.app/assets/images/base_cube.jpg","button":{"title":"Open Base Invaders","action":{"type":"launch_frame","url":"https://your-domain.vercel.app","name":"Base Invaders","splashImageUrl":"https://your-domain.vercel.app/icons/icon-192.png","splashBackgroundColor":"#000000"}}}'>
+    <meta name="twitter:title" content="Base Invaders">
+    <meta name="twitter:description" content="Cosmic Arcade Shooter on Base blockchain">
+    <meta name="twitter:image" content="https://base-invaders-nine.vercel.app/og-image.png">
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="./icons/favicon.ico">
@@ -61,6 +75,7 @@
         </div>
     </div>
 
+
     <!-- Pause Overlay -->
     <div id="pause-overlay" class="overlay hidden">
         <div class="pause-container">
@@ -71,6 +86,7 @@
             <button id="exit-game-btn" class="menu-btn exit-btn">Exit Game</button>
         </div>
     </div>
+
 
     <!-- Game Over Overlay -->
     <div id="gameover-overlay" class="overlay hidden">
@@ -127,6 +143,7 @@
             </div>
         </div>
     </div>
+
 
     <!-- Scripts -->
     <script>
