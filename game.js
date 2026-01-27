@@ -1437,23 +1437,31 @@ class GameScene extends Phaser.Scene {
             this.handleUserInteraction();
         });
         
-        // Mouse/Touch drag
+        // Mouse/Touch controls - smooth movement to touch position
+        this.touchTargetX = null;
+        this.touchTargetY = null;
+        
         this.input.on('pointerdown', (pointer) => {
-            this.isDragging = true;
+            if (!this.gameState.paused && !this.gameState.gameOver) {
+                // Set target position for smooth movement
+                this.touchTargetX = Phaser.Math.Clamp(pointer.x, 30, this.scale.width - 30);
+                this.touchTargetY = Phaser.Math.Clamp(pointer.y, 100, this.scale.height - 100);
+            }
             // Ensure audio context is active
             this.handleUserInteraction();
         });
 
         this.input.on('pointermove', (pointer) => {
-            if (this.isDragging && !this.gameState.paused && !this.gameState.gameOver) {
-                const clampedX = Phaser.Math.Clamp(pointer.x, 30, this.scale.width - 30);
-                const clampedY = Phaser.Math.Clamp(pointer.y, 100, this.scale.height - 100);
-                this.player.setPosition(clampedX, clampedY);
+            if (!this.gameState.paused && !this.gameState.gameOver) {
+                // Update target position as finger moves
+                this.touchTargetX = Phaser.Math.Clamp(pointer.x, 30, this.scale.width - 30);
+                this.touchTargetY = Phaser.Math.Clamp(pointer.y, 100, this.scale.height - 100);
             }
         });
 
         this.input.on('pointerup', () => {
-            this.isDragging = false;
+            // Keep target position, player will continue moving smoothly
+            // Target will be cleared when keyboard controls are used
         });
 
         // Keyboard controls
@@ -1497,6 +1505,36 @@ class GameScene extends Phaser.Scene {
             try {
                 if (this.player && this.player.update) {
                     this.player.update(time, delta, this.cursors, this.wasd, this.playerStats);
+                    
+                    // Smooth movement to touch target position
+                    if (this.touchTargetX !== null && this.touchTargetY !== null) {
+                        const moveSpeed = (this.playerStats.speed || 300) * (delta / 1000);
+                        const dx = this.touchTargetX - this.player.sprite.x;
+                        const dy = this.touchTargetY - this.player.sprite.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance > 5) {
+                            // Move towards target
+                            const moveX = (dx / distance) * moveSpeed;
+                            const moveY = (dy / distance) * moveSpeed;
+                            
+                            const newX = Phaser.Math.Clamp(
+                                this.player.sprite.x + moveX,
+                                30,
+                                this.scale.width - 30
+                            );
+                            const newY = Phaser.Math.Clamp(
+                                this.player.sprite.y + moveY,
+                                100,
+                                this.scale.height - 100
+                            );
+                            
+                            this.player.setPosition(newX, newY);
+                        } else {
+                            // Close enough, snap to target
+                            this.player.setPosition(this.touchTargetX, this.touchTargetY);
+                        }
+                    }
                 }
             } catch (e) {
                 console.warn('Error updating player:', e);

@@ -205,6 +205,15 @@ class Player {
         // Keyboard movement
         let moveSpeed = (stats.speed || 300) * (delta / 1000);
         
+        // Clear touch target when using keyboard
+        if (cursors.left.isDown || cursors.right.isDown || cursors.up.isDown || cursors.down.isDown ||
+            wasd.A.isDown || wasd.D.isDown || wasd.W.isDown || wasd.S.isDown) {
+            if (this.scene.touchTargetX !== null || this.scene.touchTargetY !== null) {
+                this.scene.touchTargetX = null;
+                this.scene.touchTargetY = null;
+            }
+        }
+        
         // Horizontal movement (left/right)
         if (cursors.left.isDown || wasd.A.isDown) {
             this.sprite.x = Phaser.Math.Clamp(this.sprite.x - moveSpeed, 30, this.scene.scale.width - 30);
