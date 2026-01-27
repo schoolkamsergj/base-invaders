@@ -933,7 +933,16 @@ class GameScene extends Phaser.Scene {
         const margin = Math.max(10, width * 0.03);
         const radius = Math.max(16, Math.min(width * 0.05, 22));
         const buttonX = width - margin - radius;
-        const buttonY = margin + radius;
+        
+        // Position below pause button (not covering Score/Level)
+        // Get pause button Y from UI layout if available
+        let pauseBtnY = margin + 80; // Fallback
+        if (this.ui && this.ui.layout && this.ui.layout.pauseY) {
+            pauseBtnY = this.ui.layout.pauseY;
+        } else if (this.ui && this.ui.pauseBtn) {
+            pauseBtnY = this.ui.pauseBtn.y;
+        }
+        const buttonY = pauseBtnY + 40; // Below pause button
 
         this.muteButtonBg.setPosition(buttonX, buttonY);
         this.muteButtonBg.setRadius(radius);

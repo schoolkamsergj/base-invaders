@@ -191,12 +191,11 @@ class UI {
     }
 
     createButtons() {
+        // Create buttons with temporary positions (will be set by applyLayout)
         // Shop button (bottom left)
         this.shopBtn = this.scene.add.rectangle(
-            50,
-            this.scene.scale.height - 30,
-            80,
-            40,
+            0, 0, // Temporary - set by applyLayout
+            80, 40,
             0x0052FF,
             0.8
         );
@@ -205,8 +204,7 @@ class UI {
         this.shopBtn.setInteractive({ useHandCursor: true });
         
         this.shopBtnText = this.scene.add.text(
-            50,
-            this.scene.scale.height - 30,
+            0, 0, // Temporary - set by applyLayout
             '🛒 SHOP',
             {
                 fontSize: '14px',
@@ -227,13 +225,10 @@ class UI {
             this.openShop();
         });
         
-        // Pause button (top right) - positioned with more spacing to avoid overlap
-        // Level text is at y=40 with fontSize 16px, so pause button goes to y=75 with extra spacing
+        // Pause button (top right)
         this.pauseBtn = this.scene.add.rectangle(
-            this.scene.scale.width - 50,
-            75,  // Moved further down from Level text (y=40) with 35px spacing
-            60,
-            30,
+            0, 0, // Temporary - set by applyLayout
+            60, 30,
             0x666666,
             0.8
         );
@@ -242,8 +237,7 @@ class UI {
         this.pauseBtn.setInteractive({ useHandCursor: true });
         
         this.pauseBtnText = this.scene.add.text(
-            this.scene.scale.width - 50,
-            75,  // Moved further down with more spacing
+            0, 0, // Temporary - set by applyLayout
             '⏸️',
             {
                 fontSize: '18px',
@@ -264,48 +258,87 @@ class UI {
     }
 
     getLayoutMetrics(width = this.scene.scale.width, height = this.scene.scale.height) {
+        // Base margins and spacing
         const margin = Math.max(10, width * 0.03);
         const topMargin = Math.max(8, height * 0.02);
+        
+        // Font sizes
         const currencyFont = Math.max(14, Math.min(width * 0.045, 22));
         const stageFont = Math.max(18, Math.min(width * 0.05, 30));
         const scoreFont = Math.max(12, Math.min(width * 0.035, 20));
         const levelFont = Math.max(11, Math.min(width * 0.03, 16));
         const currencySpacing = Math.max(18, currencyFont * 1.5);
+        
+        // Health bar (at bottom, primary reference point)
         const healthBarHeight = Math.max(12, Math.min(height * 0.03, 20));
+        const healthBarMargin = Math.max(45, height * 0.075); // Space from bottom
+        const healthBarY = height - healthBarMargin;
         const healthBarWidth = Math.max(220, Math.min(width * 0.7, width - margin * 2));
-        const healthBarY = height - Math.max(24, height * 0.05);
         const healthBarX = (width - healthBarWidth) / 2;
+        
+        // Shop button (above health bar)
         const shopWidth = Math.max(70, Math.min(width * 0.2, 120));
         const shopHeight = Math.max(30, Math.min(height * 0.06, 40));
+        const shopMargin = Math.max(15, height * 0.025); // Gap above health bar
+        const shopY = healthBarY - healthBarHeight - shopMargin - (shopHeight / 2);
+        const shopX = margin + shopWidth / 2;
+        
+        // Pause button (below level text, top right)
         const pauseWidth = Math.max(50, Math.min(width * 0.12, 80));
         const pauseHeight = Math.max(26, Math.min(height * 0.05, 36));
-        const shopFont = Math.max(12, Math.min(width * 0.032, 16));
-        const pauseFont = Math.max(14, Math.min(width * 0.04, 20));
+        const pauseGap = Math.max(15, height * 0.025); // Gap below level text
+        const pauseY = topMargin + scoreFont * 1.4 + levelFont * 1.6 + pauseGap + (pauseHeight / 2);
+        const pauseX = width - margin - pauseWidth / 2;
+        
+        // Check-in button (below currency, left side)
         const checkInWidth = Math.max(100, Math.min(width * 0.28, 160));
         const checkInHeight = Math.max(34, Math.min(height * 0.06, 46));
+        const checkInY = topMargin + currencySpacing * 3 + checkInHeight / 2 + Math.max(8, height * 0.01);
+        const checkInX = margin + checkInWidth / 2;
+        
+        // Button fonts
+        const shopFont = Math.max(12, Math.min(width * 0.032, 16));
+        const pauseFont = Math.max(14, Math.min(width * 0.04, 20));
 
         return {
             width,
             height,
             margin,
             topMargin,
+            
+            // Fonts
             currencyFont,
             stageFont,
             scoreFont,
             levelFont,
             currencySpacing,
+            
+            // Health bar
             healthBarHeight,
             healthBarWidth,
             healthBarX,
             healthBarY,
+            healthBarMargin,
+            
+            // Shop button - ALL coordinates
             shopWidth,
             shopHeight,
+            shopX,
+            shopY,
+            shopFont,
+            
+            // Pause button - ALL coordinates
             pauseWidth,
             pauseHeight,
-            shopFont,
+            pauseX,
+            pauseY,
             pauseFont,
+            
+            // Check-in button
             checkInWidth,
-            checkInHeight
+            checkInHeight,
+            checkInX,
+            checkInY
         };
     }
 
@@ -332,23 +365,16 @@ class UI {
         this.levelText.setPosition(layout.width - layout.margin, layout.topMargin + layout.scoreFont * 1.4);
         this.levelText.setFontSize(`${layout.levelFont}px`);
 
-        // Pause button (below score/level)
-        const pauseY =
-            layout.topMargin +
-            layout.scoreFont * 1.4 +
-            layout.levelFont * 1.6 +
-            layout.pauseHeight / 2 +
-            6;
-        this.pauseBtn.setPosition(layout.width - layout.margin - layout.pauseWidth / 2, pauseY);
+        // Pause button (top right) - use pre-calculated metrics
+        this.pauseBtn.setPosition(layout.pauseX, layout.pauseY);
         this.pauseBtn.setSize(layout.pauseWidth, layout.pauseHeight);
-        this.pauseBtnText.setPosition(this.pauseBtn.x, this.pauseBtn.y);
+        this.pauseBtnText.setPosition(layout.pauseX, layout.pauseY);
         this.pauseBtnText.setFontSize(`${layout.pauseFont}px`);
 
-        // Shop button (bottom left)
-        const shopY = layout.height - layout.margin - layout.shopHeight / 2;
-        this.shopBtn.setPosition(layout.margin + layout.shopWidth / 2, shopY);
+        // Shop button (bottom left, above health bar) - use pre-calculated metrics
+        this.shopBtn.setPosition(layout.shopX, layout.shopY);
         this.shopBtn.setSize(layout.shopWidth, layout.shopHeight);
-        this.shopBtnText.setPosition(this.shopBtn.x, this.shopBtn.y);
+        this.shopBtnText.setPosition(layout.shopX, layout.shopY);
         this.shopBtnText.setFontSize(`${layout.shopFont}px`);
 
         // Health bar
@@ -396,6 +422,13 @@ class UI {
 
         this.attachCheckInHandlers();
         this.updateCheckInButtonState();
+        
+        // Update mute button position after layout (if it exists)
+        if (this.scene.updateMuteButtonPosition) {
+            this.scene.time.delayedCall(50, () => {
+                this.scene.updateMuteButtonPosition();
+            });
+        }
     }
 
     attachCheckInHandlers() {
