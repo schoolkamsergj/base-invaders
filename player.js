@@ -205,14 +205,6 @@ class Player {
         // Keyboard movement
         let moveSpeed = (stats.speed || 300) * (delta / 1000);
         
-        // Clear touch direction when using keyboard
-        if (cursors.left.isDown || cursors.right.isDown || cursors.up.isDown || cursors.down.isDown ||
-            wasd.A.isDown || wasd.D.isDown || wasd.W.isDown || wasd.S.isDown) {
-            if (this.scene.touchDirection !== 0) {
-                this.scene.touchDirection = 0;
-            }
-        }
-        
         // Horizontal movement (left/right)
         if (cursors.left.isDown || wasd.A.isDown) {
             this.sprite.x = Phaser.Math.Clamp(this.sprite.x - moveSpeed, 30, this.scene.scale.width - 30);
