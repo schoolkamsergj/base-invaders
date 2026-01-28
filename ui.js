@@ -255,41 +255,6 @@ class UI {
             }
             this.scene.togglePause();
         });
-
-        // TEMPORARY: Reset check-in button for testing
-        this.resetCheckInBtn = this.scene.add.rectangle(
-            this.scene.scale.width - 60,
-            90,
-            50, 30,
-            0xff0000, // Red
-            0.8
-        );
-        this.resetCheckInBtn.setScrollFactor(0);
-        this.resetCheckInBtn.setDepth(100);
-        this.resetCheckInBtn.setInteractive({ useHandCursor: true });
-
-        this.resetCheckInBtnText = this.scene.add.text(
-            this.scene.scale.width - 60,
-            90,
-            '🔄',
-            { fontSize: '16px', align: 'center' }
-        );
-        this.resetCheckInBtnText.setOrigin(0.5);
-        this.resetCheckInBtnText.setScrollFactor(0);
-        this.resetCheckInBtnText.setDepth(101);
-
-        this.resetCheckInBtn.on('pointerdown', () => {
-            localStorage.removeItem('lastCheckIn');
-            localStorage.removeItem('checkInStreak');
-            console.log('✅ Check-in reset');
-            if (typeof this.updateCheckInButtonState === 'function') {
-                this.updateCheckInButtonState();
-            }
-            if (this.scene.playSound) {
-                this.scene.playSound('click');
-            }
-            alert('Check-in reset!');
-        });
     }
 
     getLayoutMetrics(width = this.scene.scale.width, height = this.scene.scale.height) {
@@ -405,14 +370,6 @@ class UI {
         this.pauseBtn.setSize(layout.pauseWidth, layout.pauseHeight);
         this.pauseBtnText.setPosition(layout.pauseX, layout.pauseY);
         this.pauseBtnText.setFontSize(`${layout.pauseFont}px`);
-
-        // TEMP: Reset check-in button (top-right, below pause)
-        if (this.resetCheckInBtn) {
-            const resetX = layout.width - layout.margin - 30;
-            const resetY = layout.pauseY + layout.pauseHeight + 15;
-            this.resetCheckInBtn.setPosition(resetX, resetY);
-            this.resetCheckInBtnText.setPosition(resetX, resetY);
-        }
 
         // Shop button (bottom left, above health bar) - use pre-calculated metrics
         this.shopBtn.setPosition(layout.shopX, layout.shopY);
@@ -660,9 +617,9 @@ if (streakData) {
                 totalDays = previousStreak || 1;
                 console.log('[CHECK-IN DEBUG] Same day - keeping streak:', totalDays);
             } else {
-                // Missed day(s) - reset to 1
+                // Missed day(s) - set to 1
                 totalDays = 1;
-                console.log('[CHECK-IN DEBUG] Missed days - reset to:', totalDays);
+                console.log('[CHECK-IN DEBUG] Missed days - set to:', totalDays);
             }
         }
     } catch (e) {
@@ -1255,7 +1212,7 @@ if (isMilestone) {
             }
         },
         
-        resetStrike: function() {
+        clearStrike: function() {
             localStorage.removeItem('lastCheckIn');
             localStorage.removeItem('checkInStreak');
             
@@ -1264,12 +1221,12 @@ if (isMilestone) {
                 const gameScene = window.game.scene.getScene('GameScene');
                 if (gameScene && gameScene.ui && gameScene.ui.updateCheckInButtonState) {
                     gameScene.ui.updateCheckInButtonState();
-                    console.log('Strike reset. UI refreshed. New state:', this.getState());
+                    console.log('Strike cleared. UI refreshed. New state:', this.getState());
                 } else {
-                    console.log('Strike reset. UI not available. New state:', this.getState());
+                    console.log('Strike cleared. UI not available. New state:', this.getState());
                 }
             } else {
-                console.log('Strike reset. Game not initialized. New state:', this.getState());
+                console.log('Strike cleared. Game not initialized. New state:', this.getState());
             }
         }
     };
