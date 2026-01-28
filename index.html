@@ -155,25 +155,6 @@
             console.error('JavaScript Error:', e.error);
             console.error('File:', e.filename, 'Line:', e.lineno);
         });
-        
-        // Check if Phaser is loaded (with delay so script has run)
-        window.addEventListener('load', function() {
-            console.log('Page loaded');
-            function checkPhaser() {
-                if (typeof Phaser === 'undefined') {
-                    console.error('Phaser.js failed to load!');
-                    var el = document.getElementById('game-container');
-                    if (el) el.innerHTML =
-                        '<div style="color: white; text-align: center; padding: 50px;">' +
-                        '<h2>Error: Phaser.js not loaded</h2>' +
-                        '<p>Check your connection and refresh.</p>' +
-                        '</div>';
-                    return;
-                }
-                console.log('Phaser loaded OK');
-            }
-            setTimeout(checkPhaser, 100);
-        });
     </script>
     <script type="module" src="./miniapp.js"></script>
     <script src="vibration.js"></script>
