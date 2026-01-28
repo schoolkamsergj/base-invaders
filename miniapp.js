@@ -1,54 +1,76 @@
 /**
- * Base Invaders – Farcaster Mini App wallet (vanilla JS, ESM).
- * viem + @farcaster/miniapp-sdk, нульова tx на Base.
+ * Base Invaders – Farcaster Mini App wallet (vanilla JS).
+ * SDK from UMD (window.MiniAppSDK), viem loaded at runtime (no static import).
+ * Must be loaded as <script type="module"> for dynamic import(viem).
  */
-import { createWalletClient, createPublicClient, custom, parseAbi, getAddress } from 'https://esm.sh/viem';
-import { base } from 'https://esm.sh/viem/chains';
-import { sdk } from 'https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk@0.2.1/+esm';
-
 const CHECKIN_ADDR = '0xb13102BbC97C25ba39967208eDd20b109104AAF4';
 const LEADERBOARD_ADDR = '0x76762B1535C3D2004a996e76c776e7C946aF03FB';
 
-const CHECKIN_ABI = parseAbi(['function checkIn() external']);
-const LEADERBOARD_ABI = parseAbi([
-    'function submitScore(uint256,uint256,uint256,string) external',
-    'function getTopPlayers() view returns (tuple(address player, string name, uint256 score, uint256 wave, uint256 streak, uint256 timestamp)[])'
-]);
-
-function getWalletClient(provider) {
-    return createWalletClient({ chain: base, transport: custom(provider) });
+let viemPromise = null;
+function getViem() {
+    if (!viemPromise) {
+        console.log('[miniapp] Loading viem from CDN...');
+        viemPromise = import('https://cdn.skypack.dev/viem').catch((e) => {
+            console.warn('[miniapp] Skypack viem failed, trying esm.sh', e);
+            return import('https://esm.sh/viem');
+        });
+    }
+    return viemPromise;
 }
 
-function getPublicClient(provider) {
-    return createPublicClient({ chain: base, transport: custom(provider) });
+function getSdk() {
+    const sdk = window.MiniAppSDK || (window.miniapp && window.miniapp.sdk) || window.miniapp;
+    if (!sdk) console.error('[miniapp] SDK not found. Add UMD script: @farcaster/miniapp-sdk dist/index.umd.js');
+    return sdk;
 }
 
-// ─── Check-in onchain ──────────────────────────────────────────────────────
 window.baseInvadersOnchainCheckIn = async function () {
+    console.log('[miniapp] baseInvadersOnchainCheckIn start');
     try {
-        console.log('[miniapp] baseInvadersOnchainCheckIn start');
-        await sdk.actions.ready({ disableNativeGestures: false });
-        if (typeof sdk.actions?.requestCapabilities === 'function') {
-            await sdk.actions.requestCapabilities(['wallet']).catch(() => {});
+        const sdk = getSdk();
+        if (!sdk) throw new Error('Farcaster SDK not loaded');
+        console.log('[miniapp] SDK:', !!sdk, 'wallet:', !!sdk.wallet);
+
+        if (typeof sdk.ready === 'function') {
+            await sdk.ready();
+            console.log('[miniapp] sdk.ready() done');
+        } else if (sdk.actions && typeof sdk.actions.ready === 'function') {
+            await sdk.actions.ready({ disableNativeGestures: false });
+            console.log('[miniapp] sdk.actions.ready() done');
         }
-        const provider = await sdk.wallet.getEthereumProvider();
-        if (!provider || typeof provider.request !== 'function') {
-            throw new Error('Farcaster wallet provider not available');
+
+        if (typeof sdk.requestCapabilities === 'function') {
+            await sdk.requestCapabilities(['wallet']);
+            console.log('[miniapp] sdk.requestCapabilities([wallet]) done');
         }
+
+        const provider = sdk.wallet.getEthereumProvider();
+        console.log('[miniapp] provider:', !!provider);
+        if (!provider || typeof provider.request !== 'function') throw new Error('Farcaster wallet provider not available');
+
         const accounts = await provider.request({ method: 'eth_requestAccounts', params: [] });
-        const address = accounts?.[0];
-        if (!address) throw new Error('Wallet not connected');
-        const client = getWalletClient(provider);
-        const account = { address: getAddress(address), type: 'json-rpc' };
+        console.log('[miniapp] accounts:', accounts ? accounts.length : 0);
+        const account = accounts && accounts[0];
+        if (!account) throw new Error('Wallet not connected');
+
+        const viem = await getViem();
+        const baseChain = viem.base || (await import('https://cdn.skypack.dev/viem/chains').then((m) => m.base));
+        const { createWalletClient, custom, parseAbi, getAddress } = viem;
+        const CHECKIN_ABI = parseAbi(['function checkIn() external']);
+
+        const client = createWalletClient({ chain: baseChain, transport: custom(provider) });
+        console.log('[miniapp] wallet client created');
+
+        const accountObj = { address: getAddress(account), type: 'json-rpc' };
         const hash = await client.writeContract({
             address: CHECKIN_ADDR,
             abi: CHECKIN_ABI,
             functionName: 'checkIn',
-            account,
+            account: accountObj,
             value: 0n
         });
-        console.log('[miniapp] checkIn hash', hash);
-        window.dispatchEvent(new CustomEvent('base-invaders:wallet-connected', { detail: { address } }));
+        console.log('[miniapp] checkIn hash:', hash);
+        window.dispatchEvent(new CustomEvent('base-invaders:wallet-connected', { detail: { address: account } }));
         return { success: true, hash };
     } catch (e) {
         console.error('[miniapp] CheckIn tx failed', e);
@@ -56,33 +78,38 @@ window.baseInvadersOnchainCheckIn = async function () {
     }
 };
 
-// ─── Submit leaderboard score ───────────────────────────────────────────────
 window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
+    console.log('[miniapp] baseInvadersSubmitScore start', score, wave, streak, name);
     try {
-        console.log('[miniapp] baseInvadersSubmitScore start');
-        await sdk.actions.ready({ disableNativeGestures: false });
-        if (typeof sdk.actions?.requestCapabilities === 'function') {
-            await sdk.actions.requestCapabilities(['wallet']).catch(() => {});
-        }
-        const provider = await sdk.wallet.getEthereumProvider();
-        if (!provider || typeof provider.request !== 'function') {
-            throw new Error('Farcaster wallet provider not available');
-        }
+        const sdk = getSdk();
+        if (!sdk) throw new Error('Farcaster SDK not loaded');
+        if (typeof sdk.ready === 'function') await sdk.ready();
+        else if (sdk.actions && typeof sdk.actions.ready === 'function') await sdk.actions.ready({ disableNativeGestures: false });
+        if (typeof sdk.requestCapabilities === 'function') await sdk.requestCapabilities(['wallet']);
+
+        const provider = sdk.wallet.getEthereumProvider();
+        if (!provider || typeof provider.request !== 'function') throw new Error('Farcaster wallet provider not available');
         const accounts = await provider.request({ method: 'eth_requestAccounts', params: [] });
-        const address = accounts?.[0];
-        if (!address) throw new Error('Wallet not connected');
-        const client = getWalletClient(provider);
-        const account = { address: getAddress(address), type: 'json-rpc' };
+        const account = accounts && accounts[0];
+        if (!account) throw new Error('Wallet not connected');
+
+        const viem = await getViem();
+        const baseChain = viem.base || (await import('https://cdn.skypack.dev/viem/chains').then((m) => m.base));
+        const { createWalletClient, custom, parseAbi, getAddress } = viem;
+        const LEADERBOARD_ABI = parseAbi(['function submitScore(uint256,uint256,uint256,string) external']);
+
+        const client = createWalletClient({ chain: baseChain, transport: custom(provider) });
+        const accountObj = { address: getAddress(account), type: 'json-rpc' };
         const hash = await client.writeContract({
             address: LEADERBOARD_ADDR,
             abi: LEADERBOARD_ABI,
             functionName: 'submitScore',
             args: [BigInt(score), BigInt(wave), BigInt(streak), (name || '').toString()],
-            account,
+            account: accountObj,
             value: 0n
         });
-        console.log('[miniapp] submitScore hash', hash);
-        window.dispatchEvent(new CustomEvent('base-invaders:wallet-connected', { detail: { address } }));
+        console.log('[miniapp] submitScore hash:', hash);
+        window.dispatchEvent(new CustomEvent('base-invaders:wallet-connected', { detail: { address: account } }));
         return { success: true, hash };
     } catch (e) {
         console.error('[miniapp] SubmitScore tx failed', e);
@@ -90,17 +117,20 @@ window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
     }
 };
 
-// ─── Fetch leaderboard (read-only) ───────────────────────────────────────────
 window.baseInvadersGetLeaderboard = async function () {
+    console.log('[miniapp] baseInvadersGetLeaderboard start');
     try {
-        const provider = await sdk.wallet.getEthereumProvider();
+        const sdk = getSdk();
+        if (!sdk) return [];
+        const provider = sdk.wallet.getEthereumProvider();
         if (!provider) return [];
-        const client = getPublicClient(provider);
-        const data = await client.readContract({
-            address: LEADERBOARD_ADDR,
-            abi: LEADERBOARD_ABI,
-            functionName: 'getTopPlayers'
-        });
+        const viem = await getViem();
+        const baseChain = viem.base || (await import('https://cdn.skypack.dev/viem/chains').then((m) => m.base));
+        const { createPublicClient, custom, parseAbi } = viem;
+        const LEADERBOARD_ABI = parseAbi(['function getTopPlayers() view returns (tuple(address player, string name, uint256 score, uint256 wave, uint256 streak, uint256 timestamp)[])']);
+        const client = createPublicClient({ chain: baseChain, transport: custom(provider) });
+        const data = await client.readContract({ address: LEADERBOARD_ADDR, abi: LEADERBOARD_ABI, functionName: 'getTopPlayers' });
+        console.log('[miniapp] getTopPlayers entries:', Array.isArray(data) ? data.length : 0);
         return Array.isArray(data) ? data : [];
     } catch (e) {
         console.error('[miniapp] getLeaderboard failed', e);
@@ -109,37 +139,46 @@ window.baseInvadersGetLeaderboard = async function () {
 };
 
 window.baseInvadersMarkMiniAppReady = async function () {
+    const sdk = getSdk();
+    if (!sdk) return;
     try {
-        await sdk.actions.ready({ disableNativeGestures: false });
+        if (typeof sdk.ready === 'function') await sdk.ready();
+        else if (sdk.actions && typeof sdk.actions.ready === 'function') await sdk.actions.ready({ disableNativeGestures: false });
         console.log('[miniapp] SDK ready OK');
     } catch (e) {
         console.error('[miniapp] ready failed', e?.message);
     }
 };
-window.baseInvadersMiniAppSdk = sdk;
+window.baseInvadersMiniAppSdk = getSdk();
 
-// ─── DOMContentLoaded: sdk.ready() + dispatch game-ready ─────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log('[miniapp] DOMContentLoaded');
     try {
-        await sdk.actions.ready({ disableNativeGestures: false });
-        console.log('[miniapp] DOMContentLoaded – SDK ready');
-        window.dispatchEvent(new Event('base-invaders:game-ready'));
+        const sdk = getSdk();
+        if (sdk) {
+            if (typeof sdk.ready === 'function') await sdk.ready();
+            else if (sdk.actions && typeof sdk.actions.ready === 'function') await sdk.actions.ready({ disableNativeGestures: false });
+            console.log('[miniapp] DOMContentLoaded – SDK ready');
+        }
     } catch (e) {
         console.error('[miniapp] DOMContentLoaded ready failed', e);
-        window.dispatchEvent(new Event('base-invaders:game-ready'));
     }
+    window.dispatchEvent(new Event('base-invaders:game-ready'));
 });
 
-// Тест у консолі: window.__debugCheckIn()
-window.__debugCheckIn = async function () {
+window.debugCheckIn = async function () {
+    console.log('[miniapp] debugCheckIn called');
     try {
         const result = await window.baseInvadersOnchainCheckIn();
-        console.log('Check-in OK', result);
-        alert('Check-in OK! Hash: ' + (result?.hash ?? ''));
+        console.log('[miniapp] Check-in OK', result);
+        if (typeof alert !== 'undefined') alert('Check-in OK! Hash: ' + (result?.hash ?? ''));
+        return result;
     } catch (e) {
-        console.error('Check-in failed', e);
-        alert('Check-in failed: ' + (e?.message ?? e));
+        console.error('[miniapp] Check-in failed', e);
+        if (typeof alert !== 'undefined') alert('Check-in failed: ' + (e?.message ?? e));
+        throw e;
     }
 };
+window.__debugCheckIn = window.debugCheckIn;
 
-console.log('[miniapp] Loaded (viem + Farcaster SDK). Test: window.__debugCheckIn()');
+console.log('[miniapp] Loaded (SDK UMD, viem runtime). Test: window.debugCheckIn()');
