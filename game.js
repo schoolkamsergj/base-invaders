@@ -332,11 +332,13 @@ Collect diamonds and upgrade your ship.`;
         });
 
         // Farcaster Mini App: hide splash and show canvas when menu is ready
+        window.dispatchEvent(new Event('base-invaders:game-ready'));
         if (typeof window.baseInvadersMarkMiniAppReady === 'function') {
-            console.log('[MenuScene] Calling baseInvadersMarkMiniAppReady (splash hide)');
             window.baseInvadersMarkMiniAppReady();
         }
-        window.dispatchEvent(new Event('base-invaders:game-ready'));
+        if (typeof window.__farcasterCallReady === 'function') {
+            window.__farcasterCallReady();
+        }
     }
 
     updateMenuButtonStyle(buttonBg, buttonRect, isHover) {

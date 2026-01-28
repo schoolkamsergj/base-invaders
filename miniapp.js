@@ -1,4 +1,5 @@
-import { sdk } from 'https://esm.sh/@farcaster/miniapp-sdk@latest';
+// Prefer jsdelivr (works in Farcaster WebView); fallback esm.sh
+import { sdk } from 'https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk@0.2.1/+esm';
 import {
     connect,
     createConfig,
@@ -424,7 +425,7 @@ window.addEventListener('base-invaders:game-ready', () => {
 });
 
 // Fallback: if game-ready never fires (e.g. miniapp loaded late), call ready() after delay
-const READY_FALLBACK_MS = 4500;
+const READY_FALLBACK_MS = 2500;
 window.addEventListener('load', () => {
     console.log('[miniapp] window load – scheduling ready() fallback in', READY_FALLBACK_MS, 'ms');
     setTimeout(() => {
