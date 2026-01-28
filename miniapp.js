@@ -10,7 +10,7 @@ import {
 } from 'https://esm.sh/@wagmi/core@latest';
 import { injected } from 'https://esm.sh/@wagmi/core@latest/connectors';
 import { base } from 'https://esm.sh/@wagmi/core@latest/chains';
-import { custom } from 'https://esm.sh/viem@latest';
+import { custom, encodeFunctionData } from 'https://esm.sh/viem@latest';
 
 const CHECK_IN_CONTRACT = {
     chainId: base.id,
@@ -323,9 +323,45 @@ async function checkInOnchain() {
         throw new Error('Check-in contract address is not configured.');
     }
 
+    try {
+        const provider = await sdk.wallet.getEthereumProvider();
+        if (!provider || typeof provider.request !== 'function') {
+            throw new Error('Farcaster wallet provider not available.');
+        }
+        const accounts = await provider.request({ method: 'eth_requestAccounts', params: [] });
+        const from = (accounts && accounts[0]) ? accounts[0] : null;
+        if (!from) {
+            throw new Error('Wallet not connected. Please connect your wallet in Farcaster.');
+        }
+        connectedAddress = from;
+        window.dispatchEvent(new CustomEvent('base-invaders:wallet-connected', { detail: { address: from } }));
+        const data = encodeFunctionData({
+            abi: CHECK_IN_CONTRACT.abi,
+            functionName: 'checkIn',
+            args: []
+        });
+        const tx = {
+            from,
+            to: CHECK_IN_CONTRACT.address,
+            data,
+            chainId: `0x${CHECK_IN_CONTRACT.chainId.toString(16)}`,
+            value: '0x0'
+        };
+        const hash = await provider.request({ method: 'eth_sendTransaction', params: [tx] });
+        if (!hash || typeof hash !== 'string') {
+            throw new Error('Transaction was not sent.');
+        }
+        const config = await getWagmiConfig().catch(() => null);
+        if (config) {
+            return waitForTransactionReceipt(config, { hash });
+        }
+        return { hash };
+    } catch (directErr) {
+        console.warn('[miniapp] Direct provider check-in failed, trying wagmi:', directErr);
+    }
+
     const config = await getWagmiConfig();
-    
-    // Connect if not already connected
+    window.ethereum = window.ethereum || await sdk.wallet.getEthereumProvider();
     const account = getAccount(config);
     if (!account.address || !connectedAddress) {
         await connect(config, { connector: injected({ shimDisconnect: true }) });
