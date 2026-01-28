@@ -575,29 +575,56 @@ class UI {
             localStorage.setItem('lastCheckIn', todayKey);
             console.log('✅ Check-in saved locally:', todayKey);
 
-            // Try on-chain if SDK available
+            // Try on-chain transaction
+            console.log('═══════════════════════════════════════');
+            console.log('🎯 [UI] CHECK-IN BUTTON CLICKED');
+            console.log('🎯 [UI] SDK function exists?', typeof window.baseInvadersOnchainCheckIn);
+            console.log('🎯 [UI] SDK object exists?', typeof window.baseInvadersMiniAppSdk);
+            console.log('═══════════════════════════════════════');
+
             if (typeof window.baseInvadersOnchainCheckIn === 'function') {
+                console.log('✅ [UI] SDK found, starting transaction...');
+                
                 this.checkInPending = true;
                 this.checkInButtonText.setText('⛓️ SIGNING...');
                 this.checkInButton.disableInteractive();
                 this.checkInButtonText.disableInteractive();
                 
                 try {
-                    console.log('🔗 Calling onchain check-in...');
-                    await window.baseInvadersOnchainCheckIn();
-                    console.log('✅ Onchain success');
+                    console.log('🎯 [UI] Calling window.baseInvadersOnchainCheckIn()...');
+                    const result = await window.baseInvadersOnchainCheckIn();
+                    
+                    console.log('═══════════════════════════════════════');
+                    console.log('✅✅✅ [UI] TRANSACTION SUCCESS! ✅✅✅');
+                    console.log('✅ [UI] Result:', result);
+                    console.log('═══════════════════════════════════════');
+                    
                     this.showNotification('⛓️ Confirmed!', notifyX, notifyY - 40);
+                    
                 } catch (error) {
-                    console.error('❌ Onchain failed:', error);
-                    this.showNotification('⚠️ Saved locally', notifyX, notifyY - 40);
+                    console.log('═══════════════════════════════════════');
+                    console.error('❌❌❌ [UI] TRANSACTION FAILED ❌❌❌');
+                    console.error('❌ [UI] Error:', error);
+                    console.error('❌ [UI] Message:', error.message);
+                    console.log('═══════════════════════════════════════');
+                    
+                    // Show error to user
+                    const shortMsg = (error.message || 'Unknown error').substring(0, 40);
+                    this.showNotification('⚠️ ' + shortMsg, notifyX, notifyY - 40);
+                } finally {
+                    this.checkInPending = false;
+                    this.checkInButton.setInteractive({ useHandCursor: true });
+                    this.checkInButtonText.setInteractive({ useHandCursor: true });
                 }
                 
-                this.checkInPending = false;
-                this.checkInButton.setInteractive({ useHandCursor: true });
-                this.checkInButtonText.setInteractive({ useHandCursor: true });
             } else {
-                console.log('📴 SDK not available');
-                this.showNotification('💎 Saved locally', notifyX, notifyY - 40);
+                console.log('═══════════════════════════════════════');
+                console.error('❌ [UI] SDK FUNCTION NOT FOUND!');
+                console.error('❌ [UI] miniapp.js probably did not load correctly');
+                console.error('❌ [UI] Check script order in index.html');
+                console.log('═══════════════════════════════════════');
+                
+                this.showNotification('⚠️ SDK not loaded', notifyX, notifyY - 40);
             }
 
 // Update streak system

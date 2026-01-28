@@ -319,57 +319,120 @@ async function getWagmiConfig() {
 }
 
 async function checkInOnchain() {
+    console.log('═══════════════════════════════════════');
+    console.log('🔗 [CHECKIN] FUNCTION START');
+    console.log('🔗 [CHECKIN] Contract:', CHECK_IN_CONTRACT.address);
+    console.log('🔗 [CHECKIN] Chain ID:', CHECK_IN_CONTRACT.chainId);
+    console.log('═══════════════════════════════════════');
+    
+    // Validate contract address
     if (!CHECK_IN_CONTRACT.address || CHECK_IN_CONTRACT.address === '0x0000000000000000000000000000000000000000') {
+        console.error('❌ [CHECKIN] Contract address invalid!');
         throw new Error('Check-in contract address is not configured.');
     }
 
-    console.log('[miniapp] checkInOnchain: starting');
+    try {
+        // Step 1: Get provider
+        console.log('🔗 [CHECKIN] Step 1/5: Getting provider...');
+        const provider = await sdk.wallet.getEthereumProvider();
+        console.log('✅ [CHECKIN] Provider obtained:', {
+            exists: !!provider,
+            hasRequest: typeof provider?.request === 'function',
+            providerType: provider?.constructor?.name
+        });
+        
+        if (!provider || typeof provider.request !== 'function') {
+            console.error('❌ [CHECKIN] Provider not available or no request method');
+            throw new Error('Farcaster wallet provider not available.');
+        }
 
-    // Use Farcaster Mini App wallet provider directly – this is the most reliable in Warpcast
-    const provider = await sdk.wallet.getEthereumProvider().catch((e) => {
-        console.error('[miniapp] getEthereumProvider failed:', e);
-        throw new Error('Farcaster wallet provider not available.');
-    });
+        // Step 2: Request accounts
+        console.log('🔗 [CHECKIN] Step 2/5: Requesting accounts...');
+        console.log('   Calling provider.request({ method: "eth_requestAccounts" })');
+        
+        const accounts = await provider.request({ 
+            method: 'eth_requestAccounts', 
+            params: [] 
+        });
+        
+        console.log('✅ [CHECKIN] Accounts received:', {
+            count: accounts?.length || 0,
+            firstAccount: accounts?.[0] || 'none',
+            allAccounts: accounts
+        });
+        
+        const from = (accounts && accounts[0]) ? accounts[0] : null;
+        
+        if (!from) {
+            console.error('❌ [CHECKIN] No account returned from provider');
+            throw new Error('Wallet not connected. Please connect your wallet in Farcaster.');
+        }
 
-    if (!provider || typeof provider.request !== 'function') {
-        throw new Error('Farcaster wallet provider not available.');
+        // Step 3: Save connected address
+        console.log('🔗 [CHECKIN] Step 3/5: Connected address:', from);
+        connectedAddress = from;
+        window.dispatchEvent(new CustomEvent('base-invaders:wallet-connected', { 
+            detail: { address: from } 
+        }));
+
+        // Step 4: Encode function data
+        console.log('🔗 [CHECKIN] Step 4/5: Encoding function call...');
+        const data = encodeFunctionData({
+            abi: CHECK_IN_CONTRACT.abi,
+            functionName: 'checkIn',
+            args: []
+        });
+        console.log('✅ [CHECKIN] Encoded data:', data);
+
+        // Step 5: Build and send transaction
+        const tx = {
+            from,
+            to: CHECK_IN_CONTRACT.address,
+            data,
+            chainId: `0x${CHECK_IN_CONTRACT.chainId.toString(16)}`,
+            value: '0x0'
+        };
+        
+        console.log('🔗 [CHECKIN] Step 5/5: Sending transaction...');
+        console.log('   Transaction params:', JSON.stringify(tx, null, 2));
+        console.log('   Calling provider.request({ method: "eth_sendTransaction" })');
+        
+        const hash = await provider.request({ 
+            method: 'eth_sendTransaction', 
+            params: [tx] 
+        });
+        
+        console.log('═══════════════════════════════════════');
+        console.log('✅✅✅ [CHECKIN] TRANSACTION SENT! ✅✅✅');
+        console.log('✅ Transaction hash:', hash);
+        console.log('═══════════════════════════════════════');
+        
+        if (!hash || typeof hash !== 'string') {
+            console.error('❌ [CHECKIN] Invalid hash returned:', hash);
+            throw new Error('Transaction was not sent properly.');
+        }
+
+        // Try to wait for receipt
+        const config = await getWagmiConfig().catch(() => null);
+        if (config) {
+            console.log('🔗 [CHECKIN] Waiting for transaction receipt...');
+            return waitForTransactionReceipt(config, { hash });
+        }
+
+        return { hash };
+        
+    } catch (error) {
+        console.log('═══════════════════════════════════════');
+        console.error('❌❌❌ [CHECKIN] EXCEPTION CAUGHT ❌❌❌');
+        console.error('❌ Error type:', error.constructor.name);
+        console.error('❌ Error message:', error.message);
+        console.error('❌ Error code:', error.code);
+        console.error('❌ Full error:', error);
+        console.log('═══════════════════════════════════════');
+        
+        // Re-throw so UI can handle it
+        throw error;
     }
-
-    console.log('[miniapp] checkInOnchain: requesting accounts');
-    const accounts = await provider.request({ method: 'eth_requestAccounts', params: [] });
-    const from = (accounts && accounts[0]) ? accounts[0] : null;
-    if (!from) {
-        throw new Error('Wallet not connected. Please connect your wallet in Farcaster.');
-    }
-
-    connectedAddress = from;
-    window.dispatchEvent(new CustomEvent('base-invaders:wallet-connected', { detail: { address: from } }));
-    console.log('[miniapp] checkInOnchain: got account', from);
-
-    const data = encodeFunctionData({
-        abi: CHECK_IN_CONTRACT.abi,
-        functionName: 'checkIn',
-        args: []
-    });
-
-    const tx = {
-        to: CHECK_IN_CONTRACT.address,
-        data,
-        value: '0x0'
-        // Let Farcaster wallet fill in from/chainId/gas
-    };
-
-    console.log('[miniapp] checkInOnchain: sending tx via eth_sendTransaction', tx);
-    const hash = await provider.request({ method: 'eth_sendTransaction', params: [tx] });
-
-    if (!hash || typeof hash !== 'string') {
-        throw new Error('Transaction was not sent.');
-    }
-
-    console.log('[miniapp] checkInOnchain: tx sent, hash =', hash);
-
-    // Caller (UI) only cares that this resolves; we don't strictly need full receipt here
-    return { hash };
 }
 
 async function submitLeaderboardScore(score, wave, streak, name) {
@@ -455,3 +518,28 @@ window.addEventListener('load', () => {
         getWagmiConfig().catch(err => console.warn('[miniapp] Wallet init failed:', err));
     }, READY_FALLBACK_MS);
 });
+
+// ═══════════════════════════════════════
+// DEBUG HELPER - Manual transaction test
+// ═══════════════════════════════════════
+window.__debugCheckIn = async function() {
+    console.log('🧪 [DEBUG] Manual test started...');
+    
+    if (typeof window.baseInvadersOnchainCheckIn !== 'function') {
+        console.error('❌ [DEBUG] Function not available!');
+        alert('ERROR: SDK function not exported. Check miniapp.js loading.');
+        return;
+    }
+    
+    try {
+        console.log('🧪 [DEBUG] Calling check-in...');
+        const result = await window.baseInvadersOnchainCheckIn();
+        console.log('✅ [DEBUG] Success:', result);
+        alert('✅ Transaction worked!\nHash: ' + (result?.hash || 'unknown'));
+    } catch (error) {
+        console.error('❌ [DEBUG] Failed:', error);
+        alert('❌ Transaction failed:\n' + error.message);
+    }
+};
+
+console.log('🧪 Debug helper loaded. Use: window.__debugCheckIn()');
