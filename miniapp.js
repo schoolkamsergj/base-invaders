@@ -29,21 +29,6 @@ function sleep(ms) {
 }
 
 async function ensureWalletProvider(sdk) {
-    // Pre-link check (requested): require FID + associate account before requestCapabilities
-    const fid = sdk?.user?.fid;
-    if (!fid) {
-        console.error('[miniapp] ❌ sdk.user.fid missing – user must link FID first');
-        throw new Error('Link FID first');
-    }
-    if (sdk?.actions?.account?.associateAccount) {
-        console.log('[miniapp] Linking Farcaster account (associateAccount) for fid:', fid);
-        await sdk.actions.account.associateAccount(fid);
-        console.log('[miniapp] ✅ associateAccount done');
-    } else {
-        console.error('[miniapp] ❌ sdk.actions.account.associateAccount not available on this SDK build');
-        throw new Error('Link FID first');
-    }
-
     // 1) Request wallet capability
     let capabilities = null;
     try {
