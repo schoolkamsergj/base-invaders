@@ -9,6 +9,7 @@
     },
     "dependencies": {
         "@farcaster/miniapp-sdk": "latest",
+        "@farcaster/miniapp-wagmi-connector": "latest",
         "@wagmi/core": "latest",
         "phaser": "latest",
         "viem": "latest",
