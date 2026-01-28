@@ -575,15 +575,13 @@ class UI {
             localStorage.setItem('lastCheckIn', todayKey);
             console.log('✅ Check-in saved locally:', todayKey);
 
-            // Try on-chain transaction
+            // Try onchain transaction
             console.log('═══════════════════════════════════════');
-            console.log('🎯 [UI] CHECK-IN BUTTON CLICKED');
-            console.log('🎯 [UI] SDK function exists?', typeof window.baseInvadersOnchainCheckIn);
-            console.log('🎯 [UI] SDK object exists?', typeof window.baseInvadersMiniAppSdk);
+            console.log('🎯 [UI] Check-in button clicked');
             console.log('═══════════════════════════════════════');
 
             if (typeof window.baseInvadersOnchainCheckIn === 'function') {
-                console.log('✅ [UI] SDK found, starting transaction...');
+                console.log('✅ [UI] SDK function found, starting transaction...');
                 
                 this.checkInPending = true;
                 this.checkInButtonText.setText('⛓️ SIGNING...');
@@ -595,22 +593,30 @@ class UI {
                     const result = await window.baseInvadersOnchainCheckIn();
                     
                     console.log('═══════════════════════════════════════');
-                    console.log('✅✅✅ [UI] TRANSACTION SUCCESS! ✅✅✅');
+                    console.log('✅✅✅ [UI] TRANSACTION SUCCESS ✅✅✅');
                     console.log('✅ [UI] Result:', result);
                     console.log('═══════════════════════════════════════');
                     
-                    this.showNotification('⛓️ Confirmed!', notifyX, notifyY - 40);
+                    this.showNotification('⛓️ Confirmed on Base!', notifyX, notifyY - 40);
                     
                 } catch (error) {
                     console.log('═══════════════════════════════════════');
                     console.error('❌❌❌ [UI] TRANSACTION FAILED ❌❌❌');
-                    console.error('❌ [UI] Error:', error);
-                    console.error('❌ [UI] Message:', error.message);
+                    console.error('❌ [UI] Error:', error.message);
                     console.log('═══════════════════════════════════════');
                     
-                    // Show error to user
-                    const shortMsg = (error.message || 'Unknown error').substring(0, 40);
-                    this.showNotification('⚠️ ' + shortMsg, notifyX, notifyY - 40);
+                    // Show user-friendly error
+                    let errorMsg = 'Transaction failed';
+                    if (error.message.includes('cancelled') || error.message.includes('rejected')) {
+                        errorMsg = 'Transaction cancelled';
+                    } else if (error.message.includes('funds')) {
+                        errorMsg = 'Insufficient funds';
+                    } else if (error.message.includes('not available')) {
+                        errorMsg = 'Wallet not ready, try again';
+                    }
+                    
+                    this.showNotification('⚠️ ' + errorMsg, notifyX, notifyY - 40);
+                    
                 } finally {
                     this.checkInPending = false;
                     this.checkInButton.setInteractive({ useHandCursor: true });
@@ -618,11 +624,10 @@ class UI {
                 }
                 
             } else {
-                console.log('═══════════════════════════════════════');
-                console.error('❌ [UI] SDK FUNCTION NOT FOUND!');
-                console.error('❌ [UI] miniapp.js probably did not load correctly');
-                console.error('❌ [UI] Check script order in index.html');
-                console.log('═══════════════════════════════════════');
+                console.error('═══════════════════════════════════════');
+                console.error('❌ [UI] SDK FUNCTION NOT FOUND');
+                console.error('❌ [UI] Check if miniapp.js loaded correctly');
+                console.error('═══════════════════════════════════════');
                 
                 this.showNotification('⚠️ SDK not loaded', notifyX, notifyY - 40);
             }
