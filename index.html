@@ -46,46 +46,9 @@
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js" crossorigin="anonymous"></script>
     <!-- Farcaster Mini App SDK (UMD for WebView compatibility) -->
     <script src="https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk@0.2.1/dist/index.min.js"></script>
-    <!-- Farcaster Mini App: call ready() so splash hides (works even if miniapp.js module fails in WebView) -->
-    <script>
-(function() {
-    var readyDone = false;
-    function doReady(sdk) {
-        if (!sdk || !sdk.actions || !sdk.actions.ready) return;
-        sdk.actions.ready({ disableNativeGestures: false }).then(function() {
-            console.log('[fc] ready() OK');
-        }).catch(function(e) {
-            console.warn('[fc] ready() err', e);
-        });
-    }
-    function callReady() {
-        if (readyDone) return;
-        readyDone = true;
-        var urls = [
-            'https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk@0.2.1/+esm',
-            'https://esm.sh/@farcaster/miniapp-sdk@0.2.1'
-        ];
-        function tryNext(i) {
-            if (i >= urls.length) {
-                console.warn('[fc] SDK load failed from all CDNs');
-                return;
-            }
-            import(/* webpackIgnore: true */ urls[i]).then(function(m) {
-                var sdk = m.sdk || m.default;
-                doReady(sdk);
-            }).catch(function(e) {
-                tryNext(i + 1);
-            });
-        }
-        tryNext(0);
-    }
-    window.__farcasterCallReady = callReady;
-    window.addEventListener('base-invaders:game-ready', callReady);
-    window.addEventListener('load', function() {
-        setTimeout(callReady, 2500);
-    });
-})();
-    </script>
+    <!-- NOTE: We intentionally do NOT import the ESM SDK here.
+         Using both UMD + ESM SDK in the same WebView can lead to capabilities/provider mismatch.
+         miniapp.js handles ready() + wallet flow using the UMD SDK. -->
 </head>
 <body>
     <div id="game-container">
