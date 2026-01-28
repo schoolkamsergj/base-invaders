@@ -1,131 +1,136 @@
 /**
- * Base Invaders – Farcaster/Base Mini App wallet integration (ESM).
- * Uses @wagmi/core + @farcaster/miniapp-wagmi-connector for transactions.
+ * Base Invaders – Farcaster Mini App wallet (vanilla JS, ESM).
+ * viem + @farcaster/miniapp-sdk, нульова tx на Base.
  */
+import { createWalletClient, createPublicClient, custom, parseAbi, getAddress } from 'https://esm.sh/viem';
+import { base } from 'https://esm.sh/viem/chains';
 import { sdk } from 'https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk@0.2.1/+esm';
-import {
-    createConfig,
-    http,
-    getAccount,
-    connect,
-    writeContract,
-    readContract,
-    waitForTransactionReceipt
-} from 'https://esm.sh/@wagmi/core';
-import { base } from 'https://esm.sh/@wagmi/core/chains';
-import { farcasterMiniApp } from 'https://cdn.jsdelivr.net/npm/@farcaster/miniapp-wagmi-connector@0.2/+esm';
-import { parseAbi } from 'https://esm.sh/viem';
 
-// ─── Wagmi config (Farcaster Mini App connector) ─────────────────────────────
-const config = createConfig({
-    chains: [base],
-    transports: { [base.id]: http() },
-    connectors: [farcasterMiniApp()]
-});
+const CHECKIN_ADDR = '0xb13102BbC97C25ba39967208eDd20b109104AAF4';
+const LEADERBOARD_ADDR = '0x76762B1535C3D2004a996e76c776e7C946aF03FB';
 
-const CHECK_IN_ADDRESS = '0xb13102BbC97C25ba39967208eDd20b109104AAF4';
-const LEADERBOARD_ADDRESS = '0x76762B1535C3D2004a996e76c776e7C946aF03FB';
-
-const checkInAbi = parseAbi(['function checkIn() external']);
-const leaderboardAbi = parseAbi([
-    'function submitScore(uint256 score, uint256 wave, uint256 streak, string name) external',
+const CHECKIN_ABI = parseAbi(['function checkIn() external']);
+const LEADERBOARD_ABI = parseAbi([
+    'function submitScore(uint256,uint256,uint256,string) external',
     'function getTopPlayers() view returns (tuple(address player, string name, uint256 score, uint256 wave, uint256 streak, uint256 timestamp)[])'
 ]);
 
-let readyCalled = false;
-
-// ─── Farcaster splash: ready() ────────────────────────────────────────────
-async function markMiniAppReady() {
-    if (readyCalled) return;
-    readyCalled = true;
-    try {
-        await sdk.actions.ready({ disableNativeGestures: false });
-        console.log('[miniapp] SDK ready() OK – splash hidden');
-    } catch (e) {
-        console.error('[miniapp] ready() failed:', e?.message);
-    }
+function getWalletClient(provider) {
+    return createWalletClient({ chain: base, transport: custom(provider) });
 }
 
-// ─── Check-in onchain (wagmi + Farcaster connector) ────────────────────────
-window.baseInvadersOnchainCheckIn = async function () {
-    let account = getAccount(config);
-    if (!account?.address) {
-        const connector = config.connectors[0];
-        if (!connector) throw new Error('Farcaster Mini App connector not found');
-        await connect(config, { connector });
-        account = getAccount(config);
-    }
-    if (!account?.address) throw new Error('Wallet not connected');
+function getPublicClient(provider) {
+    return createPublicClient({ chain: base, transport: custom(provider) });
+}
 
+// ─── Check-in onchain ──────────────────────────────────────────────────────
+window.baseInvadersOnchainCheckIn = async function () {
     try {
-        const hash = await writeContract(config, {
-            address: CHECK_IN_ADDRESS,
-            abi: checkInAbi,
+        console.log('[miniapp] baseInvadersOnchainCheckIn start');
+        await sdk.actions.ready({ disableNativeGestures: false });
+        if (typeof sdk.actions?.requestCapabilities === 'function') {
+            await sdk.actions.requestCapabilities(['wallet']).catch(() => {});
+        }
+        const provider = await sdk.wallet.getEthereumProvider();
+        if (!provider || typeof provider.request !== 'function') {
+            throw new Error('Farcaster wallet provider not available');
+        }
+        const accounts = await provider.request({ method: 'eth_requestAccounts', params: [] });
+        const address = accounts?.[0];
+        if (!address) throw new Error('Wallet not connected');
+        const client = getWalletClient(provider);
+        const account = { address: getAddress(address), type: 'json-rpc' };
+        const hash = await client.writeContract({
+            address: CHECKIN_ADDR,
+            abi: CHECKIN_ABI,
             functionName: 'checkIn',
-            chainId: base.id
+            account,
+            value: 0n
         });
-        window.dispatchEvent(new CustomEvent('base-invaders:wallet-connected', { detail: { address: account.address } }));
+        console.log('[miniapp] checkIn hash', hash);
+        window.dispatchEvent(new CustomEvent('base-invaders:wallet-connected', { detail: { address } }));
         return { success: true, hash };
     } catch (e) {
-        console.error('CheckIn tx failed', e);
+        console.error('[miniapp] CheckIn tx failed', e);
         throw e;
     }
 };
 
 // ─── Submit leaderboard score ───────────────────────────────────────────────
 window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
-    let account = getAccount(config);
-    if (!account?.address) {
-        const connector = config.connectors[0];
-        if (!connector) throw new Error('Farcaster Mini App connector not found');
-        await connect(config, { connector });
-        account = getAccount(config);
-    }
-    if (!account?.address) throw new Error('Wallet not connected');
-
     try {
-        const hash = await writeContract(config, {
-            address: LEADERBOARD_ADDRESS,
-            abi: leaderboardAbi,
+        console.log('[miniapp] baseInvadersSubmitScore start');
+        await sdk.actions.ready({ disableNativeGestures: false });
+        if (typeof sdk.actions?.requestCapabilities === 'function') {
+            await sdk.actions.requestCapabilities(['wallet']).catch(() => {});
+        }
+        const provider = await sdk.wallet.getEthereumProvider();
+        if (!provider || typeof provider.request !== 'function') {
+            throw new Error('Farcaster wallet provider not available');
+        }
+        const accounts = await provider.request({ method: 'eth_requestAccounts', params: [] });
+        const address = accounts?.[0];
+        if (!address) throw new Error('Wallet not connected');
+        const client = getWalletClient(provider);
+        const account = { address: getAddress(address), type: 'json-rpc' };
+        const hash = await client.writeContract({
+            address: LEADERBOARD_ADDR,
+            abi: LEADERBOARD_ABI,
             functionName: 'submitScore',
             args: [BigInt(score), BigInt(wave), BigInt(streak), (name || '').toString()],
-            chainId: base.id
+            account,
+            value: 0n
         });
-        window.dispatchEvent(new CustomEvent('base-invaders:wallet-connected', { detail: { address: account.address } }));
+        console.log('[miniapp] submitScore hash', hash);
+        window.dispatchEvent(new CustomEvent('base-invaders:wallet-connected', { detail: { address } }));
         return { success: true, hash };
     } catch (e) {
-        console.error('SubmitScore tx failed', e);
+        console.error('[miniapp] SubmitScore tx failed', e);
         throw e;
     }
 };
 
-// ─── Fetch leaderboard (read-only) ──────────────────────────────────────────
+// ─── Fetch leaderboard (read-only) ───────────────────────────────────────────
 window.baseInvadersGetLeaderboard = async function () {
-    const data = await readContract(config, {
-        address: LEADERBOARD_ADDRESS,
-        abi: leaderboardAbi,
-        functionName: 'getTopPlayers',
-        chainId: base.id
-    });
-    return Array.isArray(data) ? data : [];
+    try {
+        const provider = await sdk.wallet.getEthereumProvider();
+        if (!provider) return [];
+        const client = getPublicClient(provider);
+        const data = await client.readContract({
+            address: LEADERBOARD_ADDR,
+            abi: LEADERBOARD_ABI,
+            functionName: 'getTopPlayers'
+        });
+        return Array.isArray(data) ? data : [];
+    } catch (e) {
+        console.error('[miniapp] getLeaderboard failed', e);
+        return [];
+    }
 };
 
-window.baseInvadersMarkMiniAppReady = markMiniAppReady;
+window.baseInvadersMarkMiniAppReady = async function () {
+    try {
+        await sdk.actions.ready({ disableNativeGestures: false });
+        console.log('[miniapp] SDK ready OK');
+    } catch (e) {
+        console.error('[miniapp] ready failed', e?.message);
+    }
+};
 window.baseInvadersMiniAppSdk = sdk;
 
-// ─── Init on load: wagmi ready, then game-ready ─────────────────────────────
-window.addEventListener('load', () => {
-    console.log('[miniapp] load – wagmi config ready');
-    markMiniAppReady();
-    window.dispatchEvent(new Event('base-invaders:game-ready'));
+// ─── DOMContentLoaded: sdk.ready() + dispatch game-ready ─────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        await sdk.actions.ready({ disableNativeGestures: false });
+        console.log('[miniapp] DOMContentLoaded – SDK ready');
+        window.dispatchEvent(new Event('base-invaders:game-ready'));
+    } catch (e) {
+        console.error('[miniapp] DOMContentLoaded ready failed', e);
+        window.dispatchEvent(new Event('base-invaders:game-ready'));
+    }
 });
 
-window.addEventListener('base-invaders:game-ready', () => {
-    console.log('[miniapp] game-ready – ensuring SDK ready');
-    markMiniAppReady();
-});
-
-// Debug: викликати в console: window.__debugCheckIn()
+// Тест у консолі: window.__debugCheckIn()
 window.__debugCheckIn = async function () {
     try {
         const result = await window.baseInvadersOnchainCheckIn();
@@ -137,4 +142,4 @@ window.__debugCheckIn = async function () {
     }
 };
 
-console.log('[miniapp] Loaded (wagmi + farcasterMiniApp). Test: window.__debugCheckIn()');
+console.log('[miniapp] Loaded (viem + Farcaster SDK). Test: window.__debugCheckIn()');
