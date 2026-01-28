@@ -24,6 +24,68 @@ function getSdk() {
     return sdk;
 }
 
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function ensureWalletProvider(sdk) {
+    // 1) Link/associate Farcaster account before requesting capabilities (per user request)
+    try {
+        if (sdk?.actions?.account?.associateAccount) {
+            console.log('[miniapp] Calling sdk.actions.account.associateAccount()...');
+            await sdk.actions.account.associateAccount();
+            console.log('[miniapp] ✅ associateAccount() done');
+        } else {
+            console.log('[miniapp] associateAccount() not available on this SDK build');
+        }
+    } catch (e) {
+        console.warn('[miniapp] ⚠️ associateAccount() failed (continuing):', e?.message || e);
+    }
+
+    // 2) Request wallet capability
+    let capabilities = null;
+    try {
+        if (typeof sdk.requestCapabilities === 'function') {
+            capabilities = await sdk.requestCapabilities(['wallet']);
+        } else if (typeof sdk.actions?.requestCapabilities === 'function') {
+            capabilities = await sdk.actions.requestCapabilities(['wallet']);
+        }
+    } catch (e) {
+        console.warn('[miniapp] ⚠️ requestCapabilities failed (continuing):', e?.message || e);
+    }
+    console.log('[miniapp] Capabilities:', capabilities);
+
+    // 3) Retry provider up to 3 times with 1s delay
+    let provider = null;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+            provider = sdk?.wallet?.getEthereumProvider ? sdk.wallet.getEthereumProvider() : null;
+        } catch (e) {
+            provider = null;
+        }
+        console.log(`[miniapp] Provider attempt ${attempt}/3:`, provider);
+        if (provider) break;
+        await sleep(1000);
+    }
+
+    if (!provider || typeof provider.request !== 'function') {
+        console.error('[miniapp] ❌ Provider is null/invalid after retries');
+        return { provider: null, account: null, error: 'Link Farcaster account first' };
+    }
+
+    // 4) Manual connect: request accounts
+    let account = null;
+    try {
+        const accounts = await provider.request({ method: 'eth_requestAccounts', params: [] });
+        account = accounts?.[0] ?? null;
+    } catch (e) {
+        console.warn('[miniapp] ⚠️ eth_requestAccounts failed:', e?.message || e);
+        account = null;
+    }
+
+    return { provider, account, error: null };
+}
+
 window.baseInvadersOnchainCheckIn = async function () {
     console.log('[miniapp] baseInvadersOnchainCheckIn start');
     try {
@@ -39,19 +101,17 @@ window.baseInvadersOnchainCheckIn = async function () {
             console.log('[miniapp] sdk.actions.ready() done');
         }
 
-        if (typeof sdk.requestCapabilities === 'function') {
-            await sdk.requestCapabilities(['wallet']);
-            console.log('[miniapp] sdk.requestCapabilities([wallet]) done');
+        const { provider, account, error } = await ensureWalletProvider(sdk);
+        if (!provider) {
+            // Fallback requested by user: do not throw, return {success:false,...} so UI can toast.
+            return { success: false, error: error || 'Link Farcaster account first' };
         }
-
-        const provider = sdk.wallet.getEthereumProvider();
-        console.log('[miniapp] provider:', !!provider);
-        if (!provider || typeof provider.request !== 'function') throw new Error('Farcaster wallet provider not available');
-
-        const accounts = await provider.request({ method: 'eth_requestAccounts', params: [] });
-        console.log('[miniapp] accounts:', accounts ? accounts.length : 0);
-        const account = accounts && accounts[0];
-        if (!account) throw new Error('Wallet not connected');
+        console.log('[miniapp] Provider:', provider);
+        if (!account) {
+            console.warn('[miniapp] No account after eth_requestAccounts');
+            return { success: false, error: 'Link Farcaster account first' };
+        }
+        console.log('[miniapp] Connected account:', account);
 
         const viem = await getViem();
         const baseChain = viem.base || (await import('https://cdn.skypack.dev/viem/chains').then((m) => m.base));
@@ -74,7 +134,8 @@ window.baseInvadersOnchainCheckIn = async function () {
         return { success: true, hash };
     } catch (e) {
         console.error('[miniapp] CheckIn tx failed', e);
-        throw e;
+        // If provider/account association is broken, prefer a stable error payload for UI toast
+        return { success: false, error: e?.message || 'Link Farcaster account first' };
     }
 };
 
@@ -85,13 +146,8 @@ window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
         if (!sdk) throw new Error('Farcaster SDK not loaded');
         if (typeof sdk.ready === 'function') await sdk.ready();
         else if (sdk.actions && typeof sdk.actions.ready === 'function') await sdk.actions.ready({ disableNativeGestures: false });
-        if (typeof sdk.requestCapabilities === 'function') await sdk.requestCapabilities(['wallet']);
-
-        const provider = sdk.wallet.getEthereumProvider();
-        if (!provider || typeof provider.request !== 'function') throw new Error('Farcaster wallet provider not available');
-        const accounts = await provider.request({ method: 'eth_requestAccounts', params: [] });
-        const account = accounts && accounts[0];
-        if (!account) throw new Error('Wallet not connected');
+        const { provider, account, error } = await ensureWalletProvider(sdk);
+        if (!provider || !account) return { success: false, error: error || 'Link Farcaster account first' };
 
         const viem = await getViem();
         const baseChain = viem.base || (await import('https://cdn.skypack.dev/viem/chains').then((m) => m.base));
@@ -113,7 +169,7 @@ window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
         return { success: true, hash };
     } catch (e) {
         console.error('[miniapp] SubmitScore tx failed', e);
-        throw e;
+        return { success: false, error: e?.message || 'Link Farcaster account first' };
     }
 };
 
