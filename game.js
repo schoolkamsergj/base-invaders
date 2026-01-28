@@ -2410,6 +2410,15 @@ class GameScene extends Phaser.Scene {
         if (isNewHigh && window.baseInvadersLeaderboard?.saveLocalHighScore) {
             window.baseInvadersLeaderboard.saveLocalHighScore(localEntry);
         }
+        if (typeof window.baseInvadersSubmitScore === 'function' && isNewHigh) {
+            window.baseInvadersSubmitScore(
+                Math.floor(this.gameState.score),
+                Math.floor(waveLevel),
+                streak || 1,
+                'Player'
+            );
+            console.log('GLOBAL SUBMITTED!');
+        }
         
         document.getElementById('gameover-overlay').classList.remove('hidden');
         document.getElementById('final-stats').innerHTML = `
