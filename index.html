@@ -8,12 +8,8 @@
     <meta name="description" content="Cosmic Arcade Shooter on Base blockchain">
     <meta name="base:app_id" content="69751e8e3a92926b661fd3d0" />
     
-    <!-- Farcaster Mini App Embed -->
-    <meta property="fc:frame" content="vNext" />
-    <meta property="fc:frame:image" content="https://base-invaders-nine.vercel.app/og-image.png" />
-    <meta property="fc:frame:button:1" content="Play Game 🚀" />
-    <meta property="fc:frame:button:1:action" content="launch_frame" />
-    <meta property="fc:frame:button:1:target" content="https://base-invaders-nine.vercel.app" />
+    <!-- Farcaster Mini App Embed (ВИПРАВЛЕНО!) -->
+    <meta name="fc:frame" content='{"version":"next","imageUrl":"https://base-invaders-nine.vercel.app/og-image.png","button":{"title":"Play Game 🚀","action":{"type":"launch_frame","name":"Base Invaders","url":"https://base-invaders-nine.vercel.app","splashImageUrl":"https://base-invaders-nine.vercel.app/splash.png","splashBackgroundColor":"#000000"}}}' />
     
     <!-- Open Graph -->
     <meta property="og:title" content="Base Invaders">
@@ -75,7 +71,6 @@
         </div>
     </div>
 
-
     <!-- Pause Overlay -->
     <div id="pause-overlay" class="overlay hidden">
         <div class="pause-container">
@@ -86,7 +81,6 @@
             <button id="exit-game-btn" class="menu-btn exit-btn">Exit Game</button>
         </div>
     </div>
-
 
     <!-- Game Over Overlay -->
     <div id="gameover-overlay" class="overlay hidden">
@@ -143,7 +137,6 @@
             </div>
         </div>
     </div>
-
 
     <!-- Scripts -->
     <script>
