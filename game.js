@@ -330,6 +330,13 @@ Collect diamonds and upgrade your ship.`;
         this.scale.on('resize', (gameSize) => {
             this.updateMenuLayout(gameSize.width, gameSize.height);
         });
+
+        // Farcaster Mini App: hide splash and show canvas when menu is ready
+        if (typeof window.baseInvadersMarkMiniAppReady === 'function') {
+            console.log('[MenuScene] Calling baseInvadersMarkMiniAppReady (splash hide)');
+            window.baseInvadersMarkMiniAppReady();
+        }
+        window.dispatchEvent(new Event('base-invaders:game-ready'));
     }
 
     updateMenuButtonStyle(buttonBg, buttonRect, isHover) {
@@ -2508,11 +2515,10 @@ if (typeof Phaser === 'undefined') {
         }
     };
 
-    console.log('Creating Phaser game with config:', config);
+    console.log('Creating Phaser game (scale: RESIZE, CENTER_BOTH)', { w: config.width, h: config.height });
     const game = new Phaser.Game(config);
-    window.game = game; // Make game accessible globally
-    console.log('Phaser game created:', game);
-    window.dispatchEvent(new Event('base-invaders:game-ready'));
+    window.game = game;
+    console.log('Phaser game created – base-invaders:game-ready will fire from MenuScene.create()');
     window.addEventListener('resize', () => {
         game.scale.resize(window.innerWidth, window.innerHeight);
     });

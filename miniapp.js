@@ -387,40 +387,51 @@ async function fetchLeaderboard() {
     });
 }
 
+/**
+ * Call Farcaster Mini App SDK ready() to hide splash and show app.
+ * MUST be called after game canvas is visible (e.g. from MenuScene.create() or game-ready).
+ */
 async function markMiniAppReady() {
     if (readyCalled) {
-        console.log('⚠️ markMiniAppReady already called');
+        console.log('[miniapp] markMiniAppReady already called, skip');
         return;
     }
     readyCalled = true;
-    
-    console.log('🚀 Initializing Base Mini Apps SDK...');
-    
+    console.log('[miniapp] Calling sdk.actions.ready()...');
+
     try {
-        await sdk.actions.ready();
-        console.log('✅ SDK ready!');
-        console.log('✅ window.baseInvadersOnchainCheckIn:', typeof window.baseInvadersOnchainCheckIn);
+        await sdk.actions.ready({ disableNativeGestures: false });
+        console.log('[miniapp] SDK ready() OK – splash should hide, app visible');
         window.dispatchEvent(new Event('base-invaders:wallet-connected'));
     } catch (error) {
-        console.error('❌ SDK failed:', error);
+        console.error('[miniapp] sdk.actions.ready() failed:', error);
     }
 }
+
+// Expose so game can call when first scene is ready (canvas in DOM)
+window.baseInvadersMarkMiniAppReady = markMiniAppReady;
 
 window.baseInvadersOnchainCheckIn = checkInOnchain;
 window.baseInvadersSubmitScore = submitLeaderboardScore;
 window.baseInvadersGetLeaderboard = fetchLeaderboard;
 window.baseInvadersMiniAppSdk = sdk;
 
+// Prefer: ready() when Phaser has booted and first scene is ready
 window.addEventListener('base-invaders:game-ready', () => {
+    console.log('[miniapp] base-invaders:game-ready received');
     markMiniAppReady();
-    // Initialize wallet connection when game is ready
-    getWagmiConfig().catch(err => console.warn('Wallet init failed:', err));
+    getWagmiConfig().catch(err => console.warn('[miniapp] Wallet init failed:', err));
 });
 
+// Fallback: if game-ready never fires (e.g. miniapp loaded late), call ready() after delay
+const READY_FALLBACK_MS = 4500;
 window.addEventListener('load', () => {
+    console.log('[miniapp] window load – scheduling ready() fallback in', READY_FALLBACK_MS, 'ms');
     setTimeout(() => {
-        markMiniAppReady();
-        // Initialize wallet connection on load
-        getWagmiConfig().catch(err => console.warn('Wallet init failed:', err));
-    }, 0);
+        if (!readyCalled) {
+            console.log('[miniapp] Fallback: calling markMiniAppReady() (game-ready may have been missed)');
+            markMiniAppReady();
+        }
+        getWagmiConfig().catch(err => console.warn('[miniapp] Wallet init failed:', err));
+    }, READY_FALLBACK_MS);
 });
