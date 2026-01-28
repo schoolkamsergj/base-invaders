@@ -319,163 +319,77 @@ async function getWagmiConfig() {
 }
 
 async function checkInOnchain() {
-    console.log('═══════════════════════════════════════');
-    console.log('🔗 [CHECK-IN] Starting transaction...');
-    console.log('═══════════════════════════════════════');
-    
-    // Validate contract
+    // Prefer SDK requestTransaction when available (Base Mini-App); else use provider (Farcaster)
     if (!CHECK_IN_CONTRACT.address || CHECK_IN_CONTRACT.address === '0x0000000000000000000000000000000000000000') {
-        console.error('❌ Contract address not configured');
         throw new Error('Check-in contract address is not configured.');
     }
-    
-    console.log('✅ Contract:', CHECK_IN_CONTRACT.address);
-    console.log('✅ Chain ID:', CHECK_IN_CONTRACT.chainId);
+    const data = encodeFunctionData({
+        abi: CHECK_IN_CONTRACT.abi,
+        functionName: CHECK_IN_CONTRACT.functionName,
+        args: CHECK_IN_CONTRACT.args
+    });
+    const tx = {
+        to: CHECK_IN_CONTRACT.address,
+        data,
+        chainId: CHECK_IN_CONTRACT.chainId
+    };
 
-    try {
-        // Step 1: Ensure wagmi config is initialized
-        console.log('🔗 Step 1/6: Initializing wagmi config...');
-        await getWagmiConfig().catch(e => {
-            console.warn('Config init warning (may be ok):', e.message);
-        });
-        
-        // Give SDK time to initialize if needed
-        console.log('🔗 Waiting 500ms for SDK...');
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Step 2: Get provider
-        console.log('🔗 Step 2/6: Getting Ethereum provider...');
-        const provider = await sdk.wallet.getEthereumProvider();
-        
-        if (!provider) {
-            console.error('❌ Provider is null/undefined');
-            throw new Error('Farcaster wallet provider not available. Try reopening the Mini App.');
-        }
-        
-        if (typeof provider.request !== 'function') {
-            console.error('❌ Provider has no request method');
-            throw new Error('Wallet provider is invalid.');
-        }
-        
-        console.log('✅ Provider obtained');
-
-        // Step 3: Request accounts
-        console.log('🔗 Step 3/6: Requesting wallet accounts...');
-        console.log('   Calling: provider.request({ method: "eth_requestAccounts" })');
-        
-        const accounts = await provider.request({ 
-            method: 'eth_requestAccounts', 
-            params: [] 
-        });
-        
-        console.log('✅ Accounts returned:', {
-            count: accounts?.length || 0,
-            first: accounts?.[0]?.substring(0, 10) + '...' || 'none'
-        });
-        
-        const from = (accounts && accounts[0]) ? accounts[0] : null;
-        
-        if (!from) {
-            console.error('❌ No account address returned');
-            throw new Error('Wallet not connected. Please connect your wallet in Warpcast.');
-        }
-
-        // Step 4: Save connected address
-        console.log('🔗 Step 4/6: Connected to wallet:', from.substring(0, 10) + '...');
-        connectedAddress = from;
-        window.dispatchEvent(new CustomEvent('base-invaders:wallet-connected', { 
-            detail: { address: from } 
-        }));
-
-        // Step 5: Encode transaction data
-        console.log('🔗 Step 5/6: Encoding function call...');
-        const data = encodeFunctionData({
-            abi: CHECK_IN_CONTRACT.abi,
-            functionName: 'checkIn',
-            args: []
-        });
-        console.log('✅ Encoded data:', data.substring(0, 20) + '...');
-
-        // Step 6: Build and send transaction
-        const tx = {
-            from,
-            to: CHECK_IN_CONTRACT.address,
-            data,
-            chainId: `0x${CHECK_IN_CONTRACT.chainId.toString(16)}`, // Base = 0x2105
-            value: '0x0'
-        };
-        
-        console.log('🔗 Step 6/6: Sending transaction...');
-        console.log('   From:', tx.from.substring(0, 10) + '...');
-        console.log('   To:', tx.to);
-        console.log('   Chain:', tx.chainId, '(Base)');
-        console.log('   Calling: provider.request({ method: "eth_sendTransaction" })');
-        
-        const hash = await provider.request({ 
-            method: 'eth_sendTransaction', 
-            params: [tx] 
-        });
-        
-        console.log('═══════════════════════════════════════');
-        console.log('✅✅✅ TRANSACTION SENT SUCCESSFULLY! ✅✅✅');
-        console.log('✅ Hash:', hash);
-        console.log('═══════════════════════════════════════');
-        
-        if (!hash || typeof hash !== 'string') {
-            console.error('❌ Invalid hash returned:', hash);
-            throw new Error('Transaction was not sent properly.');
-        }
-
-        // Try to wait for receipt (optional)
-        const config = await getWagmiConfig().catch(() => null);
-        if (config) {
-            console.log('⏳ Waiting for transaction receipt...');
-            return waitForTransactionReceipt(config, { hash });
-        }
-
-        return { hash };
-        
-    } catch (error) {
-        console.log('═══════════════════════════════════════');
-        console.error('❌❌❌ TRANSACTION FAILED ❌❌❌');
-        console.error('❌ Error type:', error.constructor?.name || 'Unknown');
-        console.error('❌ Error message:', error.message);
-        console.error('❌ Error code:', error.code);
-        if (error.stack) {
-            console.error('❌ Stack trace:', error.stack.split('\n').slice(0, 3).join('\n'));
-        }
-        console.log('═══════════════════════════════════════');
-        
-        // Re-throw with better message
-        if (error.message.includes('User rejected')) {
-            throw new Error('Transaction cancelled by user');
-        } else if (error.message.includes('insufficient funds')) {
-            throw new Error('Insufficient funds for gas');
-        } else {
-            throw error;
-        }
+    if (typeof sdk?.actions?.requestTransaction === 'function') {
+        console.log('[miniapp] REQUESTING TRANSACTION VIA SDK:', tx);
+        const result = await sdk.actions.requestTransaction(tx);
+        if (!result?.hash) throw new Error('Transaction failed - no hash returned');
+        return result;
     }
+
+    // Fallback: Farcaster SDK uses getEthereumProvider + eth_sendTransaction (no requestTransaction)
+    console.log('[miniapp] Using provider fallback for transaction');
+    const provider = await sdk.wallet.getEthereumProvider();
+    if (!provider || typeof provider.request !== 'function') {
+        throw new Error('MiniApp SDK not available - ensure running in Base Mini-App and account association is valid');
+    }
+    const accounts = await provider.request({ method: 'eth_requestAccounts', params: [] });
+    const from = (accounts && accounts[0]) ? accounts[0] : null;
+    if (!from) throw new Error('Wallet not connected. Please connect your wallet.');
+    connectedAddress = from;
+    window.dispatchEvent(new CustomEvent('base-invaders:wallet-connected', { detail: { address: from } }));
+    const sendTx = {
+        from,
+        to: tx.to,
+        data: tx.data,
+        chainId: `0x${Number(tx.chainId).toString(16)}`,
+        value: '0x0'
+    };
+    const hash = await provider.request({ method: 'eth_sendTransaction', params: [sendTx] });
+    if (!hash || typeof hash !== 'string') throw new Error('Transaction was not sent properly.');
+    return { hash };
 }
 
 async function submitLeaderboardScore(score, wave, streak, name) {
     if (!LEADERBOARD_CONTRACT.address || LEADERBOARD_CONTRACT.address === '0x0000000000000000000000000000000000000000') {
         throw new Error('Leaderboard contract address is not configured.');
     }
-
-    const config = await getWagmiConfig();
-    await connect(config, { connector: injected({ shimDisconnect: true }) });
-
-    const account = getAccount(config);
-    const hash = await writeContract(config, {
-        address: LEADERBOARD_CONTRACT.address,
+    const data = encodeFunctionData({
         abi: LEADERBOARD_CONTRACT.abi,
         functionName: 'submitScore',
-        args: [score, wave, streak, name || ''],
-        chainId: LEADERBOARD_CONTRACT.chainId,
-        account: account.address
+        args: [BigInt(score), BigInt(wave), BigInt(streak), name || '']
     });
+    const tx = { to: LEADERBOARD_CONTRACT.address, data, chainId: LEADERBOARD_CONTRACT.chainId };
 
-    return waitForTransactionReceipt(config, { hash });
+    if (typeof sdk?.actions?.requestTransaction === 'function') {
+        const result = await sdk.actions.requestTransaction(tx);
+        return result;
+    }
+    // Fallback: provider
+    const provider = await sdk.wallet.getEthereumProvider();
+    if (!provider || typeof provider.request !== 'function') throw new Error('SDK not available');
+    const accounts = await provider.request({ method: 'eth_requestAccounts', params: [] });
+    const from = (accounts && accounts[0]) ? accounts[0] : null;
+    if (!from) throw new Error('Wallet not connected.');
+    const hash = await provider.request({
+        method: 'eth_sendTransaction',
+        params: [{ from, to: tx.to, data: tx.data, chainId: `0x${Number(tx.chainId).toString(16)}`, value: '0x0' }]
+    });
+    return { hash };
 }
 
 async function fetchLeaderboard() {
@@ -492,24 +406,15 @@ async function fetchLeaderboard() {
     });
 }
 
-/**
- * Call Farcaster Mini App SDK ready() to hide splash and show app.
- * MUST be called after game canvas is visible (e.g. from MenuScene.create() or game-ready).
- */
 async function markMiniAppReady() {
-    if (readyCalled) {
-        console.log('[miniapp] markMiniAppReady already called, skip');
-        return;
-    }
+    if (readyCalled) return;
     readyCalled = true;
     console.log('[miniapp] Calling sdk.actions.ready()...');
-
     try {
         await sdk.actions.ready({ disableNativeGestures: false });
-        console.log('[miniapp] SDK ready() OK – splash should hide, app visible');
-        window.dispatchEvent(new Event('base-invaders:wallet-connected'));
+        console.log('[miniapp] ✅ ready() OK – splash hidden, app active');
     } catch (error) {
-        console.error('[miniapp] sdk.actions.ready() failed:', error);
+        console.error('[miniapp] ❌ ready() failed:', error.message);
     }
 }
 
@@ -538,7 +443,7 @@ getWagmiConfig()
 
 // Listen for game-ready event to call sdk.actions.ready()
 window.addEventListener('base-invaders:game-ready', () => {
-    console.log('[miniapp] base-invaders:game-ready received');
+    console.log('[miniapp] Game ready event – ensuring SDK ready');
     markMiniAppReady();
 });
 
@@ -553,6 +458,9 @@ window.addEventListener('load', () => {
         }
     }, READY_FALLBACK_MS);
 });
+
+// Call immediately for faster init (per Base create-new docs)
+markMiniAppReady();
 
 // ═══════════════════════════════════════
 // DEBUG HELPER

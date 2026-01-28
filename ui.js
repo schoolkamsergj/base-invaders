@@ -581,55 +581,34 @@ class UI {
             console.log('═══════════════════════════════════════');
 
             if (typeof window.baseInvadersOnchainCheckIn === 'function') {
-                console.log('✅ [UI] SDK function found, starting transaction...');
-                
                 this.checkInPending = true;
                 this.checkInButtonText.setText('⛓️ SIGNING...');
                 this.checkInButton.disableInteractive();
                 this.checkInButtonText.disableInteractive();
-                
+
                 try {
-                    console.log('🎯 [UI] Calling window.baseInvadersOnchainCheckIn()...');
+                    console.log('Check-in clicked - calling onchain');
                     const result = await window.baseInvadersOnchainCheckIn();
-                    
-                    console.log('═══════════════════════════════════════');
-                    console.log('✅✅✅ [UI] TRANSACTION SUCCESS ✅✅✅');
-                    console.log('✅ [UI] Result:', result);
-                    console.log('═══════════════════════════════════════');
-                    
                     this.showNotification('⛓️ Confirmed on Base!', notifyX, notifyY - 40);
-                    
+                    alert('✅ Check-in successful! Hash: ' + (result?.hash || ''));
                 } catch (error) {
-                    console.log('═══════════════════════════════════════');
-                    console.error('❌❌❌ [UI] TRANSACTION FAILED ❌❌❌');
-                    console.error('❌ [UI] Error:', error.message);
-                    console.log('═══════════════════════════════════════');
-                    
-                    // Show user-friendly error
+                    console.error('Check-in failed:', error);
+                    const msg = error?.message || 'Unknown error';
                     let errorMsg = 'Transaction failed';
-                    if (error.message.includes('cancelled') || error.message.includes('rejected')) {
-                        errorMsg = 'Transaction cancelled';
-                    } else if (error.message.includes('funds')) {
-                        errorMsg = 'Insufficient funds';
-                    } else if (error.message.includes('not available')) {
-                        errorMsg = 'Wallet not ready, try again';
-                    }
-                    
+                    if (msg.includes('cancelled') || msg.includes('rejected')) errorMsg = 'Transaction cancelled';
+                    else if (msg.includes('funds')) errorMsg = 'Insufficient funds';
+                    else if (msg.includes('not available')) errorMsg = 'Wallet not ready, try again';
                     this.showNotification('⚠️ ' + errorMsg, notifyX, notifyY - 40);
-                    
+                    alert('❌ Check-in failed: ' + msg);
                 } finally {
                     this.checkInPending = false;
                     this.checkInButton.setInteractive({ useHandCursor: true });
                     this.checkInButtonText.setInteractive({ useHandCursor: true });
                 }
-                
             } else {
-                console.error('═══════════════════════════════════════');
-                console.error('❌ [UI] SDK FUNCTION NOT FOUND');
-                console.error('❌ [UI] Check if miniapp.js loaded correctly');
-                console.error('═══════════════════════════════════════');
-                
+                console.error('[UI] SDK function not found');
                 this.showNotification('⚠️ SDK not loaded', notifyX, notifyY - 40);
+                alert('❌ Check-in failed: SDK not loaded');
             }
 
 // Update streak system
