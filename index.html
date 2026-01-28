@@ -8,9 +8,11 @@
     <meta name="description" content="Cosmic Arcade Shooter on Base blockchain">
     <meta name="base:app_id" content="69751e8e3a92926b661fd3d0" />
     
-    <!-- Farcaster Mini App / Frame v2 Embed (launch_miniapp per Base migrate docs) -->
-    <meta name="fc:miniapp" content='{"version":"1","imageUrl":"https://base-invaders-nine.vercel.app/og-image.png","button":{"title":"Play Game 🚀","action":{"type":"launch_miniapp","name":"Base Invaders","url":"https://base-invaders-nine.vercel.app","splashImageUrl":"https://base-invaders-nine.vercel.app/splash.png","splashBackgroundColor":"#000000"}}}' />
-    <meta name="fc:frame" content='{"version":"1","imageUrl":"https://base-invaders-nine.vercel.app/og-image.png","button":{"title":"Play Game 🚀","action":{"type":"launch_miniapp","name":"Base Invaders","url":"https://base-invaders-nine.vercel.app","splashImageUrl":"https://base-invaders-nine.vercel.app/splash.png","splashBackgroundColor":"#000000"}}}' />
+    <!-- Farcaster Mini App / Frame v2 Embed -->
+    <!-- Primary Mini App tag -->
+    <meta name="fc:miniapp" content='{"version":"1","imageUrl":"https://base-invaders-nine.vercel.app/og-image.png","button":{"title":"Play Game 🚀","action":{"type":"launch_frame","name":"Base Invaders","url":"https://base-invaders-nine.vercel.app","splashImageUrl":"https://base-invaders-nine.vercel.app/splash.png","splashBackgroundColor":"#000000"}}}' />
+    <!-- Backwards-compatible frame tag -->
+    <meta name="fc:frame" content='{"version":"1","imageUrl":"https://base-invaders-nine.vercel.app/og-image.png","button":{"title":"Play Game 🚀","action":{"type":"launch_frame","name":"Base Invaders","url":"https://base-invaders-nine.vercel.app","splashImageUrl":"https://base-invaders-nine.vercel.app/splash.png","splashBackgroundColor":"#000000"}}}' />
     
     <!-- Open Graph -->
     <meta property="og:title" content="Base Invaders">
@@ -42,7 +44,46 @@
         canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js" crossorigin="anonymous"></script>
-    <!-- miniapp.js (module) imports SDK and calls ready() immediately -->
+    <!-- Farcaster Mini App: call ready() so splash hides (works even if miniapp.js module fails in WebView) -->
+    <script>
+(function() {
+    var readyDone = false;
+    function doReady(sdk) {
+        if (!sdk || !sdk.actions || !sdk.actions.ready) return;
+        sdk.actions.ready({ disableNativeGestures: false }).then(function() {
+            console.log('[fc] ready() OK');
+        }).catch(function(e) {
+            console.warn('[fc] ready() err', e);
+        });
+    }
+    function callReady() {
+        if (readyDone) return;
+        readyDone = true;
+        var urls = [
+            'https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk@0.2.1/+esm',
+            'https://esm.sh/@farcaster/miniapp-sdk@0.2.1'
+        ];
+        function tryNext(i) {
+            if (i >= urls.length) {
+                console.warn('[fc] SDK load failed from all CDNs');
+                return;
+            }
+            import(/* webpackIgnore: true */ urls[i]).then(function(m) {
+                var sdk = m.sdk || m.default;
+                doReady(sdk);
+            }).catch(function(e) {
+                tryNext(i + 1);
+            });
+        }
+        tryNext(0);
+    }
+    window.__farcasterCallReady = callReady;
+    window.addEventListener('base-invaders:game-ready', callReady);
+    window.addEventListener('load', function() {
+        setTimeout(callReady, 2500);
+    });
+})();
+    </script>
 </head>
 <body>
     <div id="game-container">

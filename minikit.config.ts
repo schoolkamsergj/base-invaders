@@ -1,4 +1,3 @@
-// TODO: Regenerate accountAssociation via https://base.dev/preview?tab=account for domain 'base-invaders-nine.vercel.app'. Disable Vercel Deployment Protection first. Update header, payload, signature here.
 const ROOT_URL =
     process.env.ROOT_URL ||
     process.env.NEXT_PUBLIC_ROOT_URL ||
