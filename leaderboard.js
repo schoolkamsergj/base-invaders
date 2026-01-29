@@ -141,7 +141,10 @@
         }
 
         entries.slice(0, LEADERBOARD_LIMIT).forEach((entry) => {
-        const name = entry.name ? entry.name : truncateAddress(entry.address);
+            const raw = (entry.name && String(entry.name).trim()) || '';
+            const name = raw && raw.toLowerCase() !== 'player'
+                ? raw
+                : truncateAddress(entry.address);
             const dateValue = entry.timestamp ? Number(entry.timestamp) * 1000 : null;
             const row = document.createElement('tr');
             row.innerHTML = `
