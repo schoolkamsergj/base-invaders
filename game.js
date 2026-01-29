@@ -254,30 +254,12 @@ Collect diamonds and upgrade your ship.`;
             });
         });
         
-        // Click handler with confirmation dialog
+        // Click handler: reset without confirmation (player knows the consequences)
         this.resetBtn.on('pointerdown', () => {
-            // Confirmation dialog
-            const confirmed = confirm('⚠️ Reset all progress?\n\nThis will:\n- Clear all currency (Gold, Lightning, Diamonds)\n- Reset all upgrades and purchases\n- Reset score and level\n\nThis cannot be undone!');
-            
-            if (confirmed) {
-                // Clear all localStorage data
-                localStorage.removeItem('baseInvadersData');
-                localStorage.removeItem('baseInvadersShopData');
-                localStorage.removeItem('baseInvadersVibration');
-                
-                // Visual feedback
-                this.tweens.add({
-                    targets: [resetBtn, resetText],
-                    alpha: 0.5,
-                    scale: 0.9,
-                    duration: 200,
-                    yoyo: true,
-                    onComplete: () => {
-                        // Reload the game to fresh state
-                        location.reload();
-                    }
-                });
-            }
+            localStorage.removeItem('baseInvadersData');
+            localStorage.removeItem('baseInvadersShop');
+            localStorage.removeItem('baseInvadersVibration');
+            location.reload();
         });
 
         // LEADERBOARD button (below Reset Progress)
