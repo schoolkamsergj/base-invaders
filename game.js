@@ -1713,11 +1713,11 @@ class GameScene extends Phaser.Scene {
             if (enemy && enemy.update) {
                 enemy.update(time, delta);
             }
-            // Check if enemy went off screen
+            // Check if enemy went off screen (penalty: score only, no invisible "hit" damage)
             if (enemySprite.y > this.scale.height + 50) {
                 if (enemy && enemy.type !== 'boss') {
                     this.gameState.score -= 50;
-                    this.player.takeDamage(5);
+                    // Removed: this.player.takeDamage(5) – caused "invisible hit" (vibration, no bullet/sound)
                 }
                 // Properly destroy enemy that went off screen
                 if (enemy) {
