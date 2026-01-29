@@ -292,9 +292,9 @@ class UI {
         const margin = Math.max(10, width * 0.03);
         const topMargin = Math.max(8, height * 0.02);
         
-        // Font sizes
+        // Font sizes (stage smaller so "Mission X / Wave Y" fits and doesn't overlap score or currency)
         const currencyFont = Math.max(14, Math.min(width * 0.045, 22));
-        const stageFont = Math.max(18, Math.min(width * 0.05, 30));
+        const stageFont = Math.max(14, Math.min(width * 0.04, 20));
         const scoreFont = Math.max(12, Math.min(width * 0.035, 20));
         const levelFont = Math.max(11, Math.min(width * 0.03, 16));
         const currencySpacing = Math.max(18, currencyFont * 1.5);
@@ -385,7 +385,7 @@ class UI {
         this.lightningText.setPosition(0, layout.currencySpacing);
         this.diamondsText.setPosition(0, layout.currencySpacing * 2);
 
-        // Stage text (center)
+        // Stage text (center, smaller font so 2-line text doesn't overlap)
         this.stageText.setPosition(layout.width / 2, layout.topMargin);
         this.stageText.setFontSize(`${layout.stageFont}px`);
 
@@ -1047,17 +1047,18 @@ if (isMilestone) {
         this.lightningText.setText(`⚡ ${this.formatNumber(gameState.lightning)}`);
         this.diamondsText.setText(`💎 ${this.formatNumber(gameState.diamonds)}`);
         
-        // Update mission/wave display
+        // Update mission/wave display (2 lines so it doesn't overlap Score right / currency left)
         if (gameState.missionSystem) {
+            const m = gameState.missionSystem.currentMission;
             if (gameState.missionSystem.bossActive) {
-                this.stageText.setText(`Mission ${gameState.missionSystem.currentMission} - BOSS ⚔️`);
+                this.stageText.setText(`Mission ${m}\nBOSS ⚔️`);
                 this.stageText.setColor('#ff0000');
             } else {
-                this.stageText.setText(`Mission ${gameState.missionSystem.currentMission} - Wave ${gameState.missionSystem.currentWave}/5`);
+                const w = gameState.missionSystem.currentWave;
+                this.stageText.setText(`Mission ${m}\nWave ${w}/5`);
                 this.stageText.setColor('#00ffff');
             }
         } else {
-            // Fallback to stage if mission system not available
             this.stageText.setText(`STAGE ${gameState.stage}`);
             this.stageText.setColor('#00ffff');
         }
