@@ -176,8 +176,16 @@
         }
     }
 
-    function open() {
+    async function open() {
         overlay.classList.remove('hidden');
+        if (!getSavedName() && typeof window.baseInvadersGetUserName === 'function') {
+            try {
+                const name = await window.baseInvadersGetUserName();
+                if (name) setSavedName(name);
+            } catch (e) {
+                // ignore
+            }
+        }
         loadLeaderboard();
     }
 

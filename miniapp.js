@@ -22,6 +22,22 @@ function getSdk() {
     return sdk;
 }
 
+/** Get current user's display name from Farcaster / Base (for leaderboard). */
+window.baseInvadersGetUserName = async function () {
+    const sdk = getSdk();
+    if (!sdk) return '';
+    try {
+        if (typeof sdk.ready === 'function') await sdk.ready();
+        else if (sdk.actions && typeof sdk.actions.ready === 'function') await sdk.actions.ready({ disableNativeGestures: false });
+    } catch (e) {
+        // ignore
+    }
+    const user = sdk.context?.user || sdk.user;
+    if (!user || typeof user !== 'object') return '';
+    const name = (user.displayName && String(user.displayName).trim()) || (user.username && String(user.username).trim());
+    return name || '';
+};
+
 function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }

@@ -2408,14 +2408,22 @@ class GameScene extends Phaser.Scene {
                 );
                 if (!wantsSubmit) return;
                 try {
-                    const name = window.baseInvadersLeaderboard?.getSavedName
-                        ? window.baseInvadersLeaderboard.getSavedName()
-                        : 'Player';
+                    let name = '';
+                    if (typeof window.baseInvadersGetUserName === 'function') {
+                        name = await window.baseInvadersGetUserName();
+                    }
+                    if (!name && window.baseInvadersLeaderboard?.getSavedName) {
+                        name = window.baseInvadersLeaderboard.getSavedName();
+                    }
+                    name = (name && String(name).trim()) || 'Player';
+                    if (window.baseInvadersLeaderboard?.setSavedName) {
+                        window.baseInvadersLeaderboard.setSavedName(name);
+                    }
                     await window.baseInvadersSubmitScore(
                         this.gameState.score,
                         waveLevel,
                         streak,
-                        name || 'Player'
+                        name
                     );
                 } catch (error) {
                     console.error('Leaderboard submission failed:', error);
