@@ -115,13 +115,14 @@
         const data = await window.baseInvadersGetLeaderboard();
         if (!Array.isArray(data)) return [];
 
+        // ABI order: player, name, score, wave, streak, timestamp (0..5)
         return data.map((entry) => ({
             address: entry.player || entry[0],
             name: entry.name || entry[1] || '',
             score: entry.score ?? entry[2],
             wave: entry.wave ?? entry[3],
-            timestamp: entry.timestamp ?? entry[4],
-            streak: entry.streak ?? entry[5]
+            streak: entry.streak ?? entry[4],
+            timestamp: entry.timestamp ?? entry[5]
         }));
     }
 

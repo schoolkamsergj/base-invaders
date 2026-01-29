@@ -2392,50 +2392,33 @@ class GameScene extends Phaser.Scene {
         if (isNewHigh && window.baseInvadersLeaderboard?.saveLocalHighScore) {
             window.baseInvadersLeaderboard.saveLocalHighScore(localEntry);
         }
-        if (typeof window.baseInvadersSubmitScore === 'function' && isNewHigh) {
-            window.baseInvadersSubmitScore(
-                Math.floor(this.gameState.score),
-                Math.floor(waveLevel),
-                streak || 1,
-                'Player'
-            );
-            console.log('GLOBAL SUBMITTED!');
-        }
-        
+
         document.getElementById('gameover-overlay').classList.remove('hidden');
         document.getElementById('final-stats').innerHTML = `
             <p>Final Score: ${this.gameState.score.toLocaleString()}</p>
             <p>Stage Reached: ${this.gameState.stage}</p>
             <p>Level: ${this.gameState.playerLevel}</p>
         `;
-        
+
+        // One dialog only: submit to global leaderboard (wallet tx required)
         if (isNewHigh && typeof window.baseInvadersSubmitScore === 'function') {
             setTimeout(async () => {
                 const wantsSubmit = confirm(
-                    '🏆 New high score! Submit to global leaderboard?\n\n' +
-                    'This requires a wallet transaction.'
+                    'New high score! Submit to global leaderboard? (Wallet transaction required.)'
                 );
                 if (!wantsSubmit) return;
-                
                 try {
-                    let savedName = window.baseInvadersLeaderboard?.getSavedName
+                    const name = window.baseInvadersLeaderboard?.getSavedName
                         ? window.baseInvadersLeaderboard.getSavedName()
-                        : '';
-                    const promptName = prompt('Enter a name for the leaderboard (optional):', savedName);
-                    const finalName = typeof promptName === 'string' ? promptName.trim() : '';
-                    if (window.baseInvadersLeaderboard?.setSavedName) {
-                        window.baseInvadersLeaderboard.setSavedName(finalName);
-                    }
+                        : 'Player';
                     await window.baseInvadersSubmitScore(
                         this.gameState.score,
                         waveLevel,
                         streak,
-                        finalName
+                        name || 'Player'
                     );
-                    alert('Leaderboard submission confirmed!');
                 } catch (error) {
                     console.error('Leaderboard submission failed:', error);
-                    alert('Submission failed or was rejected.');
                 }
             }, 200);
         }

@@ -165,15 +165,15 @@ window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
 window.baseInvadersGetLeaderboard = async function () {
     console.log('[miniapp] baseInvadersGetLeaderboard start');
     try {
-        const sdk = getSdk();
-        if (!sdk) return [];
-        const provider = sdk.wallet.getEthereumProvider();
-        if (!provider) return [];
         const viem = await getViem();
         const baseChain = viem.base || (await import('https://esm.sh/viem/chains').then((m) => m.base));
-        const { createPublicClient, custom, parseAbi } = viem;
+        const { createPublicClient, http, parseAbi } = viem;
         const LEADERBOARD_ABI = parseAbi(['function getTopPlayers() view returns (tuple(address player, string name, uint256 score, uint256 wave, uint256 streak, uint256 timestamp)[])']);
-        const client = createPublicClient({ chain: baseChain, transport: custom(provider) });
+        // Use public Base RPC so leaderboard works without wallet
+        const client = createPublicClient({
+            chain: baseChain,
+            transport: http('https://mainnet.base.org')
+        });
         const data = await client.readContract({ address: LEADERBOARD_ADDR, abi: LEADERBOARD_ABI, functionName: 'getTopPlayers' });
         console.log('[miniapp] getTopPlayers entries:', Array.isArray(data) ? data.length : 0);
         return Array.isArray(data) ? data : [];
