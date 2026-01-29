@@ -2567,9 +2567,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('pause-overlay').classList.add('hidden');
                 }
                 
-                // Sync shop purchases with game state
+                // Sync shop purchases with game state (currency)
                 if (window.shopSystem && scene.gameState) {
                     window.shopSystem.syncWithGameState(scene.gameState);
+                }
+                // Apply purchased upgrades to current game (multi-shot, damage, HP, etc.)
+                if (scene.loadPlayerStats) {
+                    scene.loadPlayerStats();
                 }
             }
         }
