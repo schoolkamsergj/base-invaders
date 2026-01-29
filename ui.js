@@ -485,25 +485,10 @@ class UI {
         return `${year}-${month}-${day}`;
     }
 
-    // Helper: Get UTC day key (YYYY-MM-DD) – contract uses block.timestamp (UTC)
-    getDayKeyUTC(date = new Date()) {
-        const year = date.getUTCFullYear();
-        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-        const day = String(date.getUTCDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
-
     // Helper: Calculate days between two day keys (local dates)
     daysBetweenDayKeys(key1, key2) {
         const d1 = new Date(key1 + 'T00:00:00');
         const d2 = new Date(key2 + 'T00:00:00');
-        return Math.floor((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
-    }
-
-    // Helper: Days between two UTC day keys (for check-in streak aligned with contract)
-    daysBetweenDayKeysUTC(key1, key2) {
-        const d1 = new Date(key1 + 'T00:00:00Z');
-        const d2 = new Date(key2 + 'T00:00:00Z');
         return Math.floor((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
     }
 
@@ -579,10 +564,12 @@ class UI {
 
             const notifyX = this.checkInLayout?.x ?? buttonX;
             const notifyY = this.checkInLayout?.y ?? buttonY;
-            const todayKey = this.getDayKeyUTC(); // Contract uses UTC day (block.timestamp)
-            let checkInSucceeded = false;
 
-            // Try onchain transaction (do NOT set lastCheckIn until success or "Already checked in today")
+            // Save locally first (then try on-chain)
+            const todayKey = this.getDayKey();
+            localStorage.setItem('lastCheckIn', todayKey);
+            console.log('✅ Check-in saved locally:', todayKey);
+
             console.log('═══════════════════════════════════════');
             console.log('🎯 [UI] Check-in button clicked');
             console.log('═══════════════════════════════════════');
@@ -605,8 +592,6 @@ class UI {
                     console.log('═══════════════════════════════════════');
                     
                     this.showNotification('⛓️ Confirmed on Base!', notifyX, notifyY - 40);
-                    localStorage.setItem('lastCheckIn', todayKey);
-                    checkInSucceeded = true;
                     
                 } catch (error) {
                     console.log('═══════════════════════════════════════');
@@ -614,21 +599,17 @@ class UI {
                     console.error('❌ [UI] Error:', error.message);
                     console.log('═══════════════════════════════════════');
                     
-                    if (error.message.includes('Already checked in today')) {
-                        localStorage.setItem('lastCheckIn', todayKey);
-                        this.showNotification('Already checked in today', notifyX, notifyY - 40);
-                        this.updateCheckInButtonState();
-                    } else {
-                        let errorMsg = 'Transaction failed';
-                        if (error.message.includes('cancelled') || error.message.includes('rejected')) {
-                            errorMsg = 'Transaction cancelled';
-                        } else if (error.message.includes('funds')) {
-                            errorMsg = 'Insufficient funds';
-                        } else if (error.message.includes('not available')) {
-                            errorMsg = 'Wallet not ready, try again';
-                        }
-                        this.showNotification('⚠️ ' + errorMsg, notifyX, notifyY - 40);
+                    let errorMsg = 'Transaction failed';
+                    if (error.message.includes('cancelled') || error.message.includes('rejected')) {
+                        errorMsg = 'Transaction cancelled';
+                    } else if (error.message.includes('funds')) {
+                        errorMsg = 'Insufficient funds';
+                    } else if (error.message.includes('not available')) {
+                        errorMsg = 'Wallet not ready, try again';
+                    } else if (error.message.includes('Already checked in today')) {
+                        errorMsg = 'Already checked in today';
                     }
+                    this.showNotification('⚠️ ' + errorMsg, notifyX, notifyY - 40);
                     
                 } finally {
                     this.checkInPending = false;
@@ -643,30 +624,25 @@ class UI {
                 console.error('═══════════════════════════════════════');
                 
                 this.showNotification('⚠️ SDK not loaded', notifyX, notifyY - 40);
-                localStorage.setItem('lastCheckIn', todayKey);
-                checkInSucceeded = true;
             }
 
-            if (!checkInSucceeded) return;
-
-            // Update streak system (only when check-in actually succeeded or local-only)
-let totalDays = 0;
-const streakData = localStorage.getItem('checkInStreak');
-if (streakData) {
-    try {
-        const data = JSON.parse(streakData);
-        const lastDateKey = data.lastDate;
-        const previousStreak = data.totalDays || 0;
-        
-        console.log('[CHECK-IN DEBUG] Previous streak:', previousStreak);
-        
-        if (!lastDateKey) {
-            // No previous date, start at day 1
-            totalDays = 1;
-            console.log('[CHECK-IN DEBUG] No previous date, starting at day 1');
-        } else {
-            const daysSince = this.daysBetweenDayKeysUTC(lastDateKey, todayKey);
-            console.log('[CHECK-IN DEBUG] Days since last check-in (UTC):', daysSince);
+            // Update streak system (local date)
+            let totalDays = 0;
+            const streakData = localStorage.getItem('checkInStreak');
+            if (streakData) {
+                try {
+                    const data = JSON.parse(streakData);
+                    const lastDateKey = data.lastDate;
+                    const previousStreak = data.totalDays || 0;
+                    
+                    console.log('[CHECK-IN DEBUG] Previous streak:', previousStreak);
+                    
+                    if (!lastDateKey) {
+                        totalDays = 1;
+                        console.log('[CHECK-IN DEBUG] No previous date, starting at day 1');
+                    } else {
+                        const daysSince = this.daysBetweenDayKeys(lastDateKey, todayKey);
+                        console.log('[CHECK-IN DEBUG] Days since last check-in:', daysSince);
             
             if (daysSince === 1) {
                 // Consecutive day - increment streak
@@ -788,9 +764,8 @@ if (isMilestone) {
         if (!lastCheckIn) {
             return true; // Never checked in, button is active
         }
-        // Contract uses UTC day (block.timestamp) – use UTC so we don't allow tx that would revert
-        const todayUTC = this.getDayKeyUTC();
-        return lastCheckIn !== todayUTC;
+        const todayKey = this.getDayKey();
+        return lastCheckIn !== todayKey;
     }
 
     getCheckInTimeRemaining() {
@@ -798,14 +773,15 @@ if (isMilestone) {
         if (!lastCheckIn) {
             return null; // No cooldown
         }
-        // Contract uses UTC day – show countdown to next UTC midnight
-        const todayUTC = this.getDayKeyUTC();
-        if (lastCheckIn !== todayUTC) {
-            return null; // Cooldown expired (different UTC day)
+        const todayKey = this.getDayKey();
+        if (lastCheckIn !== todayKey) {
+            return null; // Cooldown expired (different day)
         }
         const now = new Date();
-        const nextUTCMidnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
-        const msRemaining = nextUTCMidnight.getTime() - now.getTime();
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(0, 0, 0, 0); // Midnight local time
+        const msRemaining = tomorrow.getTime() - now.getTime();
         if (msRemaining <= 0) {
             return null;
         }
@@ -825,9 +801,8 @@ if (isMilestone) {
             if (!lastDateKey) {
                 return { totalDays: 0, nextMilestone: 7, isMilestone: false };
             }
-            // Streak uses UTC days to match contract
-            const todayUTC = this.getDayKeyUTC();
-            const daysSince = this.daysBetweenDayKeysUTC(lastDateKey, todayUTC);
+            const todayKey = this.getDayKey();
+            const daysSince = this.daysBetweenDayKeys(lastDateKey, todayKey);
             if (daysSince > 1 || daysSince < 0) {
                 return { totalDays: 0, nextMilestone: 7, isMilestone: false };
             }

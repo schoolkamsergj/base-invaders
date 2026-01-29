@@ -104,32 +104,13 @@ window.baseInvadersOnchainCheckIn = async function () {
 
         const viem = await getViem();
         const baseChain = viem.base || (await import('https://esm.sh/viem/chains').then((m) => m.base));
-        const { createWalletClient, createPublicClient, custom, parseAbi, getAddress } = viem;
+        const { createWalletClient, custom, parseAbi, getAddress } = viem;
         const CHECKIN_ABI = parseAbi(['function checkIn() external']);
-
-        const accountObj = { address: getAddress(account), type: 'json-rpc' };
-
-        // Simulate first so we don't send a tx that would revert (e.g. "Already checked in today")
-        const publicClient = createPublicClient({ chain: baseChain, transport: custom(provider) });
-        try {
-            await publicClient.simulateContract({
-                address: CHECKIN_ADDR,
-                abi: CHECKIN_ABI,
-                functionName: 'checkIn',
-                account: accountObj
-            });
-        } catch (simErr) {
-            const msg = (simErr && simErr.message) ? String(simErr.message) : '';
-            if (msg.includes('Already checked in today')) {
-                console.log('[miniapp] Simulate: already checked in today');
-                throw new Error('Already checked in today');
-            }
-            throw simErr;
-        }
 
         const client = createWalletClient({ chain: baseChain, transport: custom(provider) });
         console.log('[miniapp] wallet client created');
 
+        const accountObj = { address: getAddress(account), type: 'json-rpc' };
         const hash = await client.writeContract({
             address: CHECKIN_ADDR,
             abi: CHECKIN_ABI,
