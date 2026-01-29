@@ -162,25 +162,51 @@ window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
     }
 };
 
+// Base public RPCs (try in order; some may block CORS from browser)
+const BASE_RPC_URLS = [
+    'https://mainnet.base.org',
+    'https://base.llamarpc.com',
+    'https://1rpc.io/base',
+    'https://base-rpc.publicnode.com',
+    'https://base.drpc.org'
+];
+
 window.baseInvadersGetLeaderboard = async function () {
     console.log('[miniapp] baseInvadersGetLeaderboard start');
-    try {
-        const viem = await getViem();
-        const baseChain = viem.base || (await import('https://esm.sh/viem/chains').then((m) => m.base));
-        const { createPublicClient, http, parseAbi } = viem;
-        const LEADERBOARD_ABI = parseAbi(['function getTopPlayers() view returns (tuple(address player, string name, uint256 score, uint256 wave, uint256 streak, uint256 timestamp)[])']);
-        // Use public Base RPC so leaderboard works without wallet
-        const client = createPublicClient({
-            chain: baseChain,
-            transport: http('https://mainnet.base.org')
-        });
-        const data = await client.readContract({ address: LEADERBOARD_ADDR, abi: LEADERBOARD_ABI, functionName: 'getTopPlayers' });
-        console.log('[miniapp] getTopPlayers entries:', Array.isArray(data) ? data.length : 0);
-        return Array.isArray(data) ? data : [];
-    } catch (e) {
-        console.error('[miniapp] getLeaderboard failed', e);
-        return [];
+    const viem = await getViem();
+    const baseChain = viem.base || (await import('https://esm.sh/viem/chains').then((m) => m.base));
+    const { createPublicClient, parseAbi, custom } = viem;
+    const http = viem.http;
+    const LEADERBOARD_ABI = parseAbi(['function getTopPlayers() view returns (tuple(address player, string name, uint256 score, uint256 wave, uint256 streak, uint256 timestamp)[])']);
+
+    let lastError = null;
+    for (const rpcUrl of BASE_RPC_URLS) {
+        try {
+            const transport = typeof http === 'function'
+                ? http(rpcUrl)
+                : custom(async ({ method, params }) => {
+                    const res = await fetch(rpcUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
+                    });
+                    if (!res.ok) throw new Error('RPC ' + res.status);
+                    const json = await res.json();
+                    if (json.error) throw new Error(json.error.message || JSON.stringify(json.error));
+                    return json.result;
+                });
+            const client = createPublicClient({ chain: baseChain, transport });
+            const data = await client.readContract({ address: LEADERBOARD_ADDR, abi: LEADERBOARD_ABI, functionName: 'getTopPlayers' });
+            const arr = Array.isArray(data) ? data : [];
+            console.log('[miniapp] getTopPlayers OK via', rpcUrl, 'entries:', arr.length);
+            return arr;
+        } catch (e) {
+            lastError = e;
+            console.warn('[miniapp] getLeaderboard failed for', rpcUrl, e?.message || e);
+        }
     }
+    console.error('[miniapp] getLeaderboard failed for all RPCs', lastError);
+    throw lastError || new Error('Failed to load leaderboard');
 };
 
 window.baseInvadersMarkMiniAppReady = async function () {
@@ -226,4 +252,17 @@ window.debugCheckIn = async function () {
 };
 window.__debugCheckIn = window.debugCheckIn;
 
-console.log('[miniapp] Loaded (SDK UMD, viem runtime). Test: window.debugCheckIn()');
+window.debugLeaderboard = async function () {
+    console.log('[miniapp] debugLeaderboard called');
+    try {
+        const data = await window.baseInvadersGetLeaderboard();
+        console.log('[miniapp] getLeaderboard raw:', data);
+        console.log('[miniapp] entries count:', Array.isArray(data) ? data.length : 0);
+        return data;
+    } catch (e) {
+        console.error('[miniapp] getLeaderboard error:', e);
+        throw e;
+    }
+};
+
+console.log('[miniapp] Loaded (SDK UMD, viem runtime). Test: window.debugCheckIn(), window.debugLeaderboard()');

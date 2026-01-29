@@ -107,23 +107,29 @@
         localTableBody.appendChild(row);
     }
 
+    function normalizeEntry(entry) {
+        if (!entry || typeof entry !== 'object') return null;
+        // Support both named keys and tuple indices (ABI: player, name, score, wave, streak, timestamp = 0..5)
+        const address = entry.player ?? entry[0];
+        const name = entry.name ?? entry[1] ?? '';
+        const score = entry.score ?? entry[2];
+        const wave = entry.wave ?? entry[3];
+        const streak = entry.streak ?? entry[4];
+        const timestamp = entry.timestamp ?? entry[5];
+        if (address == null) return null;
+        return { address, name, score, wave, streak, timestamp };
+    }
+
     async function fetchGlobal() {
         if (typeof window.baseInvadersGetLeaderboard !== 'function') {
-            throw new Error('Leaderboard wallet integration not available.');
+            throw new Error('Leaderboard integration not available.');
         }
 
         const data = await window.baseInvadersGetLeaderboard();
-        if (!Array.isArray(data)) return [];
-
-        // ABI order: player, name, score, wave, streak, timestamp (0..5)
-        return data.map((entry) => ({
-            address: entry.player || entry[0],
-            name: entry.name || entry[1] || '',
-            score: entry.score ?? entry[2],
-            wave: entry.wave ?? entry[3],
-            streak: entry.streak ?? entry[4],
-            timestamp: entry.timestamp ?? entry[5]
-        }));
+        if (!data) return [];
+        const arr = Array.isArray(data) ? data : (data.length !== undefined ? Array.from(data) : []);
+        const entries = arr.map(normalizeEntry).filter(Boolean);
+        return entries;
     }
 
     function renderGlobal(entries) {
@@ -161,11 +167,12 @@
             renderGlobal(sorted);
             globalStatus.textContent = 'Global leaderboard (on-chain)';
         } catch (error) {
+            const msg = error && error.message ? error.message : String(error);
             console.warn('Failed to load global leaderboard:', error);
-            globalStatus.textContent = 'Global leaderboard unavailable — showing local only.';
+            globalStatus.textContent = 'Global leaderboard: ' + msg;
             globalStatus.classList.add('error');
             globalTableBody.innerHTML =
-                '<tr><td colspan="5">Connect wallet or try again later.</td></tr>';
+                '<tr><td colspan="5">Failed to load. Try Refresh or check console.</td></tr>';
         }
     }
 
