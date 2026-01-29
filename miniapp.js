@@ -36,7 +36,7 @@ function getUserFromContext(ctx) {
     return user && typeof user === 'object' ? user : null;
 }
 
-/** Get current user's display name from Farcaster / Base (for leaderboard). */
+/** Get current user's username (preferred) or display name from Farcaster / Base (for leaderboard). */
 window.baseInvadersGetUserName = async function () {
     const sdk = getSdk();
     if (!sdk) return '';
@@ -59,11 +59,47 @@ window.baseInvadersGetUserName = async function () {
         user = getUserFromContext(ctx);
     }
     if (!user || typeof user !== 'object') return '';
-    const name = (user.displayName && String(user.displayName).trim())
+    // Prefer username (e.g. vitalik.eth) over display name for leaderboard
+    const name = (user.username && String(user.username).trim())
+        || (user.displayName && String(user.displayName).trim())
         || (user.display_name && String(user.display_name).trim())
-        || (user.username && String(user.username).trim())
         || '';
     return name || '';
+};
+
+/**
+ * Resolve Ethereum addresses to Farcaster usernames via Neynar API.
+ * Set window.baseInvadersNeynarApiKey (get key at neynar.com) to enable.
+ * Returns Promise<Record<addressLowercase, username>>.
+ */
+window.baseInvadersResolveAddressesToUsernames = async function (addresses) {
+    const key = typeof window !== 'undefined' && window.baseInvadersNeynarApiKey;
+    if (!key || !Array.isArray(addresses) || addresses.length === 0) return {};
+    const list = addresses.map((a) => String(a).toLowerCase()).filter(Boolean);
+    const uniq = [...new Set(list)];
+    try {
+        const url = 'https://api.neynar.com/v2/farcaster/user/bulk-by-address/?addresses=' + encodeURIComponent(uniq.join(','));
+        const res = await fetch(url, { headers: { 'x-api-key': key } });
+        if (!res.ok) return {};
+        const data = await res.json();
+        const users = data.users || data.result?.users || (Array.isArray(data) ? data : []);
+        const map = {};
+        users.forEach((u) => {
+            const username = (u.username && String(u.username).trim()) || '';
+            if (!username) return;
+            const addr = (u.custody_address || u.custodyAddress || '').toString().toLowerCase();
+            if (addr) map[addr] = username;
+            const verifications = u.verifications || u.verified_addresses || u.verifiedAddresses || [];
+            verifications.forEach((v) => {
+                const a = (v && String(v).toLowerCase()) || '';
+                if (a) map[a] = username;
+            });
+        });
+        return map;
+    } catch (e) {
+        console.warn('[miniapp] Neynar resolve usernames failed:', e?.message || e);
+        return {};
+    }
 };
 
 function sleep(ms) {

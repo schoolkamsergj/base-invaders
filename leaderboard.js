@@ -132,6 +132,27 @@
         return entries;
     }
 
+    /** Resolve addresses to Farcaster usernames (Neynar) if API key is set. */
+    async function resolveUsernames(entries) {
+        if (typeof window.baseInvadersResolveAddressesToUsernames !== 'function') return;
+        const needResolve = entries
+            .filter((e) => {
+                const raw = (e.name && String(e.name).trim()) || '';
+                return !raw || raw.toLowerCase() === 'player';
+            })
+            .map((e) => e.address);
+        if (!needResolve.length) return;
+        try {
+            const map = await window.baseInvadersResolveAddressesToUsernames(needResolve);
+            entries.forEach((e) => {
+                const key = (e.address && String(e.address).toLowerCase()) || '';
+                if (key && map[key]) e.resolvedUsername = map[key];
+            });
+        } catch (err) {
+            console.warn('[leaderboard] resolve usernames failed:', err);
+        }
+    }
+
     function renderGlobal(entries) {
         globalTableBody.innerHTML = '';
         if (!entries.length) {
@@ -142,9 +163,8 @@
 
         entries.slice(0, LEADERBOARD_LIMIT).forEach((entry) => {
             const raw = (entry.name && String(entry.name).trim()) || '';
-            const name = raw && raw.toLowerCase() !== 'player'
-                ? raw
-                : truncateAddress(entry.address);
+            const fromChain = raw && raw.toLowerCase() !== 'player' ? raw : '';
+            const name = entry.resolvedUsername || fromChain || truncateAddress(entry.address);
             const dateValue = entry.timestamp ? Number(entry.timestamp) * 1000 : null;
             const row = document.createElement('tr');
             row.innerHTML = `
@@ -167,6 +187,7 @@
         try {
             const entries = await fetchGlobal();
             const sorted = sortEntries(entries);
+            await resolveUsernames(sorted);
             renderGlobal(sorted);
             globalStatus.textContent = 'Global leaderboard (on-chain)';
         } catch (error) {
