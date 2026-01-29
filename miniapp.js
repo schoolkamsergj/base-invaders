@@ -22,6 +22,20 @@ function getSdk() {
     return sdk;
 }
 
+/** Get context (sdk.context can be a Promise in some SDK builds). */
+async function getContext(sdk) {
+    if (!sdk) return null;
+    let ctx = sdk.context;
+    if (ctx && typeof ctx.then === 'function') ctx = await ctx;
+    return ctx && typeof ctx === 'object' ? ctx : null;
+}
+
+function getUserFromContext(ctx) {
+    if (!ctx || typeof ctx !== 'object') return null;
+    const user = ctx.user ?? null;
+    return user && typeof user === 'object' ? user : null;
+}
+
 /** Get current user's display name from Farcaster / Base (for leaderboard). */
 window.baseInvadersGetUserName = async function () {
     const sdk = getSdk();
@@ -32,9 +46,23 @@ window.baseInvadersGetUserName = async function () {
     } catch (e) {
         // ignore
     }
-    const user = sdk.context?.user || sdk.user;
+    let ctx = await getContext(sdk);
+    let user = getUserFromContext(ctx);
+    if (!user) {
+        await sleep(400);
+        ctx = await getContext(sdk);
+        user = getUserFromContext(ctx);
+    }
+    if (!user) {
+        await sleep(400);
+        ctx = await getContext(sdk);
+        user = getUserFromContext(ctx);
+    }
     if (!user || typeof user !== 'object') return '';
-    const name = (user.displayName && String(user.displayName).trim()) || (user.username && String(user.username).trim());
+    const name = (user.displayName && String(user.displayName).trim())
+        || (user.display_name && String(user.display_name).trim())
+        || (user.username && String(user.username).trim())
+        || '';
     return name || '';
 };
 
@@ -151,6 +179,15 @@ window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
         console.log('[miniapp] sdk.version:', sdk?.version || sdk?.sdkVersion || 'unknown');
         if (typeof sdk.ready === 'function') await sdk.ready();
         else if (sdk.actions && typeof sdk.actions.ready === 'function') await sdk.actions.ready({ disableNativeGestures: false });
+        let displayName = (name != null && name !== '') ? String(name).trim() : '';
+        if (!displayName || displayName === 'Player') {
+            if (typeof window.baseInvadersGetUserName === 'function') {
+                displayName = await window.baseInvadersGetUserName();
+            }
+        }
+        displayName = displayName || 'Player';
+        if (displayName.length > 32) displayName = displayName.slice(0, 32);
+        console.log('[miniapp] submitScore displayName:', displayName);
         const { provider, account } = await ensureWalletProvider(sdk);
         if (!provider || !account) throw new Error('Wallet not connected');
 
@@ -165,7 +202,7 @@ window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
             address: LEADERBOARD_ADDR,
             abi: LEADERBOARD_ABI,
             functionName: 'submitScore',
-            args: [BigInt(score), BigInt(wave), BigInt(streak), (name || '').toString()],
+            args: [BigInt(score), BigInt(wave), BigInt(streak), displayName],
             account: accountObj,
             value: 0n
         });
@@ -268,6 +305,21 @@ window.debugCheckIn = async function () {
     }
 };
 window.__debugCheckIn = window.debugCheckIn;
+
+/** Call in console (e.g. in Warpcast) to see what Farcaster user/name is available. */
+window.debugUserName = async function () {
+    const sdk = getSdk();
+    let name = '';
+    console.log('[miniapp] sdk:', !!sdk, sdk ? Object.keys(sdk) : []);
+    if (sdk) {
+        const ctx = await getContext(sdk);
+        console.log('[miniapp] context (after await):', ctx);
+        console.log('[miniapp] context?.user:', ctx?.user);
+        name = await window.baseInvadersGetUserName();
+        console.log('[miniapp] baseInvadersGetUserName() =>', JSON.stringify(name));
+    }
+    return name;
+};
 
 window.debugLeaderboard = async function () {
     console.log('[miniapp] debugLeaderboard called');
