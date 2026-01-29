@@ -6,12 +6,14 @@
 const CHECKIN_ADDR = '0xb13102BbC97C25ba39967208eDd20b109104AAF4';
 const LEADERBOARD_ADDR = '0x76762B1535C3D2004a996e76c776e7C946aF03FB';
 
-// viem: use esm.sh only (Skypack pulls "ox/tempo" which fails in browser)
 let viemPromise = null;
 function getViem() {
     if (!viemPromise) {
-        console.log('[miniapp] Loading viem from esm.sh...');
-        viemPromise = import('https://esm.sh/viem');
+        console.log('[miniapp] Loading viem from CDN...');
+        viemPromise = import('https://cdn.skypack.dev/viem').catch((e) => {
+            console.warn('[miniapp] Skypack viem failed, trying esm.sh', e);
+            return import('https://esm.sh/viem');
+        });
     }
     return viemPromise;
 }
@@ -44,16 +46,7 @@ async function ensureWalletProvider(sdk) {
     let provider = null;
     for (let attempt = 1; attempt <= 3; attempt++) {
         try {
-            if (sdk?.wallet?.getEthereumProvider) {
-                const maybeProvider = sdk.wallet.getEthereumProvider();
-                // Some SDK builds return a Promise here
-                provider =
-                    maybeProvider && typeof maybeProvider.then === 'function'
-                        ? await maybeProvider
-                        : maybeProvider;
-            } else {
-                provider = null;
-            }
+            provider = sdk?.wallet?.getEthereumProvider ? sdk.wallet.getEthereumProvider() : null;
         } catch (e) {
             provider = null;
         }
@@ -62,10 +55,18 @@ async function ensureWalletProvider(sdk) {
         await sleep(1000);
     }
 
-    // 3) Fallback ONLY to Farcaster-injected provider (do NOT use window.ethereum = Rabby/MetaMask)
+    // 3) Fallback provider if SDK provider is null (Warpcast/webview globals)
     if (!provider) {
-        provider = window.farcasterProvider || null;
-        console.log('[miniapp] Provider fallback (window.farcasterProvider only, not Rabby):', !!provider);
+        provider = window.ethereum || window.farcasterProvider || null;
+        console.log('[miniapp] Provider fallback (window.ethereum/window.farcasterProvider):', provider);
+    }
+
+    // 4) Fallback: ethereum.request wrapper
+    if (provider && typeof provider.request !== 'function' && window.ethereum && typeof window.ethereum.request === 'function') {
+        console.log('[miniapp] Wrapping provider with window.ethereum.request fallback');
+        provider = {
+            request: (args) => window.ethereum.request(args)
+        };
     }
 
     if (!provider || typeof provider.request !== 'function') {
@@ -103,7 +104,7 @@ window.baseInvadersOnchainCheckIn = async function () {
         console.log('[miniapp] Connected account:', account);
 
         const viem = await getViem();
-        const baseChain = viem.base || (await import('https://esm.sh/viem/chains').then((m) => m.base));
+        const baseChain = viem.base || (await import('https://cdn.skypack.dev/viem/chains').then((m) => m.base));
         const { createWalletClient, custom, parseAbi, getAddress } = viem;
         const CHECKIN_ABI = parseAbi(['function checkIn() external']);
 
@@ -139,7 +140,7 @@ window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
         if (!provider || !account) throw new Error('Wallet not connected');
 
         const viem = await getViem();
-        const baseChain = viem.base || (await import('https://esm.sh/viem/chains').then((m) => m.base));
+        const baseChain = viem.base || (await import('https://cdn.skypack.dev/viem/chains').then((m) => m.base));
         const { createWalletClient, custom, parseAbi, getAddress } = viem;
         const LEADERBOARD_ABI = parseAbi(['function submitScore(uint256,uint256,uint256,string) external']);
 
@@ -170,7 +171,7 @@ window.baseInvadersGetLeaderboard = async function () {
         const provider = sdk.wallet.getEthereumProvider();
         if (!provider) return [];
         const viem = await getViem();
-        const baseChain = viem.base || (await import('https://esm.sh/viem/chains').then((m) => m.base));
+        const baseChain = viem.base || (await import('https://cdn.skypack.dev/viem/chains').then((m) => m.base));
         const { createPublicClient, custom, parseAbi } = viem;
         const LEADERBOARD_ABI = parseAbi(['function getTopPlayers() view returns (tuple(address player, string name, uint256 score, uint256 wave, uint256 streak, uint256 timestamp)[])']);
         const client = createPublicClient({ chain: baseChain, transport: custom(provider) });
