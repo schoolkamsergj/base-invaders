@@ -2647,33 +2647,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // Create custom confirmation dialog with YES/CANCEL buttons
-        const confirmed = confirm('⚠️ Reset ALL progress?\n\nThis will:\n- Clear ALL currency (Gold, Lightning, Diamonds)\n- Reset ALL purchases (ships, weapons, upgrades)\n- Reset score, level, and all progress\n- Delete ALL saved data\n\nThis cannot be undone!');
+        const confirmed = confirm('Reset ALL progress? This will clear currency, purchases, score and all saved data. Cannot be undone.');
         
         if (confirmed) {
-            // Clear ALL localStorage data completely
-            localStorage.clear();  // This removes ALL localStorage items
-            
-            // Also explicitly remove game-specific keys (in case clear() doesn't work)
+            localStorage.clear();
             localStorage.removeItem('baseInvadersData');
             localStorage.removeItem('baseInvadersShopData');
             localStorage.removeItem('baseInvadersVibration');
-            
-            // Close pause overlay
             document.getElementById('pause-overlay').classList.add('hidden');
-            
-            // Stop the game scene
-            if (window.game && window.game.scene) {
-                window.game.scene.stop('GameScene');
-            }
-            
-            // Restart from MenuScene (start screen)
-            if (window.game && window.game.scene) {
-                window.game.scene.start('MenuScene');
-            } else {
-                // If game not initialized, just reload page
-                location.reload();
-            }
+            // Reload page so game starts fresh (avoids freeze from scene.stop/start)
+            location.reload();
         }
     });
 
