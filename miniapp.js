@@ -177,7 +177,8 @@ window.baseInvadersGetLeaderboard = async function () {
     const baseChain = viem.base || (await import('https://esm.sh/viem/chains').then((m) => m.base));
     const { createPublicClient, parseAbi, custom } = viem;
     const http = viem.http;
-    const LEADERBOARD_ABI = parseAbi(['function getTopPlayers() view returns (tuple(address player, string name, uint256 score, uint256 wave, uint256 streak, uint256 timestamp)[])']);
+    // Unnamed tuple (abitype rejects named tuple in parseAbi); order: player, name, score, wave, streak, timestamp
+    const LEADERBOARD_ABI = parseAbi(['function getTopPlayers() view returns ((address,string,uint256,uint256,uint256,uint256)[])']);
 
     let lastError = null;
     for (const rpcUrl of BASE_RPC_URLS) {
