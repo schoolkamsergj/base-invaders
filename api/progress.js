@@ -1,25 +1,17 @@
 /**
  * Vercel Serverless API: збереження та завантаження прогресу гри в Supabase.
- * ENV у Vercel: SUPABASE_URL, SUPABASE_KEY.
- * Таблиця player_progress (створити в Supabase SQL Editor при потребі):
- *   CREATE TABLE player_progress (
- *     fid text PRIMARY KEY,
- *     gold int8 DEFAULT 0, diamonds int8 DEFAULT 0, lightning int8 DEFAULT 0,
- *     wave int4 DEFAULT 1, mission int4 DEFAULT 1, level int4 DEFAULT 1,
- *     best_score int8 DEFAULT 0, upgrades jsonb DEFAULT '{}',
- *     achievements jsonb DEFAULT '{}', daily_streak int4 DEFAULT 0,
- *     last_checkin text, updated_at timestamptz DEFAULT now()
- *   );
+ * ENV: SUPABASE_URL, SUPABASE_KEY. Таблиця: player_progress.
  */
 import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
-  // Дозволяємо тільки GET і POST
+  // Перевірка методу
   if (req.method !== 'GET' && req.method !== 'POST') {
     res.setHeader('Allow', ['GET', 'POST']);
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Перевірка ENV
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_KEY;
   if (!supabaseUrl || !supabaseKey) {
@@ -31,7 +23,7 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      // GET /api/progress?fid=<fid> — отримати прогрес гравця
+      // GET логіка
       const fid = req.query.fid;
       if (!fid || typeof fid !== 'string') {
         return res.status(400).json({ error: 'Missing fid' });
@@ -56,7 +48,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      // POST /api/progress — зберегти прогрес (body: fid, gold, diamonds, lightning, wave, mission, level, best_score, upgrades, achievements, daily_streak, last_checkin)
+      // POST логіка
       let body = req.body;
       if (typeof body === 'string') {
         try {
@@ -65,6 +57,7 @@ export default async function handler(req, res) {
           return res.status(400).json({ error: 'Invalid JSON body' });
         }
       }
+
       if (!body || typeof body !== 'object') {
         return res.status(400).json({ error: 'Body required' });
       }
