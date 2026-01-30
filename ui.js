@@ -485,10 +485,25 @@ class UI {
         return `${year}-${month}-${day}`;
     }
 
+    // Helper: Get UTC day key (for check-in: contract uses block.timestamp = UTC)
+    getDayKeyUTC(date = new Date()) {
+        const year = date.getUTCFullYear();
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(date.getUTCDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
     // Helper: Calculate days between two day keys (local dates)
     daysBetweenDayKeys(key1, key2) {
         const d1 = new Date(key1 + 'T00:00:00');
         const d2 = new Date(key2 + 'T00:00:00');
+        return Math.floor((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
+    }
+
+    // Helper: Days between UTC day keys (for check-in streak)
+    daysBetweenDayKeysUTC(key1, key2) {
+        const d1 = new Date(key1 + 'T00:00:00Z');
+        const d2 = new Date(key2 + 'T00:00:00Z');
         return Math.floor((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
     }
 
@@ -564,163 +579,79 @@ class UI {
 
             const notifyX = this.checkInLayout?.x ?? buttonX;
             const notifyY = this.checkInLayout?.y ?? buttonY;
+            const todayKey = this.getDayKeyUTC();
 
-            // Save locally first (then try on-chain)
-            const todayKey = this.getDayKey();
-            localStorage.setItem('lastCheckIn', todayKey);
-            console.log('✅ Check-in saved locally:', todayKey);
-
-            console.log('═══════════════════════════════════════');
-            console.log('🎯 [UI] Check-in button clicked');
-            console.log('═══════════════════════════════════════');
-
-            if (typeof window.baseInvadersOnchainCheckIn === 'function') {
-                console.log('✅ [UI] SDK function found, starting transaction...');
-                
-                this.checkInPending = true;
-                this.checkInButtonText.setText('⛓️ SIGNING...');
-                this.checkInButton.disableInteractive();
-                this.checkInButtonText.disableInteractive();
-                
-                try {
-                    console.log('🎯 [UI] Calling window.baseInvadersOnchainCheckIn()...');
-                    const result = await window.baseInvadersOnchainCheckIn();
-                    
-                    console.log('═══════════════════════════════════════');
-                    console.log('✅✅✅ [UI] TRANSACTION SUCCESS ✅✅✅');
-                    console.log('✅ [UI] Result:', result);
-                    console.log('═══════════════════════════════════════');
-                    
-                    this.showNotification('⛓️ Confirmed on Base!', notifyX, notifyY - 40);
-                    
-                } catch (error) {
-                    console.log('═══════════════════════════════════════');
-                    console.error('❌❌❌ [UI] TRANSACTION FAILED ❌❌❌');
-                    console.error('❌ [UI] Error:', error.message);
-                    console.log('═══════════════════════════════════════');
-                    
-                    let errorMsg = 'Transaction failed';
-                    if (error.message.includes('cancelled') || error.message.includes('rejected')) {
-                        errorMsg = 'Transaction cancelled';
-                    } else if (error.message.includes('funds')) {
-                        errorMsg = 'Insufficient funds';
-                    } else if (error.message.includes('not available')) {
-                        errorMsg = 'Wallet not ready, try again';
-                    } else if (error.message.includes('Already checked in today')) {
-                        errorMsg = 'Already checked in today';
-                    }
-                    this.showNotification('⚠️ ' + errorMsg, notifyX, notifyY - 40);
-                    
-                } finally {
-                    this.checkInPending = false;
-                    this.checkInButton.setInteractive({ useHandCursor: true });
-                    this.checkInButtonText.setInteractive({ useHandCursor: true });
-                }
-                
-            } else {
-                console.error('═══════════════════════════════════════');
-                console.error('❌ [UI] SDK FUNCTION NOT FOUND');
-                console.error('❌ [UI] Check if miniapp.js loaded correctly');
-                console.error('═══════════════════════════════════════');
-                
+            if (typeof window.baseInvadersOnchainCheckIn !== 'function') {
+                console.error('[UI] SDK function not found');
                 this.showNotification('⚠️ SDK not loaded', notifyX, notifyY - 40);
+                return;
             }
 
-            // Update streak system (local date)
-            let totalDays = 0;
-            const streakData = localStorage.getItem('checkInStreak');
-            if (streakData) {
-                try {
-                    const data = JSON.parse(streakData);
-                    const lastDateKey = data.lastDate;
-                    const previousStreak = data.totalDays || 0;
-                    
-                    console.log('[CHECK-IN DEBUG] Previous streak:', previousStreak);
-                    
-                    if (!lastDateKey) {
+            this.checkInPending = true;
+            this.checkInButtonText.setText('⛓️ SIGNING...');
+            this.checkInButton.disableInteractive();
+            this.checkInButtonText.disableInteractive();
+
+            try {
+                const result = await window.baseInvadersOnchainCheckIn();
+                console.log('[UI] Check-in tx success:', result);
+
+                localStorage.setItem('lastCheckIn', todayKey);
+                this.showNotification('⛓️ Confirmed on Base!', notifyX, notifyY - 40);
+
+                let totalDays = 0;
+                const streakData = localStorage.getItem('checkInStreak');
+                if (streakData) {
+                    try {
+                        const data = JSON.parse(streakData);
+                        const lastDateKey = data.lastDate;
+                        const previousStreak = data.totalDays || 0;
+                        if (!lastDateKey) {
+                            totalDays = 1;
+                        } else {
+                            const daysSince = this.daysBetweenDayKeysUTC(lastDateKey, todayKey);
+                            if (daysSince === 1) totalDays = previousStreak + 1;
+                            else if (daysSince === 0) totalDays = previousStreak || 1;
+                            else totalDays = 1;
+                        }
+                    } catch (e) {
                         totalDays = 1;
-                        console.log('[CHECK-IN DEBUG] No previous date, starting at day 1');
-                    } else {
-                        const daysSince = this.daysBetweenDayKeys(lastDateKey, todayKey);
-                        console.log('[CHECK-IN DEBUG] Days since last check-in:', daysSince);
-            
-            if (daysSince === 1) {
-                // Consecutive day - increment streak
-                totalDays = previousStreak + 1;
-                console.log('[CHECK-IN DEBUG] Consecutive day - BEFORE increment:', previousStreak, 'AFTER increment:', totalDays);
-            } else if (daysSince === 0) {
-                // Same day - keep current streak (shouldn't happen, but handle gracefully)
-                totalDays = previousStreak || 1;
-                console.log('[CHECK-IN DEBUG] Same day - keeping streak:', totalDays);
-            } else {
-                // Missed day(s) - set to 1
-                totalDays = 1;
-                console.log('[CHECK-IN DEBUG] Missed days - set to:', totalDays);
-            }
-        }
-    } catch (e) {
-        totalDays = 1;
-        console.error('[CHECK-IN DEBUG] Error parsing streak data:', e);
-    }
-} else {
-    totalDays = 1;
-    console.log('[CHECK-IN DEBUG] No streak data, starting at day 1');
-}
+                    }
+                } else {
+                    totalDays = 1;
+                }
 
-// Save streak (infinite progression, no cap)
-localStorage.setItem('checkInStreak', JSON.stringify({
-    totalDays: totalDays,
-    lastDate: todayKey
-}));
+                localStorage.setItem('checkInStreak', JSON.stringify({ totalDays, lastDate: todayKey }));
 
-// Calculate reward based on infinite streak
-// IMPORTANT: Milestone appears when user CLAIMS Day 7, 14, 21... (the day just claimed)
-const isMilestone = (totalDays % 7 === 0 && totalDays >= 7); // Days 7, 14, 21...
-console.log('[CHECK-IN DEBUG] Claimed day:', totalDays, '| Is milestone?', isMilestone);
-const dayInCycle = (totalDays % 7) || 7; // 1-7 (cycles for base rewards)
-const milestoneNumber = Math.floor(totalDays / 7); // Which milestone (1, 2, 3...)
+                const isMilestone = (totalDays % 7 === 0 && totalDays >= 7);
+                const dayInCycle = (totalDays % 7) || 7;
+                const milestoneNumber = Math.floor(totalDays / 7);
+                const baseRewards = [10, 15, 20, 25, 30, 35, 50];
+                let reward = baseRewards[dayInCycle - 1];
+                if (isMilestone) reward += reward;
 
-const baseRewards = [10, 15, 20, 25, 30, 35, 50]; // Days 1-7 base rewards
-let reward = baseRewards[dayInCycle - 1];
-
-// Milestone bonus (days 7, 14, 21, 28...)
-if (isMilestone) {
-    // Cap milestone bonus at day 21 (milestone 3)
-    const cappedMilestone = Math.min(milestoneNumber, 3);
-    // 2x base reward for milestone days
-    const milestoneBonus = reward; // Double the base reward
-    reward += milestoneBonus;
-}
-
-// Add diamonds
-this.gameState.diamonds += reward;
-
-// Show notification
-let message;
-if (isMilestone) {
-    message = `🎉 MILESTONE DAY ${totalDays}! +${reward} 💎`;
-    console.log('[CHECK-IN DEBUG] Milestone detected, will trigger celebration after UI update');
-} else {
-    message = `+${reward} 💎 Day Streak: ${totalDays}`;
-    console.log('[CHECK-IN DEBUG] Regular check-in, no milestone. Day:', totalDays);
-}
-            this.showNotification(message, this.checkInLayout.x, this.checkInLayout.y - 40);
-
-            
-            // Update button state FIRST (so UI shows correct day)
-            this.updateCheckInButtonState();
-            this.checkInPending = false;
-            
-            // Start countdown interval after check-in
-            this.startCountdownInterval();
-            
-            // IMPORTANT: Wait for DOM to repaint before showing milestone animation
-            // This ensures user sees "Day 7" text BEFORE character appears
-            if (isMilestone) {
-                setTimeout(() => {
-                    console.log('[CHECK-IN DEBUG] 🎉 NOW showing milestone celebration for day:', totalDays);
-                    this.showMilestoneCelebration(totalDays);
-                }, 500); // 500ms delay for DOM repaint + user to see new day number
+                this.gameState.diamonds += reward;
+                const message = isMilestone ? `🎉 MILESTONE DAY ${totalDays}! +${reward} 💎` : `+${reward} 💎 Day Streak: ${totalDays}`;
+                this.showNotification(message, this.checkInLayout.x, this.checkInLayout.y - 40);
+                this.updateCheckInButtonState();
+                this.startCountdownInterval();
+                if (isMilestone) setTimeout(() => this.showMilestoneCelebration(totalDays), 500);
+            } catch (error) {
+                console.error('[UI] Check-in tx failed:', error.message);
+                let errorMsg = 'Transaction failed';
+                if (error.message.includes('cancelled') || error.message.includes('rejected')) errorMsg = 'Transaction cancelled';
+                else if (error.message.includes('funds')) errorMsg = 'Insufficient funds';
+                else if (error.message.includes('not available')) errorMsg = 'Wallet not ready, try again';
+                else if (error.message.includes('Already checked in today')) {
+                    errorMsg = 'Already checked in today';
+                    localStorage.setItem('lastCheckIn', todayKey);
+                    this.updateCheckInButtonState();
+                }
+                this.showNotification('⚠️ ' + errorMsg, notifyX, notifyY - 40);
+            } finally {
+                this.checkInPending = false;
+                this.checkInButton.setInteractive({ useHandCursor: true });
+                this.checkInButtonText.setInteractive({ useHandCursor: true });
             }
         };
         
@@ -764,7 +695,7 @@ if (isMilestone) {
         if (!lastCheckIn) {
             return true; // Never checked in, button is active
         }
-        const todayKey = this.getDayKey();
+        const todayKey = this.getDayKeyUTC();
         return lastCheckIn !== todayKey;
     }
 
@@ -773,15 +704,13 @@ if (isMilestone) {
         if (!lastCheckIn) {
             return null; // No cooldown
         }
-        const todayKey = this.getDayKey();
+        const todayKey = this.getDayKeyUTC();
         if (lastCheckIn !== todayKey) {
             return null; // Cooldown expired (different day)
         }
         const now = new Date();
-        const tomorrow = new Date(now);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        tomorrow.setHours(0, 0, 0, 0); // Midnight local time
-        const msRemaining = tomorrow.getTime() - now.getTime();
+        const nextUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0, 0));
+        const msRemaining = nextUTC.getTime() - now.getTime();
         if (msRemaining <= 0) {
             return null;
         }
@@ -801,8 +730,8 @@ if (isMilestone) {
             if (!lastDateKey) {
                 return { totalDays: 0, nextMilestone: 7, isMilestone: false };
             }
-            const todayKey = this.getDayKey();
-            const daysSince = this.daysBetweenDayKeys(lastDateKey, todayKey);
+            const todayKey = this.getDayKeyUTC();
+            const daysSince = this.daysBetweenDayKeysUTC(lastDateKey, todayKey);
             if (daysSince > 1 || daysSince < 0) {
                 return { totalDays: 0, nextMilestone: 7, isMilestone: false };
             }
