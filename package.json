@@ -8,6 +8,7 @@
         "start": "npx serve ."
     },
     "dependencies": {
+        "@supabase/supabase-js": "^2.45.0",
         "@farcaster/miniapp-sdk": "latest",
         "@farcaster/miniapp-wagmi-connector": "latest",
         "@wagmi/core": "latest",

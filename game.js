@@ -1,4 +1,6 @@
 // Base Invaders - Main Game File
+// Фіксований FID для бета-тесту синхронізації прогресу (Supabase)
+const TEST_FID = 'test_user_12345';
 console.log('MenuScene and GameScene classes defined');
 
 // Menu Scene - Start Screen
@@ -742,7 +744,7 @@ class GameScene extends Phaser.Scene {
         console.log('Preload complete - loading spaceship sprites and sounds');
     }
 
-    create() {
+    async create() {
         console.log('Game create() started');
         
         // Verify textures loaded
@@ -759,7 +761,6 @@ class GameScene extends Phaser.Scene {
         
         try {
             console.log('Scene width:', this.scale.width, 'height:', this.scale.height);
-            
             // Game state
             this.gameState = {
                 score: 0,
@@ -774,14 +775,6 @@ class GameScene extends Phaser.Scene {
                 gameOver: false,
                 scoreMultiplier: 1
             };
-
-            // Load saved data
-            try {
-                this.loadGameData();
-                console.log('Game data loaded');
-            } catch (e) {
-                console.warn('Error loading game data:', e);
-            }
 
             // Create background
             try {
@@ -817,7 +810,76 @@ class GameScene extends Phaser.Scene {
                 coinMagnet: false
             };
 
-            // Load player stats from shop
+            // --- Синхронізація прогресу (Supabase бета): бета-ресет, потім завантаження з сервера або локально ---
+            try {
+                if (!localStorage.getItem('beta_reset_v2')) {
+                    localStorage.clear();
+                    localStorage.setItem('beta_reset_v2', 'true');
+                    this.gameState.gold = 0;
+                    this.gameState.lightning = 0;
+                    this.gameState.diamonds = 0;
+                    this.gameState.playerLevel = 1;
+                    this.gameState.stage = 1;
+                    this.gameState.xp = 0;
+                    this.gameState.xpToNext = 100;
+                    this.missionSystem.currentMission = 1;
+                    this.missionSystem.currentWave = 1;
+                    this.missionSystem.bossActive = false;
+                    this.playerStats.fireRate = 300;
+                    this.playerStats.damage = 1;
+                    this.playerStats.multiShot = 1;
+                    this.playerStats.maxHP = 100;
+                    this.playerStats.speed = 300;
+                    const payload = { fid: TEST_FID, gold: 0, diamonds: 0, lightning: 0, wave: 1, mission: 1, level: 1, best_score: 0, upgrades: { fireRate: 300, damage: 1, multiShot: 1, maxHP: 100, speed: 300 }, achievements: {}, daily_streak: 0, last_checkin: null };
+                    try {
+                        await fetch('/api/progress', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    } catch (e) {
+                        console.log('[progress] Beta reset POST failed:', e.message);
+                    }
+                    console.log('🔄 Beta reset completed. Starting from zero.');
+                } else {
+                    const res = await fetch(`/api/progress?fid=${encodeURIComponent(TEST_FID)}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data && typeof data === 'object' && (data.gold != null || data.diamonds != null)) {
+                            this.gameState.gold = Number(data.gold) || 0;
+                            this.gameState.lightning = Number(data.lightning) || 0;
+                            this.gameState.diamonds = Number(data.diamonds) || 0;
+                            this.gameState.playerLevel = Number(data.level) || 1;
+                            this.gameState.stage = Number(data.wave) || 1;
+                            this.missionSystem.currentMission = Number(data.mission) || 1;
+                            this.missionSystem.currentWave = Number(data.wave) || 1;
+                            if (data.upgrades && typeof data.upgrades === 'object') {
+                                this.playerStats.fireRate = data.upgrades.fireRate ?? 300;
+                                this.playerStats.damage = data.upgrades.damage ?? 1;
+                                this.playerStats.multiShot = data.upgrades.multiShot ?? 1;
+                                this.playerStats.maxHP = data.upgrades.maxHP ?? 100;
+                                this.playerStats.speed = data.upgrades.speed ?? 300;
+                            }
+                            localStorage.setItem('baseInvadersData', JSON.stringify({ gold: this.gameState.gold, lightning: this.gameState.lightning, diamonds: this.gameState.diamonds, playerLevel: this.gameState.playerLevel, highScore: Number(data.best_score) || 0 }));
+                            const shopData = localStorage.getItem('baseInvadersShop');
+                            const shop = shopData ? JSON.parse(shopData) : {};
+                            Object.assign(shop, { fireRate: this.playerStats.fireRate, damage: this.playerStats.damage, multiShot: this.playerStats.multiShot, maxHP: this.playerStats.maxHP, speed: this.playerStats.speed });
+                            localStorage.setItem('baseInvadersShop', JSON.stringify(shop));
+                            if (data.daily_streak != null || data.last_checkin != null) {
+                                localStorage.setItem('checkInStreak', JSON.stringify({ totalDays: Number(data.daily_streak) || 0, lastDate: data.last_checkin || '' }));
+                                if (data.last_checkin) localStorage.setItem('lastCheckIn', String(data.last_checkin));
+                            }
+                            if (data.best_score != null) localStorage.setItem('highScore', String(data.best_score));
+                            console.log('✅ Progress loaded from server');
+                        } else {
+                            this.loadGameData();
+                        }
+                    } else {
+                        this.loadGameData();
+                    }
+                }
+            } catch (e) {
+                this.loadGameData();
+                console.log('⚠️ Offline mode');
+            }
+
+            // Load player stats from shop (з localStorage, який міг оновитись з сервера)
             try {
                 this.loadPlayerStats();
             } catch (e) {
@@ -894,6 +956,11 @@ class GameScene extends Phaser.Scene {
             this.spawnTimer = 0;
             this.stageTimer = 0;
             this.enemySpawnRate = 2000;
+
+            // Синхронізація прогресу з сервером кожні 30 секунд
+            this.syncProgressInterval = setInterval(() => {
+                if (this.syncProgress) this.syncProgress();
+            }, 30000);
 
             // Create particle texture for effects
             try {
@@ -2278,7 +2345,7 @@ class GameScene extends Phaser.Scene {
         if (this.missionSystem.bossActive) return;
         
         console.log(`Wave ${this.missionSystem.currentWave} complete!`);
-        
+        if (this.syncProgress) this.syncProgress();
         // Move to next wave or spawn boss
         if (this.missionSystem.currentWave >= this.missionSystem.maxWaves) {
             // All waves complete, spawn boss
@@ -2309,7 +2376,7 @@ class GameScene extends Phaser.Scene {
     
     completeMission() {
         if (!this.missionSystem) return;
-        
+        if (this.syncProgress) this.syncProgress();
         console.log(`Mission ${this.missionSystem.currentMission} complete!`);
         
         // Award mission rewards
@@ -2357,6 +2424,7 @@ class GameScene extends Phaser.Scene {
     togglePause() {
         this.gameState.paused = !this.gameState.paused;
         if (this.gameState.paused) {
+            if (this.syncProgress) this.syncProgress();
             this.scene.pause();
             document.getElementById('pause-overlay').classList.remove('hidden');
         } else {
@@ -2454,6 +2522,50 @@ class GameScene extends Phaser.Scene {
         }
     }
 
+    /** Відправити поточний прогрес на сервер (Supabase). Викликається з дебаунсом і при важливих подіях. */
+    syncProgress() {
+        if (!this.gameState || !this.missionSystem) return;
+        try {
+            const ms = this.missionSystem;
+            let dailyStreak = 0;
+            let lastCheckin = null;
+            try {
+                const streakData = localStorage.getItem('checkInStreak');
+                if (streakData) {
+                    const parsed = JSON.parse(streakData);
+                    dailyStreak = parsed.totalDays || 0;
+                    lastCheckin = parsed.lastDate || null;
+                }
+            } catch (e) {}
+            if (lastCheckin == null) lastCheckin = localStorage.getItem('lastCheckIn');
+            const bestScore = Math.max(this.gameState.score, parseInt(localStorage.getItem('highScore') || '0', 10));
+            const payload = {
+                fid: TEST_FID,
+                gold: this.gameState.gold,
+                diamonds: this.gameState.diamonds,
+                lightning: this.gameState.lightning,
+                wave: ms.currentWave || 1,
+                mission: ms.currentMission || 1,
+                level: this.gameState.playerLevel,
+                best_score: bestScore,
+                upgrades: {
+                    fireRate: this.playerStats.fireRate,
+                    damage: this.playerStats.damage,
+                    multiShot: this.playerStats.multiShot,
+                    maxHP: this.playerStats.maxHP,
+                    speed: this.playerStats.speed
+                },
+                achievements: {},
+                daily_streak: dailyStreak,
+                last_checkin: lastCheckin
+            };
+            console.log('☁️ Syncing progress...');
+            fetch('/api/progress', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch((e) => console.log('[progress] Sync failed:', e.message));
+        } catch (e) {
+            console.log('[progress] syncProgress error:', e.message);
+        }
+    }
+
     loadPlayerStats() {
         const shopData = localStorage.getItem('baseInvadersShop');
         if (shopData) {
@@ -2548,6 +2660,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (scene.loadPlayerStats) {
                     scene.loadPlayerStats();
                 }
+                if (scene.syncProgress) scene.syncProgress();
             }
         }
     });
