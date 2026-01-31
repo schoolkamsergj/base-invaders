@@ -1,17 +1,9 @@
 {
     "version": 2,
-    "builds": [
-        {
-            "src": "api/**/*.js",
-            "use": "@vercel/node"
-        },
-        {
-            "src": "**/*",
-            "use": "@vercel/static"
-        }
-    ],
-    "routes": [
-        { "src": "/.well-known/(.*)", "dest": "/.well-known/$1" },
-        { "src": "/(.*)", "dest": "/$1" }
-    ]
-}
+    "functions": {
+      "api/**/*.js": {
+        "runtime": "nodejs20.x"
+      }
+    }
+  }
+  
