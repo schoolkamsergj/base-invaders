@@ -709,8 +709,8 @@ class UI {
             return null; // Cooldown expired (different day)
         }
         const now = new Date();
-        const nextUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0, 0));
-        const msRemaining = nextUTC.getTime() - now.getTime();
+        const nextLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
+        const msRemaining = nextLocal.getTime() - now.getTime();
         if (msRemaining <= 0) {
             return null;
         }
