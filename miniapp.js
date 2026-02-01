@@ -4,7 +4,7 @@
  * Must be loaded as <script type="module"> for dynamic import(viem).
  */
 const CHECKIN_ADDR = '0xb13102BbC97C25ba39967208eDd20b109104AAF4';
-const LEADERBOARD_ADDR = '0x76762B1535C3D2004a996e76c776e7C946aF03FB';
+const LEADERBOARD_ADDR = '0xAC89DA9d8508d0865c55083552da91894537aC89'; // V2 contract with clear function
 
 // viem: use esm.sh only (Skypack pulls "ox/tempo" which fails in browser)
 let viemPromise = null;
@@ -247,6 +247,46 @@ window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
         return { success: true, hash };
     } catch (e) {
         console.error('[miniapp] SubmitScore tx failed', e);
+        throw e;
+    }
+};
+
+// 🔥 NEW FUNCTION: Clear leaderboard (owner only)
+window.baseInvadersClearLeaderboard = async function () {
+    console.log('[miniapp] clearLeaderboard start');
+    try {
+        const sdk = getSdk();
+        if (!sdk) throw new Error('Farcaster SDK not loaded');
+
+        if (typeof sdk.ready === 'function') await sdk.ready();
+        else if (sdk.actions && typeof sdk.actions.ready === 'function') {
+            await sdk.actions.ready({ disableNativeGestures: false });
+        }
+
+        const { provider, account } = await ensureWalletProvider(sdk);
+        if (!provider || !account) throw new Error('Wallet not connected');
+
+        const viem = await getViem();
+        const baseChain = viem.base || (await import('https://esm.sh/viem/chains').then((m) => m.base));
+        const { createWalletClient, custom, parseAbi, getAddress } = viem;
+
+        const CLEAR_ABI = parseAbi(['function clearLeaderboard() external']);
+
+        const client = createWalletClient({ chain: baseChain, transport: custom(provider) });
+        const accountObj = { address: getAddress(account), type: 'json-rpc' };
+
+        const hash = await client.writeContract({
+            address: LEADERBOARD_ADDR,
+            abi: CLEAR_ABI,
+            functionName: 'clearLeaderboard',
+            account: accountObj,
+            value: 0n
+        });
+
+        console.log('[miniapp] clearLeaderboard hash:', hash);
+        return { success: true, hash };
+    } catch (e) {
+        console.error('[miniapp] clearLeaderboard failed', e);
         throw e;
     }
 };

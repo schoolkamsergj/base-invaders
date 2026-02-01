@@ -746,7 +746,25 @@ class GameScene extends Phaser.Scene {
 
     async create() {
         console.log('Game create() started');
-        
+
+        // 🔥 V2 RESET: One-time localStorage clear for all players
+        if (!localStorage.getItem('base_invaders_v2_migrated')) {
+            console.log('🔄 Migrating to V2: Clearing old data...');
+
+            // Clear all old game data
+            localStorage.removeItem('baseInvadersData');
+            localStorage.removeItem('baseInvadersShop');
+            localStorage.removeItem('baseInvadersLeaderboard');
+            localStorage.removeItem('checkInStreak');
+            localStorage.removeItem('lastCheckIn');
+            localStorage.removeItem('highScore');
+
+            // Mark migration as complete
+            localStorage.setItem('base_invaders_v2_migrated', 'true');
+
+            console.log('✅ V2 Migration complete - fresh start!');
+        }
+
         // Verify textures loaded
         console.log('=== Texture Verification ===');
         console.log('Boss texture exists:', this.textures.exists('bossJesse'));
