@@ -756,8 +756,6 @@ class GameScene extends Phaser.Scene {
             localStorage.removeItem('baseInvadersShop');
             localStorage.removeItem('baseInvadersLeaderboard');
             localStorage.removeItem('baseInvadersLocalHighScore');
-            localStorage.removeItem('checkInStreak_default');
-            localStorage.removeItem('lastCheckIn_default');
             localStorage.removeItem('highScore');
 
             // Mark migration as complete
