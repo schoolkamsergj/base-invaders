@@ -626,11 +626,14 @@ class UI {
                 const result = await window.baseInvadersOnchainCheckIn();
                 console.log('[UI] Check-in tx success:', result);
 
-                localStorage.setItem(this.getLastCheckInKey(), todayKey);
+                const lastKey = this.getLastCheckInKey();
+                const streakKey = this.getStreakKey();
+                this._lastCheckInKeyUsed = lastKey;
+                localStorage.setItem(lastKey, todayKey);
                 this.showNotification('⛓️ Confirmed on Base!', notifyX, notifyY - 40);
 
                 let totalDays = 0;
-                const streakData = localStorage.getItem(this.getStreakKey());
+                const streakData = localStorage.getItem(streakKey);
                 if (streakData) {
                     try {
                         const data = JSON.parse(streakData);
@@ -652,6 +655,7 @@ class UI {
                 }
 
                 localStorage.setItem(this.getStreakKey(), JSON.stringify({ totalDays, lastDate: todayKey }));
+                this._lastCheckInKeyUsed = this.getLastCheckInKey();
 
                 const isMilestone = (totalDays % 7 === 0 && totalDays >= 7);
                 const dayInCycle = (totalDays % 7) || 7;
@@ -674,7 +678,9 @@ class UI {
                 else if (error.message.includes('not available')) errorMsg = 'Wallet not ready, try again';
                 else if (error.message.includes('Already checked in today')) {
                     errorMsg = 'Already checked in today';
-                    localStorage.setItem(this.getLastCheckInKey(), todayKey);
+                    const key = this.getLastCheckInKey();
+                    this._lastCheckInKeyUsed = key;
+                    localStorage.setItem(key, todayKey);
                     this.updateCheckInButtonState();
                 }
                 this.showNotification('⚠️ ' + errorMsg, notifyX, notifyY - 40);
@@ -720,8 +726,25 @@ class UI {
         }, 1000);
     }
 
+    _getLastCheckInValue() {
+        const key = this.getLastCheckInKey();
+        let v = localStorage.getItem(key);
+        if (v == null && this._lastCheckInKeyUsed) v = localStorage.getItem(this._lastCheckInKeyUsed);
+        return v;
+    }
+
+    _getStreakValue() {
+        const key = this.getStreakKey();
+        let v = localStorage.getItem(key);
+        if (v == null && this._lastCheckInKeyUsed) {
+            const streakKey = (this._lastCheckInKeyUsed || '').replace('lastCheckIn_', 'checkInStreak_');
+            if (streakKey) v = localStorage.getItem(streakKey);
+        }
+        return v;
+    }
+
     isCheckInActive() {
-        const lastCheckIn = localStorage.getItem(this.getLastCheckInKey());
+        const lastCheckIn = this._getLastCheckInValue();
         if (!lastCheckIn) {
             return true; // Never checked in, button is active
         }
@@ -730,7 +753,7 @@ class UI {
     }
 
     getCheckInTimeRemaining() {
-        const lastCheckIn = localStorage.getItem(this.getLastCheckInKey());
+        const lastCheckIn = this._getLastCheckInValue();
         if (!lastCheckIn) {
             return null; // No cooldown
         }
@@ -750,7 +773,7 @@ class UI {
     }
 
     getCheckInStreak() {
-        const streakData = localStorage.getItem(this.getStreakKey());
+        const streakData = this._getStreakValue();
         if (!streakData) {
             return { totalDays: 0, nextMilestone: 7, isMilestone: false };
         }

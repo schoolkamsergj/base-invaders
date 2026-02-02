@@ -365,6 +365,20 @@ window.baseInvadersMarkMiniAppReady = async function () {
 };
 window.baseInvadersMiniAppSdk = getSdk();
 
+// Раннє встановлення fid для чек-іну (щоб відлік працював у Farcaster/телефоні)
+(function () {
+    async function setCheckInFid() {
+        try {
+            const ctx = await window.baseInvadersGetUserContext?.();
+            if (ctx?.user?.fid != null) {
+                window.__baseInvadersCheckInFid = String(ctx.user.fid);
+                console.log('[miniapp] __baseInvadersCheckInFid set:', window.__baseInvadersCheckInFid);
+            }
+        } catch (e) { /* ignore */ }
+    }
+    setCheckInFid();
+})();
+
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('[miniapp] DOMContentLoaded');
     try {
@@ -373,6 +387,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (typeof sdk.ready === 'function') await sdk.ready();
             else if (sdk.actions && typeof sdk.actions.ready === 'function') await sdk.actions.ready({ disableNativeGestures: false });
             console.log('[miniapp] DOMContentLoaded – SDK ready');
+            const ctx = await getContext(sdk);
+            if (ctx?.user?.fid != null) {
+                window.__baseInvadersCheckInFid = String(ctx.user.fid);
+            }
         }
     } catch (e) {
         console.error('[miniapp] DOMContentLoaded ready failed', e);
