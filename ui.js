@@ -873,15 +873,14 @@ class UI {
             // Calculate next milestone after this claim
             const nextMilestone = Math.ceil(nextDay / 7) * 7;
             
-            // Build button text
+            // Build button text (restore font size after disabled state)
+            this.checkInButtonText.setFontSize(Math.max(11, Math.min(13, layout.checkInHeight * 0.35)) + 'px');
+            this.checkInButtonText.setPosition(buttonX, buttonY);
             if (isNextMilestone) {
-                // Next claim IS milestone (Day 7, 14, 21...)
                 this.checkInButtonText.setText(`📅 Day ${nextDay} →${nextDay + 7} 🎉`);
             } else {
-                // Regular day
                 this.checkInButtonText.setText(`📅 Day ${nextDay} →${nextMilestone}`);
             }
-
             this.checkInButtonText.setColor('#00ff00');
             this.checkInCountdownText.setVisible(false);
             
@@ -889,28 +888,23 @@ class UI {
             this.checkInButton.setInteractive({ useHandCursor: true });
             this.checkInButtonText.setInteractive({ useHandCursor: true });
         } else {
-            // Disabled state: Gray color with countdown
+            // Disabled state: Gray, single line countdown inside button (no overflow)
             this.checkInButtonBg.fillStyle(0x666666, 0.7);  // Gray
             this.checkInButtonBg.fillRoundedRect(buttonX - buttonWidth / 2, buttonY - buttonHeight / 2, buttonWidth, buttonHeight, 5);
             this.checkInButtonBg.lineStyle(2, 0x888888, 1);
             this.checkInButtonBg.strokeRoundedRect(buttonX - buttonWidth / 2, buttonY - buttonHeight / 2, buttonWidth, buttonHeight, 5);
 
-            this.checkInButtonText.setColor('#ffffff');
-
-            // Відлік до півночі (локальний час) — завжди показувати текст і робити його видимим
-            if (this.checkInCountdownText) {
-                this.checkInCountdownText.setPosition(buttonX, buttonY + buttonHeight * 0.45);
-                this.checkInCountdownText.setDepth(107);
-                this.checkInCountdownText.setColor('#00ff00');
-                this.checkInCountdownText.setFontSize(Math.max(11, Math.min(14, buttonHeight * 0.3)) + 'px');
-                if (timeRemaining && (timeRemaining.hours > 0 || timeRemaining.minutes > 0)) {
-                    const timeStr = `${timeRemaining.hours}h ${timeRemaining.minutes}m`;
-                    this.checkInCountdownText.setText(timeStr);
-                } else {
-                    this.checkInCountdownText.setText('Checked in');
-                }
-                this.checkInCountdownText.setVisible(true);
+            // One line on button only: countdown text, small font so it fits in button width
+            const countdownFontPx = Math.max(9, Math.min(11, Math.floor(buttonWidth / 10)));
+            this.checkInButtonText.setFontSize(countdownFontPx + 'px');
+            this.checkInButtonText.setColor('#00ff00');
+            this.checkInButtonText.setPosition(buttonX, buttonY);
+            if (timeRemaining && (timeRemaining.hours > 0 || timeRemaining.minutes > 0)) {
+                this.checkInButtonText.setText(timeRemaining.hours + 'h ' + timeRemaining.minutes + 'm');
+            } else {
+                this.checkInButtonText.setText('Checked in');
             }
+            this.checkInCountdownText.setVisible(false);
 
             // Disable interaction
             this.checkInButton.disableInteractive();
