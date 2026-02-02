@@ -25,12 +25,29 @@
         return a.slice(0, 6) + '…' + a.slice(-4);
     }
 
+    /** Format date as DD,MM,YYYY (e.g. 02,02,2026), English only, no locale text. */
+    function formatDateDDMMYYYY(tsOrDate) {
+        let d;
+        if (tsOrDate instanceof Date) {
+            d = tsOrDate;
+        } else if (tsOrDate != null) {
+            const n = typeof tsOrDate === 'bigint' ? Number(tsOrDate) : Number(tsOrDate);
+            if (!Number.isFinite(n)) return '—';
+            d = new Date(n * 1000);
+        } else {
+            return '—';
+        }
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return day + ',' + month + ',' + year;
+    }
+
     function formatTimestamp(ts) {
         if (ts == null) return '—';
         const n = typeof ts === 'bigint' ? Number(ts) : Number(ts);
         if (!Number.isFinite(n)) return '—';
-        const d = new Date(n * 1000);
-        return d.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+        return formatDateDDMMYYYY(new Date(n * 1000));
     }
 
     function getCurrentStreakFromStorage() {
@@ -111,7 +128,7 @@
             const scoreNum = typeof score === 'bigint' ? Number(score) : Number(score);
             const waveNum = typeof wave === 'bigint' ? Number(wave) : Number(wave);
             const streakNum = typeof streak === 'bigint' ? Number(streak) : Number(streak);
-            return '<tr><td>' + (Number.isFinite(scoreNum) ? scoreNum.toLocaleString() : '—') + '</td><td>' + (name || '—') + '</td><td>' + (Number.isFinite(waveNum) ? waveNum : '—') + '</td><td>' + formatTimestamp(timestamp) + '</td><td>' + (Number.isFinite(streakNum) ? streakNum : '—') + '</td></tr>';
+            return '<tr><td>' + (Number.isFinite(scoreNum) ? scoreNum.toLocaleString('en-US') : '—') + '</td><td>' + (name || '—') + '</td><td>' + (Number.isFinite(waveNum) ? waveNum : '—') + '</td><td>' + formatTimestamp(timestamp) + '</td><td>' + (Number.isFinite(streakNum) ? streakNum : '—') + '</td></tr>';
         }).join('');
     }
 
@@ -119,15 +136,9 @@
         if (!entry || typeof entry !== 'object') {
             return '<tr><td colspan="5">Play a run to set your personal best.</td></tr>';
         }
-        const score = entry.score != null ? Number(entry.score).toLocaleString() : '—';
+        const score = entry.score != null ? Number(entry.score).toLocaleString('en-US') : '—';
         const wave = entry.wave != null ? entry.wave : '—';
-        const date = entry.date ? (function () {
-            try {
-                return new Date(entry.date).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
-            } catch (e) {
-                return entry.date;
-            }
-        }()) : '—';
+        const date = entry.date ? formatDateDDMMYYYY(new Date(entry.date)) : '—';
         const streak = entry.streak != null ? entry.streak : '—';
         const name = (entry.name && String(entry.name).trim()) || 'You';
         return '<tr><td>' + score + '</td><td>' + name + '</td><td>' + wave + '</td><td>' + date + '</td><td>' + streak + '</td></tr>';
