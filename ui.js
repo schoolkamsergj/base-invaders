@@ -726,11 +726,47 @@ class UI {
         }, 1000);
     }
 
+    /** YYYY-MM-DD regex for valid day keys */
+    _isDayKey(val) {
+        if (typeof val !== 'string' || val.length !== 10) return false;
+        return /^\d{4}-\d{2}-\d{2}$/.test(val);
+    }
+
+    /**
+     * Get effective last check-in date from any source (current FID, legacy, or any lastCheckIn_*).
+     * Sets _lastCheckInKeyUsed to the key that had the latest date so streak can be found.
+     */
     _getLastCheckInValue() {
-        const key = this.getLastCheckInKey();
-        let v = localStorage.getItem(key);
-        if (v == null && this._lastCheckInKeyUsed) v = localStorage.getItem(this._lastCheckInKeyUsed);
-        return v;
+        const candidates = [];
+        const currentKey = this.getLastCheckInKey();
+        candidates.push([currentKey, localStorage.getItem(currentKey)]);
+        if (currentKey !== 'lastCheckIn') candidates.push(['lastCheckIn', localStorage.getItem('lastCheckIn')]);
+        if (this._lastCheckInKeyUsed) candidates.push([this._lastCheckInKeyUsed, localStorage.getItem(this._lastCheckInKeyUsed)]);
+        try {
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k && (k === 'lastCheckIn' || k.startsWith('lastCheckIn_')))
+                    candidates.push([k, localStorage.getItem(k)]);
+            }
+        } catch (e) { /* ignore */ }
+        let bestDate = null;
+        let bestKey = null;
+        for (const [key, val] of candidates) {
+            if (!key || val == null || !this._isDayKey(val)) continue;
+            if (bestDate == null || val > bestDate) {
+                bestDate = val;
+                bestKey = key;
+            }
+        }
+        if (bestKey) {
+            this._lastCheckInKeyUsed = bestKey;
+            const m = bestKey.match(/^lastCheckIn_(.+)$/);
+            if (m && m[1] !== 'default') {
+                this._checkInFid = m[1];
+                if (typeof window !== 'undefined') window.__baseInvadersCheckInFid = m[1];
+            }
+        }
+        return bestDate;
     }
 
     _getStreakValue() {
@@ -740,6 +776,7 @@ class UI {
             const streakKey = (this._lastCheckInKeyUsed || '').replace('lastCheckIn_', 'checkInStreak_');
             if (streakKey) v = localStorage.getItem(streakKey);
         }
+        if (v == null) v = localStorage.getItem('checkInStreak');
         return v;
     }
 
