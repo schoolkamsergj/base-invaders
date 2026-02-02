@@ -751,10 +751,11 @@ class GameScene extends Phaser.Scene {
         if (!localStorage.getItem('base_invaders_v2_migrated')) {
             console.log('🔄 Migrating to V2: Clearing old data...');
 
-            // Clear all old game data
+            // Clear all old game data (including local leaderboard high score so first score after migration can be submitted)
             localStorage.removeItem('baseInvadersData');
             localStorage.removeItem('baseInvadersShop');
             localStorage.removeItem('baseInvadersLeaderboard');
+            localStorage.removeItem('baseInvadersLocalHighScore');
             localStorage.removeItem('checkInStreak');
             localStorage.removeItem('lastCheckIn');
             localStorage.removeItem('highScore');
@@ -2475,6 +2476,7 @@ class GameScene extends Phaser.Scene {
             ? window.baseInvadersLeaderboard.getLocalHighScore()
             : null;
         const isNewHigh = !localHigh || this.gameState.score > (localHigh.score || 0);
+        console.log('[leaderboard] Game over — score:', this.gameState.score, 'localHigh:', localHigh?.score ?? 'none', 'isNewHigh:', isNewHigh);
         if (isNewHigh && window.baseInvadersLeaderboard?.saveLocalHighScore) {
             window.baseInvadersLeaderboard.saveLocalHighScore(localEntry);
         }
@@ -2488,11 +2490,15 @@ class GameScene extends Phaser.Scene {
 
         // One dialog only: submit to global leaderboard (wallet tx required)
         if (isNewHigh && typeof window.baseInvadersSubmitScore === 'function') {
+            console.log('[leaderboard] New high score — will show submit dialog in 200ms');
             setTimeout(async () => {
                 const wantsSubmit = confirm(
                     'New high score! Submit to global leaderboard? (Wallet transaction required.)'
                 );
-                if (!wantsSubmit) return;
+                if (!wantsSubmit) {
+                    console.log('[leaderboard] User cancelled submit');
+                    return;
+                }
                 try {
                     let name = '';
                     if (typeof window.baseInvadersGetUserName === 'function') {
@@ -2505,16 +2511,22 @@ class GameScene extends Phaser.Scene {
                     if (window.baseInvadersLeaderboard?.setSavedName) {
                         window.baseInvadersLeaderboard.setSavedName(name);
                     }
+                    console.log('[leaderboard] Calling baseInvadersSubmitScore(', this.gameState.score, waveLevel, streak, name, ')');
                     await window.baseInvadersSubmitScore(
                         this.gameState.score,
                         waveLevel,
                         streak,
                         name
                     );
+                    console.log('[leaderboard] Submit completed successfully');
                 } catch (error) {
                     console.error('Leaderboard submission failed:', error);
                 }
             }, 200);
+        } else if (!isNewHigh) {
+            console.log('[leaderboard] Not a new high score — submit dialog not shown');
+        } else if (typeof window.baseInvadersSubmitScore !== 'function') {
+            console.warn('[leaderboard] baseInvadersSubmitScore not available (miniapp.js not loaded?)');
         }
     }
 

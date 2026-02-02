@@ -208,11 +208,11 @@ window.baseInvadersOnchainCheckIn = async function () {
 };
 
 window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
-    console.log('[miniapp] baseInvadersSubmitScore start', score, wave, streak, name);
+    console.log('[miniapp] baseInvadersSubmitScore CALLED — score:', score, 'wave:', wave, 'streak:', streak, 'name:', name);
     try {
         const sdk = getSdk();
         if (!sdk) throw new Error('Farcaster SDK not loaded');
-        console.log('[miniapp] sdk.version:', sdk?.version || sdk?.sdkVersion || 'unknown');
+        console.log('[miniapp] submitScore — SDK ready, contract:', LEADERBOARD_ADDR);
         if (typeof sdk.ready === 'function') await sdk.ready();
         else if (sdk.actions && typeof sdk.actions.ready === 'function') await sdk.actions.ready({ disableNativeGestures: false });
         let displayName = (name != null && name !== '') ? String(name).trim() : '';
@@ -223,7 +223,7 @@ window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
         }
         displayName = displayName || 'Player';
         if (displayName.length > 32) displayName = displayName.slice(0, 32);
-        console.log('[miniapp] submitScore displayName:', displayName);
+        console.log('[miniapp] submitScore — displayName:', displayName);
         const { provider, account } = await ensureWalletProvider(sdk);
         if (!provider || !account) throw new Error('Wallet not connected');
 
@@ -234,19 +234,21 @@ window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
 
         const client = createWalletClient({ chain: baseChain, transport: custom(provider) });
         const accountObj = { address: getAddress(account), type: 'json-rpc' };
+        const args = [BigInt(score), BigInt(wave), BigInt(streak), displayName];
+        console.log('[miniapp] submitScore — sending tx to', LEADERBOARD_ADDR, 'args:', args);
         const hash = await client.writeContract({
             address: LEADERBOARD_ADDR,
             abi: LEADERBOARD_ABI,
             functionName: 'submitScore',
-            args: [BigInt(score), BigInt(wave), BigInt(streak), displayName],
+            args,
             account: accountObj,
             value: 0n
         });
-        console.log('[miniapp] submitScore hash:', hash);
+        console.log('[miniapp] submitScore SUCCESS — hash:', hash);
         window.dispatchEvent(new CustomEvent('base-invaders:wallet-connected', { detail: { address: account } }));
         return { success: true, hash };
     } catch (e) {
-        console.error('[miniapp] SubmitScore tx failed', e);
+        console.error('[miniapp] SubmitScore tx FAILED:', e?.message ?? e);
         throw e;
     }
 };
