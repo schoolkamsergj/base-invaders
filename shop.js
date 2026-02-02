@@ -7,10 +7,11 @@ class ShopSystem {
     }
 
     init() {
-        // Setup tab buttons
+        // Setup tab buttons (use currentTarget so click on button text still gives correct data-tab)
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                this.switchTab(e.target.dataset.tab);
+                const tab = (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.tab) || e.target.dataset.tab;
+                if (tab) this.switchTab(tab);
             });
         });
 
@@ -20,11 +21,7 @@ class ShopSystem {
     }
 
     loadShopData() {
-        const saved = localStorage.getItem('baseInvadersShop');
-        if (saved) {
-            return JSON.parse(saved);
-        }
-        return {
+        const defaults = {
             ownedShips: ['starter'],
             fireRate: 300,
             fireRateLevel: 1,
@@ -35,6 +32,16 @@ class ShopSystem {
             speed: 300,
             upgrades: {}
         };
+        const saved = localStorage.getItem('baseInvadersShop');
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                return { ...defaults, ...parsed, upgrades: { ...(defaults.upgrades || {}), ...(parsed.upgrades || {}) } };
+            } catch (e) {
+                return defaults;
+            }
+        }
+        return defaults;
     }
 
     saveShopData() {
@@ -42,11 +49,13 @@ class ShopSystem {
     }
 
     switchTab(tab) {
+        if (!tab || typeof tab !== 'string') return;
         this.currentTab = tab;
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.classList.remove('active');
         });
-        document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+        const activeBtn = document.querySelector(`[data-tab="${tab}"]`);
+        if (activeBtn) activeBtn.classList.add('active');
         this.generateShopItems();
     }
 
@@ -217,7 +226,7 @@ class ShopSystem {
                 icon: '🧲',
                 price: { gold: 100 },
                 stats: 'Auto-collect coins',
-                owned: this.data.upgrades.coinMagnet || false
+                owned: (this.data.upgrades && this.data.upgrades.coinMagnet) || false
             },
             {
                 id: 'score2x',
@@ -259,7 +268,7 @@ class ShopSystem {
                 icon: '💚',
                 price: { gold: 500 },
                 stats: 'Heal 1 HP per second',
-                owned: this.data.upgrades.hpRegen || false
+                owned: (this.data.upgrades && this.data.upgrades.hpRegen) || false
             },
             {
                 id: 'fasterMovement',
@@ -267,7 +276,7 @@ class ShopSystem {
                 icon: '🏃',
                 price: { gold: 300 },
                 stats: '+20% movement speed',
-                owned: this.data.upgrades.fasterMovement || false
+                owned: (this.data.upgrades && this.data.upgrades.fasterMovement) || false
             }
         ];
 
