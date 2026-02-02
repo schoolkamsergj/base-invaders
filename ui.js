@@ -520,12 +520,14 @@ class UI {
 
     /** localStorage key for last check-in date (per user). */
     getLastCheckInKey() {
-        return 'lastCheckIn_' + (this._checkInFid ?? 'default');
+        const fid = this._checkInFid ?? window.__baseInvadersCheckInFid ?? 'default';
+        return 'lastCheckIn_' + fid;
     }
 
     /** localStorage key for check-in streak (per user). */
     getStreakKey() {
-        return 'checkInStreak_' + (this._checkInFid ?? 'default');
+        const fid = this._checkInFid ?? window.__baseInvadersCheckInFid ?? 'default';
+        return 'checkInStreak_' + fid;
     }
 
     createDailyCheckInButton() {
@@ -832,23 +834,24 @@ class UI {
             this.checkInButtonBg.fillRoundedRect(buttonX - buttonWidth / 2, buttonY - buttonHeight / 2, buttonWidth, buttonHeight, 5);
             this.checkInButtonBg.lineStyle(2, 0x888888, 1);
             this.checkInButtonBg.strokeRoundedRect(buttonX - buttonWidth / 2, buttonY - buttonHeight / 2, buttonWidth, buttonHeight, 5);
-            
-            // Update text
-            
+
             this.checkInButtonText.setColor('#ffffff');
 
-            
-            // Show countdown or "Checked in" message
-            if (timeRemaining) {
-                const timeStr = `${timeRemaining.hours}h ${timeRemaining.minutes}m`;
-                this.checkInCountdownText.setText(timeStr);
-                this.checkInCountdownText.setVisible(true);
-            } else {
-                // Show "Checked in" if checked in today but no time remaining (edge case)
-                this.checkInCountdownText.setText('Checked in');
+            // Відлік до півночі (локальний час) — завжди показувати текст і робити його видимим
+            if (this.checkInCountdownText) {
+                this.checkInCountdownText.setPosition(buttonX, buttonY + buttonHeight * 0.45);
+                this.checkInCountdownText.setDepth(107);
+                this.checkInCountdownText.setColor('#00ff00');
+                this.checkInCountdownText.setFontSize(Math.max(11, Math.min(14, buttonHeight * 0.3)) + 'px');
+                if (timeRemaining && (timeRemaining.hours > 0 || timeRemaining.minutes > 0)) {
+                    const timeStr = `${timeRemaining.hours}h ${timeRemaining.minutes}m`;
+                    this.checkInCountdownText.setText(timeStr);
+                } else {
+                    this.checkInCountdownText.setText('Checked in');
+                }
                 this.checkInCountdownText.setVisible(true);
             }
-            
+
             // Disable interaction
             this.checkInButton.disableInteractive();
             this.checkInButtonText.disableInteractive();
