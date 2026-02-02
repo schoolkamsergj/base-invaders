@@ -67,6 +67,17 @@ window.baseInvadersGetUserName = async function () {
     return name || '';
 };
 
+/** Get Farcaster context (user with fid, etc.) for per-user check-in state. */
+window.baseInvadersGetUserContext = async function () {
+    const sdk = getSdk();
+    if (!sdk) return null;
+    try {
+        if (typeof sdk.ready === 'function') await sdk.ready();
+        else if (sdk.actions && typeof sdk.actions.ready === 'function') await sdk.actions.ready({ disableNativeGestures: false });
+    } catch (e) { /* ignore */ }
+    return getContext(sdk);
+};
+
 /**
  * Resolve Ethereum addresses to Farcaster usernames via Neynar API.
  * Set window.baseInvadersNeynarApiKey (get key at neynar.com) to enable.

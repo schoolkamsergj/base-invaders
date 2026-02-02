@@ -756,7 +756,8 @@ class GameScene extends Phaser.Scene {
             localStorage.removeItem('baseInvadersShop');
             localStorage.removeItem('baseInvadersLeaderboard');
             localStorage.removeItem('baseInvadersLocalHighScore');
-            localStorage.removeItem('checkInStreak');
+            localStorage.removeItem('checkInStreak_default');
+            localStorage.removeItem('lastCheckIn_default');
             localStorage.removeItem('highScore');
 
             // Mark migration as complete
@@ -880,8 +881,9 @@ class GameScene extends Phaser.Scene {
                             Object.assign(shop, { fireRate: this.playerStats.fireRate, damage: this.playerStats.damage, multiShot: this.playerStats.multiShot, maxHP: this.playerStats.maxHP, speed: this.playerStats.speed });
                             localStorage.setItem('baseInvadersShop', JSON.stringify(shop));
                             if (data.daily_streak != null || data.last_checkin != null) {
-                                localStorage.setItem('checkInStreak', JSON.stringify({ totalDays: Number(data.daily_streak) || 0, lastDate: data.last_checkin || '' }));
-                                if (data.last_checkin) localStorage.setItem('lastCheckIn', String(data.last_checkin));
+                                const checkInFid = window.__baseInvadersCheckInFid || TEST_FID;
+                                localStorage.setItem('checkInStreak_' + checkInFid, JSON.stringify({ totalDays: Number(data.daily_streak) || 0, lastDate: data.last_checkin || '' }));
+                                if (data.last_checkin) localStorage.setItem('lastCheckIn_' + checkInFid, String(data.last_checkin));
                             }
                             if (data.best_score != null) localStorage.setItem('highScore', String(data.best_score));
                             console.log('✅ Progress loaded from server');
@@ -2556,17 +2558,18 @@ class GameScene extends Phaser.Scene {
         if (!this.gameState || !this.missionSystem) return;
         try {
             const ms = this.missionSystem;
+            const checkInFid = window.__baseInvadersCheckInFid || 'default';
             let dailyStreak = 0;
             let lastCheckin = null;
             try {
-                const streakData = localStorage.getItem('checkInStreak');
+                const streakData = localStorage.getItem('checkInStreak_' + checkInFid);
                 if (streakData) {
                     const parsed = JSON.parse(streakData);
                     dailyStreak = parsed.totalDays || 0;
                     lastCheckin = parsed.lastDate || null;
                 }
             } catch (e) {}
-            if (lastCheckin == null) lastCheckin = localStorage.getItem('lastCheckIn');
+            if (lastCheckin == null) lastCheckin = localStorage.getItem('lastCheckIn_' + checkInFid);
             const bestScore = Math.max(this.gameState.score, parseInt(localStorage.getItem('highScore') || '0', 10));
             const payload = {
                 fid: TEST_FID,

@@ -279,8 +279,8 @@ class UI {
         this.resetCheckInBtnText.setDepth(101);
 
         this.resetCheckInBtn.on('pointerdown', () => {
-            localStorage.removeItem('lastCheckIn');
-            localStorage.removeItem('checkInStreak');
+            localStorage.removeItem(this.getLastCheckInKey());
+            localStorage.removeItem(this.getStreakKey());
             alert('Check-in reset!');
             this.updateCheckInButtonState();
             if (this.scene.playSound) this.scene.playSound('click');
@@ -507,7 +507,35 @@ class UI {
         return Math.floor((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
     }
 
+    /** Get Farcaster ID for per-user check-in state (localStorage keys). */
+    async getUserFid() {
+        try {
+            const ctx = await window.baseInvadersGetUserContext?.();
+            const fid = ctx?.user?.fid;
+            return fid != null ? String(fid) : 'default';
+        } catch (e) {
+            return 'default';
+        }
+    }
+
+    /** localStorage key for last check-in date (per user). */
+    getLastCheckInKey() {
+        return 'lastCheckIn_' + (this._checkInFid ?? 'default');
+    }
+
+    /** localStorage key for check-in streak (per user). */
+    getStreakKey() {
+        return 'checkInStreak_' + (this._checkInFid ?? 'default');
+    }
+
     createDailyCheckInButton() {
+        this._checkInFid = 'default';
+        (async () => {
+            this._checkInFid = await this.getUserFid();
+            window.__baseInvadersCheckInFid = this._checkInFid;
+            if (this.updateCheckInButtonState) this.updateCheckInButtonState();
+        })();
+
         const buttonX = this.scene.scale.width * 0.1;
         const buttonY = this.scene.scale.height * 0.25;
         const buttonWidth = 120;
@@ -596,11 +624,11 @@ class UI {
                 const result = await window.baseInvadersOnchainCheckIn();
                 console.log('[UI] Check-in tx success:', result);
 
-                localStorage.setItem('lastCheckIn', todayKey);
+                localStorage.setItem(this.getLastCheckInKey(), todayKey);
                 this.showNotification('⛓️ Confirmed on Base!', notifyX, notifyY - 40);
 
                 let totalDays = 0;
-                const streakData = localStorage.getItem('checkInStreak');
+                const streakData = localStorage.getItem(this.getStreakKey());
                 if (streakData) {
                     try {
                         const data = JSON.parse(streakData);
@@ -621,7 +649,7 @@ class UI {
                     totalDays = 1;
                 }
 
-                localStorage.setItem('checkInStreak', JSON.stringify({ totalDays, lastDate: todayKey }));
+                localStorage.setItem(this.getStreakKey(), JSON.stringify({ totalDays, lastDate: todayKey }));
 
                 const isMilestone = (totalDays % 7 === 0 && totalDays >= 7);
                 const dayInCycle = (totalDays % 7) || 7;
@@ -644,7 +672,7 @@ class UI {
                 else if (error.message.includes('not available')) errorMsg = 'Wallet not ready, try again';
                 else if (error.message.includes('Already checked in today')) {
                     errorMsg = 'Already checked in today';
-                    localStorage.setItem('lastCheckIn', todayKey);
+                    localStorage.setItem(this.getLastCheckInKey(), todayKey);
                     this.updateCheckInButtonState();
                 }
                 this.showNotification('⚠️ ' + errorMsg, notifyX, notifyY - 40);
@@ -691,7 +719,7 @@ class UI {
     }
 
     isCheckInActive() {
-        const lastCheckIn = localStorage.getItem('lastCheckIn');
+        const lastCheckIn = localStorage.getItem(this.getLastCheckInKey());
         if (!lastCheckIn) {
             return true; // Never checked in, button is active
         }
@@ -700,7 +728,7 @@ class UI {
     }
 
     getCheckInTimeRemaining() {
-        const lastCheckIn = localStorage.getItem('lastCheckIn');
+        const lastCheckIn = localStorage.getItem(this.getLastCheckInKey());
         if (!lastCheckIn) {
             return null; // No cooldown
         }
@@ -720,7 +748,7 @@ class UI {
     }
 
     getCheckInStreak() {
-        const streakData = localStorage.getItem('checkInStreak');
+        const streakData = localStorage.getItem(this.getStreakKey());
         if (!streakData) {
             return { totalDays: 0, nextMilestone: 7, isMilestone: false };
         }
@@ -1084,8 +1112,9 @@ class UI {
     
     window.__strikeDebug = {
         getState: function() {
-            const lastCheckIn = localStorage.getItem('lastCheckIn');
-            const streakData = localStorage.getItem('checkInStreak');
+            const fid = (window.game && window.game.scene && window.game.scene.getScene && window.game.scene.getScene('GameScene')?.ui?._checkInFid) || 'default';
+            const lastCheckIn = localStorage.getItem('lastCheckIn_' + fid);
+            const streakData = localStorage.getItem('checkInStreak_' + fid);
             const todayKey = getDayKey();
             
             let streak = null;
@@ -1131,16 +1160,14 @@ class UI {
             const targetDate = new Date(today);
             targetDate.setDate(targetDate.getDate() - n);
             const targetKey = getDayKey(targetDate);
-            
-            localStorage.setItem('lastCheckIn', targetKey);
-            
-            // Update streak's lastDate if it exists
-            const streakData = localStorage.getItem('checkInStreak');
+            const fid = (window.game && window.game.scene && window.game.scene.getScene && window.game.scene.getScene('GameScene')?.ui?._checkInFid) || 'default';
+            localStorage.setItem('lastCheckIn_' + fid, targetKey);
+            const streakData = localStorage.getItem('checkInStreak_' + fid);
             if (streakData) {
                 try {
                     const streak = JSON.parse(streakData);
                     streak.lastDate = targetKey;
-                    localStorage.setItem('checkInStreak', JSON.stringify(streak));
+                    localStorage.setItem('checkInStreak_' + fid, JSON.stringify(streak));
                 } catch (e) {
                     console.warn('Could not update streak lastDate:', e);
                 }
@@ -1161,8 +1188,9 @@ class UI {
         },
         
         clearStrike: function() {
-            localStorage.removeItem('lastCheckIn');
-            localStorage.removeItem('checkInStreak');
+            const fid = (window.game && window.game.scene && window.game.scene.getScene && window.game.scene.getScene('GameScene')?.ui?._checkInFid) || 'default';
+            localStorage.removeItem('lastCheckIn_' + fid);
+            localStorage.removeItem('checkInStreak_' + fid);
             
             // Refresh UI if game is running
             if (window.game && window.game.scene) {

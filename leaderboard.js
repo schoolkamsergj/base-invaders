@@ -53,7 +53,8 @@
     }
 
     function getCurrentStreak() {
-        const data = localStorage.getItem('checkInStreak');
+        const fid = window.__baseInvadersCheckInFid || 'default';
+        const data = localStorage.getItem('checkInStreak_' + fid);
         if (!data) return 0;
         try {
             const parsed = JSON.parse(data);
