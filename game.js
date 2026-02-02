@@ -2106,24 +2106,22 @@ class GameScene extends Phaser.Scene {
     dropLightning(x, y) {
         const bolt = this.add.text(x, y, '⚡', { fontSize: '24px' });
         bolt.setDepth(10);
+        bolt.powerUpType = 'lightning';
         this.physics.add.existing(bolt);
-        bolt.body.setVelocity(
-            Phaser.Math.Between(-50, 50),
-            Phaser.Math.Between(50, 100)
-        );
-        bolt.body.setGravityY(150);
-        
+        if (bolt.body) {
+            bolt.body.setVelocity(Phaser.Math.Between(-30, 30), 80);
+            bolt.body.setGravityY(0);
+            bolt.body.setCollideWorldBounds(false);
+            bolt.body.setSize(32, 32);
+        }
         this.tweens.add({
             targets: bolt,
-            alpha: { from: 1, to: 0.3 },
-            duration: 300,
+            alpha: { from: 1, to: 0.6 },
+            duration: 400,
             yoyo: true,
-            repeat: 5,
-            onComplete: () => {
-                this.gameState.lightning += 1;
-                bolt.destroy();
-            }
+            repeat: -1
         });
+        this.powerUps.add(bolt);
     }
 
     dropDiamond(x, y) {
@@ -2188,6 +2186,10 @@ class GameScene extends Phaser.Scene {
         }
         
         switch (powerUp.powerUpType) {
+            case 'lightning':
+                this.gameState.lightning += 1;
+                if (this.playSound) this.playSound('coin');
+                break;
             case 'shield':
                 this.playerStats.shield = 5;
                 break;
