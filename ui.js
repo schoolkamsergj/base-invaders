@@ -806,7 +806,8 @@ class UI {
         }
         const hours = Math.floor(msRemaining / (1000 * 60 * 60));
         const minutes = Math.floor((msRemaining % (1000 * 60 * 60)) / (1000 * 60));
-        return { hours, minutes };
+        const seconds = Math.floor((msRemaining % (1000 * 60)) / 1000);
+        return { hours, minutes, seconds };
     }
 
     getCheckInStreak() {
@@ -894,13 +895,14 @@ class UI {
             this.checkInButtonBg.lineStyle(2, 0x888888, 1);
             this.checkInButtonBg.strokeRoundedRect(buttonX - buttonWidth / 2, buttonY - buttonHeight / 2, buttonWidth, buttonHeight, 5);
 
-            // One line on button only: countdown text, small font so it fits in button width
-            const countdownFontPx = Math.max(9, Math.min(11, Math.floor(buttonWidth / 10)));
+            // One line: countdown, larger font (use ~60% of button height), with seconds
+            const countdownFontPx = Math.max(12, Math.min(18, Math.floor(buttonHeight * 0.6)));
             this.checkInButtonText.setFontSize(countdownFontPx + 'px');
             this.checkInButtonText.setColor('#00ff00');
             this.checkInButtonText.setPosition(buttonX, buttonY);
-            if (timeRemaining && (timeRemaining.hours > 0 || timeRemaining.minutes > 0)) {
-                this.checkInButtonText.setText(timeRemaining.hours + 'h ' + timeRemaining.minutes + 'm');
+            if (timeRemaining && (timeRemaining.hours > 0 || timeRemaining.minutes > 0 || (timeRemaining.seconds != null && timeRemaining.seconds > 0))) {
+                const s = timeRemaining.seconds != null ? timeRemaining.seconds : 0;
+                this.checkInButtonText.setText(timeRemaining.hours + 'h ' + timeRemaining.minutes + 'm ' + s + 's');
             } else {
                 this.checkInButtonText.setText('Checked in');
             }
