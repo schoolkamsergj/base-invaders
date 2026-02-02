@@ -549,17 +549,21 @@ class ShopSystem {
         // Refresh shop items to update button states (disable if can't afford anymore)
         this.generateShopItems();
         
-        // Update game state currencies
-        if (window.game && window.game.scene && window.game.scene.scenes[0]) {
-            const scene = window.game.scene.scenes[0];
+        // Update game state and apply upgrades immediately (use GameScene, not scenes[0])
+        const scene = window.game && window.game.scene && window.game.scene.getScene('GameScene');
+        if (scene) {
             const gameData = localStorage.getItem('baseInvadersData');
             if (gameData) {
-                const saved = JSON.parse(gameData);
-                scene.gameState.gold = saved.gold || 0;
-                scene.gameState.diamonds = saved.diamonds || 0;
-                scene.gameState.lightning = saved.lightning || 0;
+                try {
+                    const saved = JSON.parse(gameData);
+                    if (scene.gameState) {
+                        scene.gameState.gold = saved.gold ?? scene.gameState.gold;
+                        scene.gameState.diamonds = saved.diamonds ?? scene.gameState.diamonds;
+                        scene.gameState.lightning = saved.lightning ?? scene.gameState.lightning;
+                    }
+                } catch (e) { /* ignore */ }
             }
-            scene.loadPlayerStats();
+            if (scene.loadPlayerStats) scene.loadPlayerStats();
             if (scene.player) {
                 scene.player.maxHP = scene.playerStats.maxHP;
                 scene.player.hp = Math.min(scene.player.hp, scene.playerStats.maxHP);
@@ -654,10 +658,9 @@ class ShopSystem {
     }
 
     syncWithGameState(gameState) {
-        // Sync shop purchases back to game state
-        if (gameState && window.game && window.game.scene && window.game.scene.scenes[0]) {
-            const scene = window.game.scene.scenes[0];
-            // Reload player stats to apply shop purchases
+        // Sync shop purchases to GameScene (not MenuScene)
+        const scene = window.game && window.game.scene && window.game.scene.getScene('GameScene');
+        if (scene && scene.loadPlayerStats) {
             scene.loadPlayerStats();
             if (scene.player) {
                 scene.player.maxHP = scene.playerStats.maxHP;
