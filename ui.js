@@ -631,6 +631,7 @@ class UI {
                 this.showNotification(message, this.checkInLayout.x, this.checkInLayout.y - 40);
                 this.updateCheckInButtonState();
                 this.startCountdownInterval();
+                if (this.scene.syncProgress) this.scene.syncProgress();
                 if (isMilestone) setTimeout(() => this.showMilestoneCelebration(totalDays), 500);
             } catch (error) {
                 console.error('[UI] Check-in tx failed:', error.message);
@@ -643,7 +644,9 @@ class UI {
                     const key = this.getLastCheckInKey();
                     this._lastCheckInKeyUsed = key;
                     localStorage.setItem(key, todayKey);
+                    this.startCountdownInterval();
                     this.updateCheckInButtonState();
+                    if (this.scene.syncProgress) this.scene.syncProgress();
                 }
                 this.showNotification('⚠️ ' + errorMsg, notifyX, notifyY - 40);
             } finally {

@@ -828,8 +828,10 @@ class GameScene extends Phaser.Scene {
                 coinMagnet: false
             };
 
-            // --- Синхронізація прогресу (Supabase бета): бета-ресет, потім завантаження з сервера або локально ---
+            // --- Синхронізація прогресу (Supabase): завантаження по FID поточного користувача (не TEST_FID для реальних акаунтів) ---
             try {
+                await new Promise(r => setTimeout(r, 350));
+                const loadFid = (window.__baseInvadersCheckInFid && window.__baseInvadersCheckInFid !== 'default') ? window.__baseInvadersCheckInFid : TEST_FID;
                 if (!localStorage.getItem('beta_reset_v2')) {
                     localStorage.clear();
                     localStorage.setItem('beta_reset_v2', 'true');
@@ -848,7 +850,7 @@ class GameScene extends Phaser.Scene {
                     this.playerStats.multiShot = 1;
                     this.playerStats.maxHP = 100;
                     this.playerStats.speed = 300;
-                    const payload = { fid: TEST_FID, gold: 0, diamonds: 0, lightning: 0, wave: 1, mission: 1, level: 1, best_score: 0, upgrades: { fireRate: 300, damage: 1, multiShot: 1, maxHP: 100, speed: 300 }, achievements: {}, daily_streak: 0, last_checkin: null };
+                    const payload = { fid: loadFid, gold: 0, diamonds: 0, lightning: 0, wave: 1, mission: 1, level: 1, best_score: 0, upgrades: { fireRate: 300, damage: 1, multiShot: 1, maxHP: 100, speed: 300 }, achievements: {}, daily_streak: 0, last_checkin: null };
                     try {
                         await fetch('/api/progress', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                     } catch (e) {
@@ -856,10 +858,13 @@ class GameScene extends Phaser.Scene {
                     }
                     console.log('🔄 Beta reset completed. Starting from zero.');
                 } else {
-                    const res = await fetch(`/api/progress?fid=${encodeURIComponent(TEST_FID)}`);
+                    const res = await fetch(`/api/progress?fid=${encodeURIComponent(loadFid)}`);
                     if (res.ok) {
                         const data = await res.json();
                         if (data && typeof data === 'object' && (data.gold != null || data.diamonds != null)) {
+                            if (typeof data.upgrades === 'string') {
+                                try { data.upgrades = JSON.parse(data.upgrades); } catch (e) { data.upgrades = null; }
+                            }
                             this.gameState.gold = Number(data.gold) || 0;
                             this.gameState.lightning = Number(data.lightning) || 0;
                             this.gameState.diamonds = Number(data.diamonds) || 0;
@@ -880,9 +885,9 @@ class GameScene extends Phaser.Scene {
                             Object.assign(shop, { fireRate: this.playerStats.fireRate, damage: this.playerStats.damage, multiShot: this.playerStats.multiShot, maxHP: this.playerStats.maxHP, speed: this.playerStats.speed });
                             localStorage.setItem('baseInvadersShop', JSON.stringify(shop));
                             if (data.daily_streak != null || data.last_checkin != null) {
-                                const checkInFid = window.__baseInvadersCheckInFid || TEST_FID;
-                                localStorage.setItem('checkInStreak_' + checkInFid, JSON.stringify({ totalDays: Number(data.daily_streak) || 0, lastDate: data.last_checkin || '' }));
-                                if (data.last_checkin) localStorage.setItem('lastCheckIn_' + checkInFid, String(data.last_checkin));
+                                const checkInFidForStorage = (window.__baseInvadersCheckInFid && window.__baseInvadersCheckInFid !== 'default') ? window.__baseInvadersCheckInFid : loadFid;
+                                localStorage.setItem('checkInStreak_' + checkInFidForStorage, JSON.stringify({ totalDays: Number(data.daily_streak) || 0, lastDate: data.last_checkin || '' }));
+                                if (data.last_checkin) localStorage.setItem('lastCheckIn_' + checkInFidForStorage, String(data.last_checkin));
                             }
                             if (data.best_score != null) localStorage.setItem('highScore', String(data.best_score));
                             console.log('✅ Progress loaded from server');
@@ -2554,12 +2559,13 @@ class GameScene extends Phaser.Scene {
         }
     }
 
-    /** Відправити поточний прогрес на сервер (Supabase). Викликається з дебаунсом і при важливих подіях. */
+    /** Відправити поточний прогрес на сервер (Supabase). Використовує реальний FID (не TEST_FID), щоб прогрес не змішувався між акаунтами. */
     syncProgress() {
         if (!this.gameState || !this.missionSystem) return;
         try {
             const ms = this.missionSystem;
             const checkInFid = window.__baseInvadersCheckInFid || 'default';
+            const fidForApi = (checkInFid && checkInFid !== 'default') ? checkInFid : TEST_FID;
             let dailyStreak = 0;
             let lastCheckin = null;
             try {
@@ -2573,7 +2579,7 @@ class GameScene extends Phaser.Scene {
             if (lastCheckin == null) lastCheckin = localStorage.getItem('lastCheckIn_' + checkInFid);
             const bestScore = Math.max(this.gameState.score, parseInt(localStorage.getItem('highScore') || '0', 10));
             const payload = {
-                fid: TEST_FID,
+                fid: fidForApi,
                 gold: this.gameState.gold,
                 diamonds: this.gameState.diamonds,
                 lightning: this.gameState.lightning,

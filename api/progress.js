@@ -67,6 +67,8 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Missing fid' });
       }
 
+      const upgradesObj = body.upgrades && typeof body.upgrades === 'object' ? body.upgrades : { fireRate: 300, damage: 1, multiShot: 1, maxHP: 100, speed: 300 };
+      const achievementsObj = body.achievements && typeof body.achievements === 'object' ? body.achievements : {};
       const row = {
         fid,
         gold: Number(body.gold) || 0,
@@ -76,8 +78,8 @@ export default async function handler(req, res) {
         mission: Number(body.mission) || 1,
         level: Number(body.level) || 1,
         best_score: Number(body.best_score) || 0,
-        upgrades: body.upgrades && typeof body.upgrades === 'object' ? body.upgrades : { fireRate: 300, damage: 1, multiShot: 1, maxHP: 100, speed: 300 },
-        achievements: body.achievements && typeof body.achievements === 'object' ? body.achievements : {},
+        upgrades: upgradesObj,
+        achievements: achievementsObj,
         daily_streak: Number(body.daily_streak) || 0,
         last_checkin: body.last_checkin != null ? String(body.last_checkin) : null,
         updated_at: new Date().toISOString()
