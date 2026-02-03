@@ -2762,27 +2762,41 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // RESET GAME button handler in pause menu
-    document.getElementById('reset-game-btn')?.addEventListener('click', () => {
-        // Play click sound
+    // RESET GAME: show in-game confirmation (no browser confirm() so it works in Farcaster iframe/desktop)
+    document.getElementById('reset-game-btn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         if (window.game && window.game.scene) {
             const gameScene = window.game.scene.getScene('GameScene');
-            if (gameScene && gameScene.playSound) {
-                gameScene.playSound('click');
-            }
+            if (gameScene && gameScene.playSound) gameScene.playSound('click');
         }
-        
-        const confirmed = confirm('Reset ALL progress? This will clear currency, purchases, score and all saved data. Cannot be undone.');
-        
-        if (confirmed) {
-            localStorage.clear();
-            localStorage.removeItem('baseInvadersData');
-            localStorage.removeItem('baseInvadersShopData');
-            localStorage.removeItem('baseInvadersVibration');
-            document.getElementById('pause-overlay').classList.add('hidden');
-            // Reload page so game starts fresh (avoids freeze from scene.stop/start)
-            location.reload();
+        const confirmEl = document.getElementById('reset-confirm-overlay');
+        if (confirmEl) confirmEl.classList.remove('hidden');
+    });
+    document.getElementById('reset-confirm-cancel')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const confirmEl = document.getElementById('reset-confirm-overlay');
+        if (confirmEl) confirmEl.classList.add('hidden');
+        if (window.game && window.game.scene) {
+            const gameScene = window.game.scene.getScene('GameScene');
+            if (gameScene && gameScene.playSound) gameScene.playSound('click');
         }
+    });
+    document.getElementById('reset-confirm-do')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (window.game && window.game.scene) {
+            const gameScene = window.game.scene.getScene('GameScene');
+            if (gameScene && gameScene.playSound) gameScene.playSound('click');
+        }
+        document.getElementById('reset-confirm-overlay')?.classList.add('hidden');
+        document.getElementById('pause-overlay')?.classList.add('hidden');
+        localStorage.clear();
+        localStorage.removeItem('baseInvadersData');
+        localStorage.removeItem('baseInvadersShopData');
+        localStorage.removeItem('baseInvadersVibration');
+        location.reload();
     });
 
     // EXIT GAME button handler in pause menu

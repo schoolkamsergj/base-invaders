@@ -79,14 +79,25 @@
         </div>
     </div>
 
-    <!-- Pause Overlay -->
-    <div id="pause-overlay" class="overlay hidden">
+    <!-- Pause Overlay (high z-index so clicks work in Farcaster/desktop) -->
+    <div id="pause-overlay" class="overlay hidden" style="z-index: 10002; pointer-events: auto;">
         <div class="pause-container">
             <h2>⏸️ PAUSED</h2>
             <button id="resume-btn" class="menu-btn">Resume</button>
             <button id="main-menu-btn" class="menu-btn">Main Menu</button>
             <button id="reset-game-btn" class="menu-btn reset-btn">Reset Game</button>
             <button id="exit-game-btn" class="menu-btn exit-btn">Exit Game</button>
+        </div>
+    </div>
+    <!-- Reset confirmation (replaces browser confirm() so it works in iframe/desktop) -->
+    <div id="reset-confirm-overlay" class="overlay hidden" style="z-index: 10003; pointer-events: auto;">
+        <div class="pause-container reset-confirm-box">
+            <h2>Reset progress?</h2>
+            <p style="margin: 15px 0; color: #ccc;">This will clear currency, purchases, score and all saved data. Cannot be undone.</p>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <button id="reset-confirm-cancel" class="menu-btn">Cancel</button>
+                <button id="reset-confirm-do" class="menu-btn reset-btn">Reset</button>
+            </div>
         </div>
     </div>
 
