@@ -2495,40 +2495,17 @@ class GameScene extends Phaser.Scene {
             <p>Level: ${this.gameState.playerLevel}</p>
         `;
 
-        // One dialog only: submit to global leaderboard (wallet tx required)
+        // Show in-game submit dialog (no confirm() so it works in Farcaster iframe/desktop)
         if (isNewHigh && typeof window.baseInvadersSubmitScore === 'function') {
-            console.log('[leaderboard] New high score — will show submit dialog in 200ms');
-            setTimeout(async () => {
-                const wantsSubmit = confirm(
-                    'New high score! Submit to global leaderboard? (Wallet transaction required.)'
-                );
-                if (!wantsSubmit) {
-                    console.log('[leaderboard] User cancelled submit');
-                    return;
-                }
-                try {
-                    let name = '';
-                    if (typeof window.baseInvadersGetUserName === 'function') {
-                        name = await window.baseInvadersGetUserName();
-                    }
-                    if (!name && window.baseInvadersLeaderboard?.getSavedName) {
-                        name = window.baseInvadersLeaderboard.getSavedName();
-                    }
-                    name = (name && String(name).trim()) || 'Player';
-                    if (window.baseInvadersLeaderboard?.setSavedName) {
-                        window.baseInvadersLeaderboard.setSavedName(name);
-                    }
-                    console.log('[leaderboard] Calling baseInvadersSubmitScore(', this.gameState.score, waveLevel, streak, name, ')');
-                    await window.baseInvadersSubmitScore(
-                        this.gameState.score,
-                        waveLevel,
-                        streak,
-                        name
-                    );
-                    console.log('[leaderboard] Submit completed successfully');
-                } catch (error) {
-                    console.error('Leaderboard submission failed:', error);
-                }
+            console.log('[leaderboard] New high score — will show submit overlay in 200ms');
+            setTimeout(() => {
+                window.__baseInvadersPendingLeaderboardSubmit = {
+                    score: this.gameState.score,
+                    wave: waveLevel,
+                    streak
+                };
+                const overlay = document.getElementById('leaderboard-submit-overlay');
+                if (overlay) overlay.classList.remove('hidden');
             }, 200);
         } else if (!isNewHigh) {
             console.log('[leaderboard] Not a new high score — submit dialog not shown');
@@ -2855,5 +2832,50 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         location.reload();
+    });
+
+    // Leaderboard submit overlay (replaces confirm() so it works in Farcaster/desktop)
+    document.getElementById('leaderboard-submit-cancel')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        document.getElementById('leaderboard-submit-overlay')?.classList.add('hidden');
+        window.__baseInvadersPendingLeaderboardSubmit = null;
+        if (window.game?.scene) {
+            const g = window.game.scene.getScene('GameScene');
+            if (g?.playSound) g.playSound('click');
+        }
+    });
+    document.getElementById('leaderboard-submit-do')?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const pending = window.__baseInvadersPendingLeaderboardSubmit;
+        if (!pending || typeof window.baseInvadersSubmitScore !== 'function') {
+            document.getElementById('leaderboard-submit-overlay')?.classList.add('hidden');
+            window.__baseInvadersPendingLeaderboardSubmit = null;
+            return;
+        }
+        document.getElementById('leaderboard-submit-overlay')?.classList.add('hidden');
+        window.__baseInvadersPendingLeaderboardSubmit = null;
+        if (window.game?.scene) {
+            const g = window.game.scene.getScene('GameScene');
+            if (g?.playSound) g.playSound('click');
+        }
+        try {
+            let name = '';
+            if (typeof window.baseInvadersGetUserName === 'function') {
+                name = await window.baseInvadersGetUserName();
+            }
+            if (!name && window.baseInvadersLeaderboard?.getSavedName) {
+                name = window.baseInvadersLeaderboard.getSavedName();
+            }
+            name = (name && String(name).trim()) || 'Player';
+            if (window.baseInvadersLeaderboard?.setSavedName) {
+                window.baseInvadersLeaderboard.setSavedName(name);
+            }
+            await window.baseInvadersSubmitScore(pending.score, pending.wave, pending.streak, name);
+            console.log('[leaderboard] Submit completed successfully');
+        } catch (err) {
+            console.error('Leaderboard submission failed:', err);
+        }
     });
 });

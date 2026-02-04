@@ -829,9 +829,9 @@ class UI {
             this.checkInGlow.fillStyle(0x00ffff, 0.3);
             this.checkInGlow.fillRoundedRect(buttonX - buttonWidth / 2 - 2, buttonY - buttonHeight / 2 - 2, buttonWidth + 4, buttonHeight + 4, 7);
             
-            // Calculate next day to claim (always starts from 1)
-            const currentStreak = streakInfo.totalDays || 0; // 0 if never claimed
-            const nextDay = currentStreak + 1; // Day 1, 2, 3... (the day user will claim)
+            // Next day to claim: if user checked in yesterday (totalDays=1), show "Day 2"; if never/missed, show "Day 1"
+            const currentStreak = streakInfo.totalDays || 0;
+            const nextDay = currentStreak + 1;
             
             // Check if next claim is milestone
             const isNextMilestone = (nextDay % 7 === 0 && nextDay >= 7);

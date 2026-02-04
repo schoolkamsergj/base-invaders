@@ -102,11 +102,22 @@
     </div>
 
     <!-- Game Over Overlay -->
-    <div id="gameover-overlay" class="overlay hidden">
+    <div id="gameover-overlay" class="overlay hidden" style="z-index: 10002;">
         <div class="gameover-container">
             <h2>💥 GAME OVER</h2>
             <div id="final-stats"></div>
             <button id="restart-btn" class="menu-btn">Restart</button>
+        </div>
+    </div>
+    <!-- Submit to leaderboard confirmation (replaces confirm() so it works in Farcaster/desktop) -->
+    <div id="leaderboard-submit-overlay" class="overlay hidden" style="z-index: 10004; pointer-events: auto;">
+        <div class="pause-container reset-confirm-box">
+            <h2>🏆 New high score!</h2>
+            <p style="margin: 15px 0; color: #ccc;">Submit to global leaderboard? (Wallet transaction required.)</p>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <button id="leaderboard-submit-cancel" class="menu-btn">Cancel</button>
+                <button id="leaderboard-submit-do" class="menu-btn">Submit</button>
+            </div>
         </div>
     </div>
     
