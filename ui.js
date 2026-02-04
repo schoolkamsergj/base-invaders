@@ -571,7 +571,7 @@ class UI {
 
             const notifyX = this.checkInLayout?.x ?? buttonX;
             const notifyY = this.checkInLayout?.y ?? buttonY;
-            const todayKey = this.getDayKeyUTC();
+            const todayKey = this.getDayKey();
 
             if (typeof window.baseInvadersOnchainCheckIn !== 'function') {
                 console.error('[UI] SDK function not found');
@@ -604,7 +604,7 @@ class UI {
                         if (!lastDateKey) {
                             totalDays = 1;
                         } else {
-                            const daysSince = this.daysBetweenDayKeysUTC(lastDateKey, todayKey);
+                            const daysSince = this.daysBetweenDayKeys(lastDateKey, todayKey);
                             if (daysSince === 1) totalDays = previousStreak + 1;
                             else if (daysSince === 0) totalDays = previousStreak || 1;
                             else totalDays = 1;
@@ -750,7 +750,7 @@ class UI {
         if (!lastCheckIn) {
             return true; // Never checked in, button is active
         }
-        const todayKey = this.getDayKeyUTC();
+        const todayKey = this.getDayKey();
         return lastCheckIn !== todayKey;
     }
 
@@ -759,7 +759,7 @@ class UI {
         if (!lastCheckIn) {
             return null; // No cooldown
         }
-        const todayKey = this.getDayKeyUTC();
+        const todayKey = this.getDayKey();
         if (lastCheckIn !== todayKey) {
             return null; // Cooldown expired (different day)
         }
@@ -786,8 +786,8 @@ class UI {
             if (!lastDateKey) {
                 return { totalDays: 0, nextMilestone: 7, isMilestone: false };
             }
-            const todayKey = this.getDayKeyUTC();
-            const daysSince = this.daysBetweenDayKeysUTC(lastDateKey, todayKey);
+            const todayKey = this.getDayKey();
+            const daysSince = this.daysBetweenDayKeys(lastDateKey, todayKey);
             if (daysSince > 1 || daysSince < 0) {
                 return { totalDays: 0, nextMilestone: 7, isMilestone: false };
             }
