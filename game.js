@@ -2496,7 +2496,7 @@ class GameScene extends Phaser.Scene {
         `;
 
         // Show in-game submit dialog (no confirm() so it works in Farcaster iframe/desktop)
-        if (isNewHigh && typeof window.baseInvadersSubmitScore === 'function') {
+        if (isNewHigh) {
             console.log('[leaderboard] New high score — will show submit overlay in 200ms');
             setTimeout(() => {
                 window.__baseInvadersPendingLeaderboardSubmit = {
@@ -2505,12 +2505,12 @@ class GameScene extends Phaser.Scene {
                     streak
                 };
                 const overlay = document.getElementById('leaderboard-submit-overlay');
+                const statusEl = document.getElementById('leaderboard-submit-status');
+                if (statusEl) statusEl.textContent = '';
                 if (overlay) overlay.classList.remove('hidden');
             }, 200);
-        } else if (!isNewHigh) {
+        } else {
             console.log('[leaderboard] Not a new high score — submit dialog not shown');
-        } else if (typeof window.baseInvadersSubmitScore !== 'function') {
-            console.warn('[leaderboard] baseInvadersSubmitScore not available (miniapp.js not loaded?)');
         }
     }
 
@@ -2849,13 +2849,21 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         e.stopPropagation();
         const pending = window.__baseInvadersPendingLeaderboardSubmit;
-        if (!pending || typeof window.baseInvadersSubmitScore !== 'function') {
-            document.getElementById('leaderboard-submit-overlay')?.classList.add('hidden');
+        const statusEl = document.getElementById('leaderboard-submit-status');
+        const overlay = document.getElementById('leaderboard-submit-overlay');
+        if (!pending) {
+            if (overlay) overlay.classList.add('hidden');
             window.__baseInvadersPendingLeaderboardSubmit = null;
             return;
         }
-        document.getElementById('leaderboard-submit-overlay')?.classList.add('hidden');
-        window.__baseInvadersPendingLeaderboardSubmit = null;
+        if (typeof window.baseInvadersSubmitScore !== 'function') {
+            if (statusEl) statusEl.textContent = 'Open in Warpcast to submit.';
+            if (statusEl) statusEl.style.color = '#ff8888';
+            return;
+        }
+        const btn = e.target;
+        if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
+        if (statusEl) { statusEl.textContent = 'Submitting...'; statusEl.style.color = '#00ff88'; }
         if (window.game?.scene) {
             const g = window.game.scene.getScene('GameScene');
             if (g?.playSound) g.playSound('click');
@@ -2873,9 +2881,50 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.baseInvadersLeaderboard.setSavedName(name);
             }
             await window.baseInvadersSubmitScore(pending.score, pending.wave, pending.streak, name);
+            if (statusEl) { statusEl.textContent = 'Submitted!'; statusEl.style.color = '#00ff88'; }
             console.log('[leaderboard] Submit completed successfully');
+            window.__baseInvadersPendingLeaderboardSubmit = null;
+            setTimeout(() => { if (overlay) overlay.classList.add('hidden'); if (btn) { btn.disabled = false; btn.textContent = 'Submit'; } }, 1500);
         } catch (err) {
+            const msg = (err && err.message) ? String(err.message) : 'Submit failed';
+            if (statusEl) { statusEl.textContent = msg; statusEl.style.color = '#ff6666'; }
             console.error('Leaderboard submission failed:', err);
+            if (btn) { btn.disabled = false; btn.textContent = 'Submit'; }
         }
+    });
+
+    // Manual "Submit my score" from Leaderboard screen (so user can submit even if Game Over dialog was missed)
+    document.getElementById('submit-my-score-btn')?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const statusEl = document.getElementById('leaderboard-submit-my-status');
+        const btn = e.target;
+        if (typeof window.baseInvadersSubmitScore !== 'function') {
+            if (statusEl) { statusEl.textContent = 'Open in Warpcast to submit.'; statusEl.style.color = '#ff8888'; }
+            return;
+        }
+        const local = window.baseInvadersLeaderboard?.getLocalHighScore ? window.baseInvadersLeaderboard.getLocalHighScore() : null;
+        if (!local) {
+            if (statusEl) { statusEl.textContent = 'Play a game first to have a score.'; statusEl.style.color = '#ff8888'; }
+            return;
+        }
+        const score = Number(local.score) || 0;
+        const wave = Number(local.wave) || 1;
+        const streak = window.baseInvadersLeaderboard?.getCurrentStreak ? window.baseInvadersLeaderboard.getCurrentStreak() : 0;
+        if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
+        if (statusEl) { statusEl.textContent = 'Submitting...'; statusEl.style.color = '#00ff88'; }
+        try {
+            let name = '';
+            if (typeof window.baseInvadersGetUserName === 'function') name = await window.baseInvadersGetUserName();
+            if (!name && window.baseInvadersLeaderboard?.getSavedName) name = window.baseInvadersLeaderboard.getSavedName();
+            name = (name && String(name).trim()) || 'Player';
+            if (window.baseInvadersLeaderboard?.setSavedName) window.baseInvadersLeaderboard.setSavedName(name);
+            await window.baseInvadersSubmitScore(score, wave, streak, name);
+            if (statusEl) { statusEl.textContent = 'Submitted!'; statusEl.style.color = '#00ff88'; }
+        } catch (err) {
+            const msg = (err && err.message) ? String(err.message) : 'Submit failed';
+            if (statusEl) { statusEl.textContent = msg; statusEl.style.color = '#ff6666'; }
+        }
+        if (btn) { btn.disabled = false; btn.textContent = 'Submit my score'; }
     });
 });

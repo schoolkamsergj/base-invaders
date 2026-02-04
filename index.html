@@ -114,6 +114,7 @@
         <div class="pause-container reset-confirm-box">
             <h2>🏆 New high score!</h2>
             <p style="margin: 15px 0; color: #ccc;">Submit to global leaderboard? (Wallet transaction required.)</p>
+            <p id="leaderboard-submit-status" style="min-height: 1.5em; margin: 8px 0; color: #00ff88; font-size: 14px;"></p>
             <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
                 <button id="leaderboard-submit-cancel" class="menu-btn">Cancel</button>
                 <button id="leaderboard-submit-do" class="menu-btn">Submit</button>
@@ -127,10 +128,12 @@
             <div class="leaderboard-header">
                 <h2>🏆 LEADERBOARD</h2>
                 <div class="leaderboard-actions">
+                    <button id="submit-my-score-btn" class="menu-btn small-btn">Submit my score</button>
                     <button id="refresh-leaderboard" class="menu-btn small-btn">Refresh</button>
                     <button id="close-leaderboard" class="close-btn">✕</button>
                 </div>
             </div>
+            <p id="leaderboard-submit-my-status" style="min-height: 1.2em; margin: 6px 0; color: #00ff88; font-size: 13px;"></p>
             <div class="leaderboard-section">
                 <h3 id="leaderboard-global-status">Global leaderboard (on-chain)</h3>
                 <table class="leaderboard-table">
