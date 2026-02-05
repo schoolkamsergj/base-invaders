@@ -79,15 +79,15 @@ class MenuScene extends Phaser.Scene {
             ease: 'Sine.easeInOut'
         });
 
-        // START button (center-right)
+        // START button
         this.startBtnBg = this.add.graphics();
         this.startBtnBg.setDepth(1);
 
-        this.startBtn = this.add.rectangle(width / 2, height * 0.52, 260, 85, 0x0052FF, 0);
+        this.startBtn = this.add.rectangle(width / 2, height * 0.38, 260, 85, 0x0052FF, 0);
         this.startBtn.setInteractive({ useHandCursor: true });
         this.startBtn.setDepth(2);
         
-        this.startText = this.add.text(width / 2, height * 0.52, typeof getText === 'function' ? getText('menu.start') : 'START', {
+        this.startText = this.add.text(width / 2, height * 0.38, typeof getText === 'function' ? getText('menu.start') : 'START', {
             fontSize: '36px',
             fontFamily: 'Arial, sans-serif',
             fontWeight: 'bold',
@@ -144,8 +144,7 @@ class MenuScene extends Phaser.Scene {
             this.scene.start('GameScene');
         });
         
-        // LANGUAGE button (between START and How to Play)
-        const languageBtnY = height * 0.58;
+        const languageBtnY = height * (0.38 + 0.09);
         this.languageBtnBg = this.add.graphics();
         this.languageBtnBg.setDepth(1);
         this.languageBtn = this.add.rectangle(width / 2, languageBtnY, 260, 55, 0x2196F3, 0);
@@ -180,8 +179,7 @@ class MenuScene extends Phaser.Scene {
             });
         });
         
-        // INSTRUCTIONS button (below Language button)
-        const instructionsBtnY = height * 0.65;
+        const instructionsBtnY = height * (0.38 + 0.18);
 
         this.instructionsBtnBg = this.add.graphics();
         this.instructionsBtnBg.setDepth(1);
@@ -247,8 +245,7 @@ class MenuScene extends Phaser.Scene {
             });
         });
         
-        // RESET PROGRESS button (below Instructions button)
-        const resetBtnY = height * 0.76;
+        const resetBtnY = height * (0.38 + 0.27);
         this.resetBtnBg = this.add.graphics();
         this.resetBtnBg.setDepth(1);
         
@@ -297,7 +294,7 @@ class MenuScene extends Phaser.Scene {
         });
 
         // LEADERBOARD button (below Reset Progress)
-        const leaderboardBtnY = height * 0.86;
+        const leaderboardBtnY = height * (0.38 + 0.36);
         this.leaderboardBtnBg = this.add.graphics();
         this.leaderboardBtnBg.setDepth(1);
         
@@ -438,29 +435,27 @@ class MenuScene extends Phaser.Scene {
     }
 
     updateMenuLayout(width, height) {
-        const compact = width < 900;
         const titleSize = Math.max(28, Math.min(width * 0.08, 64));
         const textSize = Math.max(14, Math.min(width * 0.025, 20));
         const buttonX = width * 0.5;
-        const startY = height * 0.52;
-        const languageY = height * 0.58;
-        const instructionsY = height * 0.65;
-        const resetY = height * 0.76;
-        const leaderboardY = height * 0.86;
+        const gap = 0.09;
+        const startY = height * 0.38;
+        const languageY = height * (0.38 + gap);
+        const instructionsY = height * (0.38 + gap * 2);
+        const resetY = height * (0.38 + gap * 3);
+        const leaderboardY = height * (0.38 + gap * 4);
 
-        this.titleText.setPosition(width / 2, height * 0.15);
+        this.titleText.setPosition(width / 2, height * 0.10);
         this.titleText.setFontSize(`${titleSize}px`);
 
-        // Welcome text (centered, above buttons)
         if (this.welcomeText) {
-            this.welcomeText.setPosition(width / 2, height * 0.25);
+            this.welcomeText.setPosition(width / 2, height * 0.19);
             this.welcomeText.setFontSize(`${textSize}px`);
             this.welcomeText.setWordWrapWidth(Math.min(450, width * 0.85), true);
         }
 
-        // Good luck text
         if (this.goodLuckText) {
-            this.goodLuckText.setPosition(width / 2, height * 0.40);
+            this.goodLuckText.setPosition(width / 2, height * 0.28);
         }
 
         // START button
@@ -684,51 +679,64 @@ class MenuScene extends Phaser.Scene {
     showLanguageOverlay() {
         const width = this.scale.width;
         const height = this.scale.height;
-        this.langOverlay = this.add.rectangle(0, 0, width * 2, height * 2, 0x000000, 0.85);
+        const depthLang = 10000;
+        this.langOverlay = this.add.rectangle(0, 0, width * 2, height * 2, 0x000000, 0.9);
         this.langOverlay.setOrigin(0, 0);
-        this.langOverlay.setDepth(2000);
+        this.langOverlay.setDepth(depthLang);
         this.langOverlay.setInteractive();
         this.langOverlay.on('pointerdown', () => this.closeLanguageOverlay());
-        const panelW = Math.min(320, width * 0.85);
-        const panelH = Math.min(180, height * 0.35);
+        const panelW = Math.min(280, width * 0.8);
+        const panelH = Math.min(220, height * 0.45);
         this.langPanel = this.add.rectangle(width / 2, height / 2, panelW, panelH, 0x1a1a2e, 0.98);
-        this.langPanel.setDepth(2001);
+        this.langPanel.setDepth(depthLang + 1);
         this.langPanelBorder = this.add.graphics();
-        this.langPanelBorder.lineStyle(2, 0x0052FF, 1);
-        this.langPanelBorder.strokeRoundedRect(width / 2 - panelW / 2, height / 2 - panelH / 2, panelW, panelH, 8);
-        this.langPanelBorder.setDepth(2001);
+        this.langPanelBorder.lineStyle(3, 0x0052FF, 1);
+        this.langPanelBorder.strokeRoundedRect(width / 2 - panelW / 2, height / 2 - panelH / 2, panelW, panelH, 10);
+        this.langPanelBorder.setDepth(depthLang + 1);
         const titleStr = typeof getText === 'function' ? getText('menu.language') : 'Language 🌐';
-        this.langTitle = this.add.text(width / 2, height / 2 - panelH / 2 + 22, titleStr, {
-            fontSize: '20px',
+        this.langTitle = this.add.text(width / 2, height / 2 - panelH / 2 + 28, titleStr, {
+            fontSize: '22px',
             fontFamily: 'Arial, sans-serif',
             fontWeight: 'bold',
             color: '#00ffff',
             align: 'center'
         });
         this.langTitle.setOrigin(0.5);
-        this.langTitle.setDepth(2002);
+        this.langTitle.setDepth(depthLang + 2);
         const enStr = typeof getText === 'function' ? getText('lang.english') : '🇺🇸 English';
         const hiStr = typeof getText === 'function' ? getText('lang.hindi') : '🇮🇳 हिंदी';
-        this.langEn = this.add.text(width / 2 - 70, height / 2 + 10, enStr, {
-            fontSize: '18px',
+        const rowH = 48;
+        const centerY = height / 2;
+        this.langEn = this.add.text(width / 2, centerY - rowH / 2 - 10, enStr, {
+            fontSize: '22px',
             fontFamily: 'Arial, sans-serif',
             color: '#ffffff',
             align: 'center'
         });
         this.langEn.setOrigin(0.5);
-        this.langEn.setDepth(2002);
+        this.langEn.setDepth(depthLang + 2);
         this.langEn.setInteractive({ useHandCursor: true });
-        this.langEn.on('pointerdown', (e) => { e.stopPropagation(); if (typeof setLang === 'function') setLang('en').then(() => { this.closeLanguageOverlay(); this.refreshMenuTexts(); }); });
-        this.langHi = this.add.text(width / 2 + 70, height / 2 + 10, hiStr, {
-            fontSize: '18px',
+        this.langEn.on('pointerdown', (e) => { e.stopPropagation(); this._applyLang('en'); });
+        this.langHi = this.add.text(width / 2, centerY + rowH / 2 + 10, hiStr, {
+            fontSize: '22px',
             fontFamily: 'Arial, sans-serif',
             color: '#ffffff',
             align: 'center'
         });
         this.langHi.setOrigin(0.5);
-        this.langHi.setDepth(2002);
+        this.langHi.setDepth(depthLang + 2);
         this.langHi.setInteractive({ useHandCursor: true });
-        this.langHi.on('pointerdown', (e) => { e.stopPropagation(); if (typeof setLang === 'function') setLang('hi').then(() => { this.closeLanguageOverlay(); this.refreshMenuTexts(); }); });
+        this.langHi.on('pointerdown', (e) => { e.stopPropagation(); this._applyLang('hi'); });
+    }
+
+    _applyLang(lang) {
+        if (typeof setLang !== 'function') { this.closeLanguageOverlay(); return; }
+        setLang(lang).then(() => {
+            this.closeLanguageOverlay();
+            this.refreshMenuTexts();
+        }).catch(() => {
+            this.closeLanguageOverlay();
+        });
     }
 
     closeLanguageOverlay() {
