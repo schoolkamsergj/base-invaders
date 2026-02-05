@@ -1201,7 +1201,7 @@ class GameScene extends Phaser.Scene {
         this.muteButtonBg.setDepth(100);
         this.muteButtonBg.setInteractive({ useHandCursor: true });
         
-        // Unmuted icon (bright speaker 🔊)
+        // Unmuted icon (bright speaker 🔊) - no glow/tint/alpha
         this.muteIconUnmuted = this.add.text(buttonX, buttonY, '🔊', {
             fontSize: '24px',
             align: 'center'
@@ -1209,18 +1209,20 @@ class GameScene extends Phaser.Scene {
         this.muteIconUnmuted.setOrigin(0.5);
         this.muteIconUnmuted.setScrollFactor(0);
         this.muteIconUnmuted.setDepth(101);
+        if (this.muteIconUnmuted.preFX) this.muteIconUnmuted.preFX.clear();
+        if (this.muteIconUnmuted.postFX) this.muteIconUnmuted.postFX.clear();
         
-        // Muted icon (gray speaker with X 🔇)
+        // Muted icon (speaker off 🔇) - no glow/tint/alpha, plain icon
         this.muteIconMuted = this.add.text(buttonX, buttonY, '🔇', {
             fontSize: '24px',
-            align: 'center',
-            alpha: 0.5
+            align: 'center'
         });
         this.muteIconMuted.setOrigin(0.5);
         this.muteIconMuted.setScrollFactor(0);
         this.muteIconMuted.setDepth(101);
         this.muteIconMuted.setVisible(false);
-        this.muteIconMuted.setTint(0x888888);  // Gray tint
+        if (this.muteIconMuted.preFX) this.muteIconMuted.preFX.clear();
+        if (this.muteIconMuted.postFX) this.muteIconMuted.postFX.clear();
         
         // Cross line for muted state (visual X)
         this.muteCross = this.add.graphics();

@@ -235,6 +235,8 @@ class UI {
         this.pauseBtn.setScrollFactor(0);
         this.pauseBtn.setDepth(100);
         this.pauseBtn.setInteractive({ useHandCursor: true });
+        if (this.pauseBtn.preFX) this.pauseBtn.preFX.clear();
+        if (this.pauseBtn.postFX) this.pauseBtn.postFX.clear();
         
         this.pauseBtnText = this.scene.add.text(
             0, 0, // Temporary - set by applyLayout
@@ -247,6 +249,8 @@ class UI {
         this.pauseBtnText.setOrigin(0.5);
         this.pauseBtnText.setScrollFactor(0);
         this.pauseBtnText.setDepth(101);
+        if (this.pauseBtnText.preFX) this.pauseBtnText.preFX.clear();
+        if (this.pauseBtnText.postFX) this.pauseBtnText.postFX.clear();
         
         this.pauseBtn.on('pointerdown', () => {
             // Play click sound
