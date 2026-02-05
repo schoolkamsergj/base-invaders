@@ -723,8 +723,8 @@ class MenuScene extends Phaser.Scene {
         this.langEn.setOrigin(0.5);
         this.langEn.setDepth(depthLang + 2);
         this.langEn.setInteractive({ useHandCursor: true });
-        this.langEn.on('pointerdown', (e) => {
-            e.stopPropagation();
+        this.langEn.on('pointerdown', () => {
+            console.log('🇺🇸 EN CLICKED');
             this._applyLang('en');
         });
         this.langHi = this.add.text(width / 2, centerY + rowH / 2 + 10, hiStr, {
@@ -736,8 +736,8 @@ class MenuScene extends Phaser.Scene {
         this.langHi.setOrigin(0.5);
         this.langHi.setDepth(depthLang + 2);
         this.langHi.setInteractive({ useHandCursor: true });
-        this.langHi.on('pointerdown', (e) => {
-            e.stopPropagation();
+        this.langHi.on('pointerdown', () => {
+            console.log('🇮🇳 HI CLICKED');
             this._applyLang('hi');
         });
     }
