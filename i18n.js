@@ -44,7 +44,7 @@
     }
 
     /**
-     * Set language and persist. Loads locale if needed, then dispatches base-invaders:lang-changed.
+     * Set language and persist. Loads locale synchronously, then dispatches base-invaders:lang-changed.
      * @param {string} lang - 'en' | 'hi'
      * @returns {Promise<void>}
      */
@@ -52,15 +52,19 @@
         if (lang !== 'en' && lang !== 'hi') lang = DEFAULT_LANG;
         currentLang = lang;
         localStorage.setItem(STORAGE_KEY, lang);
-        return loadLocale(lang).then(function () {
-            if (typeof global.dispatchEvent === 'function') {
-                global.dispatchEvent(new Event('base-invaders:lang-changed'));
-            }
-        });
+        loadLocale(lang);
+        if (typeof global.dispatchEvent === 'function') {
+            global.dispatchEvent(new Event('base-invaders:lang-changed'));
+        }
+        return Promise.resolve();
     }
 
     function getLang() {
         return currentLang;
+    }
+
+    function getHiStrings() {
+        return typeof hiFallback !== 'undefined' && hiFallback !== null ? hiFallback : enFallback;
     }
 
     /**
@@ -69,13 +73,17 @@
     function loadLocale(lang) {
         if (lang === 'en') {
             strings = JSON.parse(JSON.stringify(enFallback));
-            return Promise.resolve();
+            return;
         }
         if (lang === 'hi') {
-            strings = typeof hiFallback !== 'undefined' ? JSON.parse(JSON.stringify(hiFallback)) : JSON.parse(JSON.stringify(enFallback));
-            return Promise.resolve();
+            try {
+                var hiData = getHiStrings();
+                strings = JSON.parse(JSON.stringify(hiData));
+            } catch (e) {
+                strings = JSON.parse(JSON.stringify(enFallback));
+            }
+            return;
         }
-        return Promise.resolve();
     }
 
     /**
@@ -188,10 +196,9 @@
     };
 
     // Init: load current locale then expose API and refresh once
-    loadLocale(currentLang).then(function () {
-        if (currentLang === 'en') strings = JSON.parse(JSON.stringify(enFallback));
-        refreshAll();
-    });
+    loadLocale(currentLang);
+    if (currentLang === 'en') strings = JSON.parse(JSON.stringify(enFallback));
+    refreshAll();
 
     global.getText = getText;
     global.setLang = setLang;

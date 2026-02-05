@@ -358,15 +358,16 @@ class MenuScene extends Phaser.Scene {
     }
 
     refreshMenuTexts() {
-        if (typeof getText !== 'function') return;
-        if (this.titleText) this.titleText.setText(getText('menu.title'));
-        if (this.welcomeText) this.welcomeText.setText(getText('menu.welcome'));
-        if (this.goodLuckText) this.goodLuckText.setText(getText('menu.goodLuck'));
-        if (this.startText) this.startText.setText(getText('menu.start'));
-        if (this.languageText) this.languageText.setText(getText('menu.language'));
-        if (this.instructionsBtnText) this.instructionsBtnText.setText(getText('menu.howToPlay'));
-        if (this.resetText) this.resetText.setText(getText('menu.resetProgress'));
-        if (this.leaderboardText) this.leaderboardText.setText(getText('menu.leaderboard'));
+        var g = typeof window !== 'undefined' && typeof window.getText === 'function' ? window.getText : (typeof getText === 'function' ? getText : null);
+        if (!g) return;
+        if (this.titleText) this.titleText.setText(g('menu.title'));
+        if (this.welcomeText) this.welcomeText.setText(g('menu.welcome'));
+        if (this.goodLuckText) this.goodLuckText.setText(g('menu.goodLuck'));
+        if (this.startText) this.startText.setText(g('menu.start'));
+        if (this.languageText) this.languageText.setText(g('menu.language'));
+        if (this.instructionsBtnText) this.instructionsBtnText.setText(g('menu.howToPlay'));
+        if (this.resetText) this.resetText.setText(g('menu.resetProgress'));
+        if (this.leaderboardText) this.leaderboardText.setText(g('menu.leaderboard'));
     }
 
     updateMenuButtonStyle(buttonBg, buttonRect, isHover) {
@@ -703,10 +704,13 @@ class MenuScene extends Phaser.Scene {
         });
         this.langTitle.setOrigin(0.5);
         this.langTitle.setDepth(depthLang + 2);
-        const enStr = typeof getText === 'function' ? getText('lang.english') : '🇺🇸 English';
-        const hiStr = typeof getText === 'function' ? getText('lang.hindi') : '🇮🇳 हिंदी';
+        const g = typeof window !== 'undefined' && typeof window.getText === 'function' ? window.getText : (typeof getText === 'function' ? getText : function (k) { return k; });
+        const enStr = g('lang.english');
+        const hiStr = g('lang.hindi');
         const rowH = 48;
         const centerY = height / 2;
+        const hitW = 220;
+        const hitH = 36;
         this.langEn = this.add.text(width / 2, centerY - rowH / 2 - 10, enStr, {
             fontSize: '22px',
             fontFamily: 'Arial, sans-serif',
@@ -715,8 +719,8 @@ class MenuScene extends Phaser.Scene {
         });
         this.langEn.setOrigin(0.5);
         this.langEn.setDepth(depthLang + 2);
-        this.langEn.setInteractive({ useHandCursor: true });
-        this.langEn.on('pointerdown', (e) => { e.stopPropagation(); this._applyLang('en'); });
+        this.langEn.setInteractive(new Phaser.Geom.Rectangle(-hitW / 2, -hitH / 2, hitW, hitH), Phaser.Geom.Rectangle.Contains);
+        this.langEn.on('pointerdown', function (e) { e.stopPropagation(); this._applyLang('en'); }, this);
         this.langHi = this.add.text(width / 2, centerY + rowH / 2 + 10, hiStr, {
             fontSize: '22px',
             fontFamily: 'Arial, sans-serif',
@@ -725,18 +729,16 @@ class MenuScene extends Phaser.Scene {
         });
         this.langHi.setOrigin(0.5);
         this.langHi.setDepth(depthLang + 2);
-        this.langHi.setInteractive({ useHandCursor: true });
-        this.langHi.on('pointerdown', (e) => { e.stopPropagation(); this._applyLang('hi'); });
+        this.langHi.setInteractive(new Phaser.Geom.Rectangle(-hitW / 2, -hitH / 2, hitW, hitH), Phaser.Geom.Rectangle.Contains);
+        this.langHi.on('pointerdown', function (e) { e.stopPropagation(); this._applyLang('hi'); }, this);
     }
 
     _applyLang(lang) {
-        if (typeof setLang !== 'function') { this.closeLanguageOverlay(); return; }
-        setLang(lang).then(() => {
-            this.closeLanguageOverlay();
-            this.refreshMenuTexts();
-        }).catch(() => {
-            this.closeLanguageOverlay();
-        });
+        var setLangFn = typeof window !== 'undefined' ? window.setLang : (typeof setLang !== 'undefined' ? setLang : null);
+        if (!setLangFn) { this.closeLanguageOverlay(); return; }
+        setLangFn(lang);
+        this.closeLanguageOverlay();
+        this.refreshMenuTexts();
     }
 
     closeLanguageOverlay() {
