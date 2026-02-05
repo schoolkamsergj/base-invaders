@@ -723,7 +723,10 @@ class MenuScene extends Phaser.Scene {
         this.langEn.setOrigin(0.5);
         this.langEn.setDepth(depthLang + 2);
         this.langEn.setInteractive({ useHandCursor: true });
-        this.langEn.on('pointerdown', function (e) { e.stopPropagation(); this._applyLang('en'); }, this);
+        this.langEn.on('pointerdown', (e) => {
+            e.stopPropagation();
+            this._applyLang('en');
+        });
         this.langHi = this.add.text(width / 2, centerY + rowH / 2 + 10, hiStr, {
             fontSize: '22px',
             fontFamily: 'Arial, sans-serif',
@@ -733,7 +736,10 @@ class MenuScene extends Phaser.Scene {
         this.langHi.setOrigin(0.5);
         this.langHi.setDepth(depthLang + 2);
         this.langHi.setInteractive({ useHandCursor: true });
-        this.langHi.on('pointerdown', function (e) { e.stopPropagation(); this._applyLang('hi'); }, this);
+        this.langHi.on('pointerdown', (e) => {
+            e.stopPropagation();
+            this._applyLang('hi');
+        });
     }
 
     /** Calls setLang(lang) then closes overlay and refreshMenuTexts. E.g. _applyLang('hi') -> setLang('hi'). */
