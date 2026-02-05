@@ -710,7 +710,7 @@ class MenuScene extends Phaser.Scene {
         const rowH = 48;
         const centerY = height / 2;
         const hitW = 220;
-        const hitH = 36;
+        const hitH = 40;
         this.langEn = this.add.text(width / 2, centerY - rowH / 2 - 10, enStr, {
             fontSize: '22px',
             fontFamily: 'Arial, sans-serif',
@@ -719,7 +719,7 @@ class MenuScene extends Phaser.Scene {
         });
         this.langEn.setOrigin(0.5);
         this.langEn.setDepth(depthLang + 2);
-        this.langEn.setInteractive(new Phaser.Geom.Rectangle(-hitW / 2, -hitH / 2, hitW, hitH), Phaser.Geom.Rectangle.Contains);
+        this.langEn.setInteractive({ useHandCursor: true, hitArea: new Phaser.Geom.Rectangle(-hitW / 2, -hitH / 2, hitW, hitH), hitAreaCallback: Phaser.Geom.Rectangle.Contains });
         this.langEn.on('pointerdown', function (e) { e.stopPropagation(); this._applyLang('en'); }, this);
         this.langHi = this.add.text(width / 2, centerY + rowH / 2 + 10, hiStr, {
             fontSize: '22px',
@@ -729,7 +729,7 @@ class MenuScene extends Phaser.Scene {
         });
         this.langHi.setOrigin(0.5);
         this.langHi.setDepth(depthLang + 2);
-        this.langHi.setInteractive(new Phaser.Geom.Rectangle(-hitW / 2, -hitH / 2, hitW, hitH), Phaser.Geom.Rectangle.Contains);
+        this.langHi.setInteractive({ useHandCursor: true, hitArea: new Phaser.Geom.Rectangle(-hitW / 2, -hitH / 2, hitW, hitH), hitAreaCallback: Phaser.Geom.Rectangle.Contains });
         this.langHi.on('pointerdown', function (e) { e.stopPropagation(); this._applyLang('hi'); }, this);
     }
 
