@@ -37,7 +37,8 @@
      */
     function getText(key, replacements) {
         if (!key) return '';
-        let str = getNested(strings, key);
+        var s = (typeof global !== 'undefined' && global.__i18nStrings) ? global.__i18nStrings : strings;
+        let str = getNested(s, key);
         if (str == null) str = getNested(enFallback, key);
         if (str == null) return key;
         return template(String(str), replacements);
@@ -74,14 +75,17 @@
     function loadLocale(lang) {
         if (lang === 'en') {
             strings = JSON.parse(JSON.stringify(enFallback));
+            if (typeof global !== 'undefined') global.__i18nStrings = strings;
             return;
         }
         if (lang === 'hi') {
             try {
                 var hiData = getHiStrings();
                 strings = JSON.parse(JSON.stringify(hiData));
+                if (typeof global !== 'undefined') global.__i18nStrings = strings;
             } catch (e) {
                 strings = JSON.parse(JSON.stringify(enFallback));
+                if (typeof global !== 'undefined') global.__i18nStrings = strings;
             }
             return;
         }
@@ -272,11 +276,12 @@
 
     // Init: load current locale then expose API and refresh once
     loadLocale(currentLang);
-    if (currentLang === 'en') strings = JSON.parse(JSON.stringify(enFallback));
+    if (currentLang === 'en') { strings = JSON.parse(JSON.stringify(enFallback)); if (typeof global !== 'undefined') global.__i18nStrings = strings; }
     refreshAll();
 
     global.getText = getText;
     global.setLang = setLang;
     global.getLang = getLang;
     global.refreshI18n = refreshAll;
+    if (typeof global !== 'undefined') global.__i18nStrings = strings;
 })(typeof window !== 'undefined' ? window : this);

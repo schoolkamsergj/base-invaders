@@ -360,8 +360,10 @@ class MenuScene extends Phaser.Scene {
 
     refreshMenuTexts() {
         var g = typeof window !== 'undefined' && typeof window.getText === 'function' ? window.getText : (typeof getText === 'function' ? getText : null);
-        if (!g) return;
-        if (this.titleText) this.titleText.setText(g('menu.title'));
+        if (!g) { console.warn('refreshMenuTexts: getText not found'); return; }
+        var title = g('menu.title');
+        console.log('refreshMenuTexts getLang:', typeof window.getLang === 'function' ? window.getLang() : 'N/A', 'menu.title:', title);
+        if (this.titleText) this.titleText.setText(title);
         if (this.welcomeText) this.welcomeText.setText(g('menu.welcome'));
         if (this.goodLuckText) this.goodLuckText.setText(g('menu.goodLuck'));
         if (this.startText) this.startText.setText(g('menu.start'));
@@ -740,7 +742,8 @@ class MenuScene extends Phaser.Scene {
         if (!setLangFn) { this.closeLanguageOverlay(); return; }
         setLangFn(lang);
         this.closeLanguageOverlay();
-        this.refreshMenuTexts();
+        var self = this;
+        setTimeout(function () { self.refreshMenuTexts(); }, 0);
     }
 
     closeLanguageOverlay() {
