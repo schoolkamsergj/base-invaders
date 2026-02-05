@@ -733,6 +733,7 @@ class MenuScene extends Phaser.Scene {
         this.langHi.on('pointerdown', function (e) { e.stopPropagation(); this._applyLang('hi'); }, this);
     }
 
+    /** Calls setLang(lang) then closes overlay and refreshMenuTexts. E.g. _applyLang('hi') -> setLang('hi'). */
     _applyLang(lang) {
         var setLangFn = typeof window !== 'undefined' ? window.setLang : (typeof setLang !== 'undefined' ? setLang : null);
         if (!setLangFn) { this.closeLanguageOverlay(); return; }
