@@ -50,7 +50,7 @@
      * @returns {Promise<void>}
      */
     function setLang(lang) {
-        if (lang !== 'en' && lang !== 'hi') lang = DEFAULT_LANG;
+        if (lang !== 'en' && lang !== 'hi' && lang !== 'ru') lang = DEFAULT_LANG;
         currentLang = lang;
         localStorage.setItem(STORAGE_KEY, lang);
         loadLocale(lang);
@@ -82,6 +82,18 @@
             try {
                 var hiData = getHiStrings();
                 strings = JSON.parse(JSON.stringify(hiData));
+                if (typeof global !== 'undefined') global.__i18nStrings = strings;
+            } catch (e) {
+                strings = JSON.parse(JSON.stringify(enFallback));
+                if (typeof global !== 'undefined') global.__i18nStrings = strings;
+            }
+            return;
+        }
+        if (lang === 'ru') {
+            try {
+                strings = typeof ruFallback !== 'undefined' && ruFallback !== null
+                    ? JSON.parse(JSON.stringify(ruFallback))
+                    : JSON.parse(JSON.stringify(enFallback));
                 if (typeof global !== 'undefined') global.__i18nStrings = strings;
             } catch (e) {
                 strings = JSON.parse(JSON.stringify(enFallback));
@@ -184,7 +196,8 @@
         },
         "lang": {
             "english": "🇺🇸 English",
-            "hindi": "🇮🇳 हिंदी"
+            "hindi": "🇮🇳 हिंदी",
+            "russian": "🇷🇺 Русский"
         }
     };
 
@@ -270,7 +283,95 @@
         },
         lang: {
             english: "🇺🇸 English",
-            hindi: "🇮🇳 हिंदी"
+            hindi: "🇮🇳 हिंदी",
+            russian: "🇷🇺 Русский"
+        }
+    };
+
+    var ruFallback = {
+        menu: {
+            title: "РАЗРУШИТЕЛЬ БАЗ",
+            welcome: "Добро пожаловать, Командир! Защити базу от инопланетных захватчиков. Собирай алмазы и улучшай корабль.",
+            goodLuck: "Удачи! 🌟",
+            start: "СТАРТ",
+            howToPlay: "Как играть",
+            language: "Язык 🌐",
+            resetProgress: "Сбросить прогресс",
+            leaderboard: "Таблица лидеров"
+        },
+        instructions: {
+            title: "КАК ИГРАТЬ",
+            body: "УПРАВЛЕНИЕ:\n← или A/D - Влево/вправо\n↑ или W/S - Вверх/вниз\nАвто-стрельба\n⏸ - Пауза\n\nЦЕЛЬ:\n- Уничтожай врагов и базы\n- Собирай алмазы 💎\n- Забирай усиления\n- Улучшай корабль в магазине\n- Побеждай боссов\n\nУдачи, Командир! 🚀"
+        },
+        ui: {
+            stage: "ЭТАП",
+            mission: "Миссия",
+            wave: "Волна",
+            boss: "БОСС",
+            score: "Очки",
+            level: "Уровень",
+            shop: "🛒 МАГАЗИН",
+            checkIn: "📅 ЧЕК-ИН",
+            checkedIn: "Получено",
+            dayStreak: "День {next} →{milestone}",
+            dayMilestone: "День {next} →{next7} 🎉",
+            signing: "ПОДПИСЬ...",
+            confirmedBase: "Подтверждено на Base!",
+            transactionFailed: "Ошибка транзакции",
+            transactionCancelled: "Отменено",
+            insufficientFunds: "Недостаточно средств",
+            walletNotReady: "Кошелёк не готов",
+            alreadyCheckedIn: "Уже отмечено сегодня",
+            sdkNotLoaded: "SDK не загружен"
+        },
+        shop: {
+            title: "🛒 МАГАЗИН",
+            tabSpaceships: "🚀 Корабли",
+            tabWeapons: "🔫 Оружие",
+            tabPowerups: "⚡ Усиления",
+            tabUpgrades: "⬆️ Улучшения"
+        },
+        pause: {
+            title: "⏸️ ПАУЗА",
+            resume: "Продолжить",
+            mainMenu: "Главное меню",
+            resetGame: "Сбросить игру",
+            exitGame: "Выход"
+        },
+        resetConfirm: {
+            title: "Сбросить прогресс?",
+            message: "Будет очищена валюта, покупки, счёт и все сохранённые данные. Нельзя отменить.",
+            cancel: "Отмена",
+            reset: "Сбросить"
+        },
+        gameover: {
+            title: "💥 ИГРА ОКОНЧЕНА",
+            restart: "Рестарт",
+            finalScore: "Финальный счёт",
+            stageReached: "Достигнут этап",
+            level: "Уровень"
+        },
+        leaderboard: {
+            title: "🏆 ТАБЛИЦА ЛИДЕРОВ",
+            submitMyScore: "Отправить результат",
+            refresh: "Обновить",
+            globalStatus: "Глобальная таблица (on-chain)",
+            personalBest: "Локальный рекорд",
+            loading: "Загрузка...",
+            playToSetBest: "Сыграйте, чтобы установить рекорд.",
+            submitNewHighTitle: "🏆 Новый рекорд!",
+            submitNewHighMessage: "Отправить в таблицу лидеров? (Требуется транзакция кошелька.)",
+            submit: "Отправить",
+            cancel: "Отмена",
+            submitting: "Отправка...",
+            submitted: "Отправлено!",
+            openInWarpcast: "Откройте в Warpcast для отправки.",
+            playFirst: "Сначала сыграйте, чтобы был счёт."
+        },
+        lang: {
+            english: "🇺🇸 English",
+            hindi: "🇮🇳 हिंदी",
+            russian: "🇷🇺 Русский"
         }
     };
 

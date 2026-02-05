@@ -690,7 +690,7 @@ class MenuScene extends Phaser.Scene {
         this.langOverlay.setInteractive();
         this.langOverlay.on('pointerdown', () => this.closeLanguageOverlay());
         const panelW = Math.min(280, width * 0.8);
-        const panelH = Math.min(220, height * 0.45);
+        const panelH = Math.min(260, height * 0.5);
         this.langPanel = this.add.rectangle(width / 2, height / 2, panelW, panelH, 0x1a1a2e, 0.98);
         this.langPanel.setDepth(depthLang + 1);
         this.langPanelBorder = this.add.graphics();
@@ -710,16 +710,11 @@ class MenuScene extends Phaser.Scene {
         const g = typeof window !== 'undefined' && typeof window.getText === 'function' ? window.getText : (typeof getText === 'function' ? getText : function (k) { return k; });
         const enStr = g('lang.english');
         const hiStr = g('lang.hindi');
+        const ruStr = g('lang.russian');
         const rowH = 48;
         const centerY = height / 2;
-        const hitW = 220;
-        const hitH = 40;
-        this.langEn = this.add.text(width / 2, centerY - rowH / 2 - 10, enStr, {
-            fontSize: '22px',
-            fontFamily: 'Arial, sans-serif',
-            color: '#ffffff',
-            align: 'center'
-        });
+        var textStyle = { fontSize: '22px', fontFamily: 'Arial, sans-serif', color: '#ffffff', align: 'center' };
+        this.langEn = this.add.text(width / 2, centerY - rowH - 15, enStr, textStyle);
         this.langEn.setOrigin(0.5);
         this.langEn.setDepth(depthLang + 2);
         this.langEn.setInteractive({ useHandCursor: true });
@@ -727,18 +722,21 @@ class MenuScene extends Phaser.Scene {
             console.log('🇺🇸 EN CLICKED');
             this._applyLang('en');
         });
-        this.langHi = this.add.text(width / 2, centerY + rowH / 2 + 10, hiStr, {
-            fontSize: '22px',
-            fontFamily: 'Arial, sans-serif',
-            color: '#ffffff',
-            align: 'center'
-        });
+        this.langHi = this.add.text(width / 2, centerY, hiStr, textStyle);
         this.langHi.setOrigin(0.5);
         this.langHi.setDepth(depthLang + 2);
         this.langHi.setInteractive({ useHandCursor: true });
         this.langHi.on('pointerdown', () => {
             console.log('🇮🇳 HI CLICKED');
             this._applyLang('hi');
+        });
+        this.langRu = this.add.text(width / 2, centerY + rowH + 15, ruStr, textStyle);
+        this.langRu.setOrigin(0.5);
+        this.langRu.setDepth(depthLang + 2);
+        this.langRu.setInteractive({ useHandCursor: true });
+        this.langRu.on('pointerdown', () => {
+            console.log('🇷🇺 RU CLICKED');
+            this._applyLang('ru');
         });
     }
 
@@ -753,9 +751,9 @@ class MenuScene extends Phaser.Scene {
     }
 
     closeLanguageOverlay() {
-        const el = [this.langOverlay, this.langPanel, this.langPanelBorder, this.langTitle, this.langEn, this.langHi];
+        const el = [this.langOverlay, this.langPanel, this.langPanelBorder, this.langTitle, this.langEn, this.langHi, this.langRu];
         el.forEach(o => { if (o && o.destroy) o.destroy(); });
-        this.langOverlay = this.langPanel = this.langPanelBorder = this.langTitle = this.langEn = this.langHi = null;
+        this.langOverlay = this.langPanel = this.langPanelBorder = this.langTitle = this.langEn = this.langHi = this.langRu = null;
     }
 }
 
