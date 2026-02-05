@@ -170,6 +170,7 @@ class MenuScene extends Phaser.Scene {
             this.tweens.add({ targets: this.languageText, scale: 1, duration: 200 });
         });
         this.languageBtn.on('pointerdown', () => {
+            console.log('LANGUAGE BUTTON CLICKED!');
             this.tweens.add({
                 targets: [this.languageBtn, this.languageText],
                 scale: 0.95,
@@ -719,7 +720,7 @@ class MenuScene extends Phaser.Scene {
         });
         this.langEn.setOrigin(0.5);
         this.langEn.setDepth(depthLang + 2);
-        this.langEn.setInteractive({ useHandCursor: true, hitArea: new Phaser.Geom.Rectangle(-hitW / 2, -hitH / 2, hitW, hitH), hitAreaCallback: Phaser.Geom.Rectangle.Contains });
+        this.langEn.setInteractive({ useHandCursor: true });
         this.langEn.on('pointerdown', function (e) { e.stopPropagation(); this._applyLang('en'); }, this);
         this.langHi = this.add.text(width / 2, centerY + rowH / 2 + 10, hiStr, {
             fontSize: '22px',
@@ -729,7 +730,7 @@ class MenuScene extends Phaser.Scene {
         });
         this.langHi.setOrigin(0.5);
         this.langHi.setDepth(depthLang + 2);
-        this.langHi.setInteractive({ useHandCursor: true, hitArea: new Phaser.Geom.Rectangle(-hitW / 2, -hitH / 2, hitW, hitH), hitAreaCallback: Phaser.Geom.Rectangle.Contains });
+        this.langHi.setInteractive({ useHandCursor: true });
         this.langHi.on('pointerdown', function (e) { e.stopPropagation(); this._applyLang('hi'); }, this);
     }
 
