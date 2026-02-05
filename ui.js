@@ -1294,6 +1294,11 @@ function refreshHtmlOverlaysI18n() {
     if (submitDoBtn) submitDoBtn.textContent = g('leaderboard.submit');
     const submitCancelBtn = document.getElementById('leaderboard-submit-cancel');
     if (submitCancelBtn) submitCancelBtn.textContent = g('leaderboard.cancel');
+    // Refresh shop item texts when language changes (e.g. if shop is open)
+    const shopOverlay = document.getElementById('shop-overlay');
+    if (shopOverlay && !shopOverlay.classList.contains('hidden') && typeof window.shopSystem !== 'undefined' && typeof window.shopSystem.updateDisplay === 'function') {
+        window.shopSystem.updateDisplay();
+    }
 }
 window.refreshHtmlOverlaysI18n = refreshHtmlOverlaysI18n;
 window.addEventListener('base-invaders:lang-changed', refreshHtmlOverlaysI18n);

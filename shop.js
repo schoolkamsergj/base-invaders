@@ -80,55 +80,14 @@ class ShopSystem {
     }
 
     generateSpaceships() {
+        const g = typeof window !== 'undefined' && typeof window.getText === 'function' ? window.getText : function (k, r) { return k; };
         const ships = [
-            {
-                id: 'starter',
-                name: 'Starter Ship',
-                icon: '🚀',
-                price: { gold: 0 },
-                stats: 'HP: 100 | Speed: 300 | Balanced',
-                owned: true
-            },
-            {
-                id: 'speedDemon',
-                name: 'Speed Demon',
-                icon: '⚡',
-                price: { gold: 500 },
-                stats: 'HP: 90 | Speed: 390 | +30% Speed',
-                owned: false
-            },
-            {
-                id: 'baseDefender',
-                name: 'Base Defender',
-                icon: '🛡️',
-                price: { gold: 1000 },
-                stats: 'HP: 150 | Speed: 300 | +50 HP',
-                owned: false
-            },
-            {
-                id: 'tank',
-                name: 'Tank',
-                icon: '🛡️',
-                price: { gold: 1500 },
-                stats: 'HP: 200 | Speed: 240 | Slow but Strong',
-                owned: false
-            },
-            {
-                id: 'lightningStrike',
-                name: 'Lightning Strike',
-                icon: '⚡',
-                price: { diamonds: 50 },
-                stats: 'HP: 120 | Speed: 450 | Very Fast',
-                owned: false
-            },
-            {
-                id: 'legendary',
-                name: 'Legendary',
-                icon: '⭐',
-                price: { diamonds: 100 },
-                stats: 'HP: 250 | Speed: 400 | Best Stats',
-                owned: false
-            }
+            { id: 'starter', name: g('shopItems.starterShip.name'), icon: '🚀', price: { gold: 0 }, stats: g('shopItems.starterShip.stats'), owned: true },
+            { id: 'speedDemon', name: g('shopItems.speedDemon.name'), icon: '⚡', price: { gold: 500 }, stats: g('shopItems.speedDemon.stats'), owned: false },
+            { id: 'baseDefender', name: g('shopItems.baseDefender.name'), icon: '🛡️', price: { gold: 1000 }, stats: g('shopItems.baseDefender.stats'), owned: false },
+            { id: 'tank', name: g('shopItems.tank.name'), icon: '🛡️', price: { gold: 1500 }, stats: g('shopItems.tank.stats'), owned: false },
+            { id: 'lightningStrike', name: g('shopItems.lightningStrike.name'), icon: '⚡', price: { diamonds: 50 }, stats: g('shopItems.lightningStrike.stats'), owned: false },
+            { id: 'legendary', name: g('shopItems.legendary.name'), icon: '⭐', price: { diamonds: 100 }, stats: g('shopItems.legendary.stats'), owned: false }
         ];
 
         ships.forEach(ship => {
@@ -138,62 +97,14 @@ class ShopSystem {
     }
 
     generateWeapons() {
+        const g = typeof window !== 'undefined' && typeof window.getText === 'function' ? window.getText : function (k, r) { return k; };
         const weapons = [
-            {
-                id: 'fireRate',
-                name: 'Fire Rate',
-                icon: '🔥',
-                price: { gold: 200 },
-                stats: `Level ${this.data.fireRateLevel}/10 | Current: ${this.data.fireRate}ms`,
-                level: this.data.fireRateLevel,
-                maxLevel: 10,
-                owned: false
-            },
-            {
-                id: 'damage',
-                name: 'Damage',
-                icon: '💥',
-                price: { gold: 300 },
-                stats: `Level ${this.data.damageLevel}/10 | Current: ${this.data.damage} damage`,
-                level: this.data.damageLevel,
-                maxLevel: 10,
-                owned: false
-            },
-            {
-                id: 'multiShot2',
-                name: 'Multi-Shot x2',
-                icon: '🔫',
-                price: { gold: 200 },
-                stats: 'Shoot 2 bullets at once',
-                owned: this.data.multiShot >= 2,
-                required: { multiShot: 1 }
-            },
-            {
-                id: 'multiShot3',
-                name: 'Multi-Shot x3',
-                icon: '🔫',
-                price: { gold: 500 },
-                stats: 'Shoot 3 bullets at once',
-                owned: this.data.multiShot >= 3,
-                required: { multiShot: 2 }
-            },
-            {
-                id: 'multiShot5',
-                name: 'Multi-Shot x5',
-                icon: '🔫',
-                price: { diamonds: 20 },
-                stats: 'Shoot 5 bullets at once',
-                owned: this.data.multiShot >= 5,
-                required: { multiShot: 3 }
-            },
-            {
-                id: 'laserBeam',
-                name: 'Laser Beam',
-                icon: '⚡',
-                price: { diamonds: 50 },
-                stats: 'Continuous beam attack',
-                owned: false
-            }
+            { id: 'fireRate', name: g('shopItems.fireRate.name'), icon: '🔥', price: { gold: 200 }, stats: g('shopItems.fireRate.stats', { level: this.data.fireRateLevel, rate: this.data.fireRate }), level: this.data.fireRateLevel, maxLevel: 10, owned: false },
+            { id: 'damage', name: g('shopItems.damage.name'), icon: '💥', price: { gold: 300 }, stats: g('shopItems.damage.stats', { level: this.data.damageLevel, damage: this.data.damage }), level: this.data.damageLevel, maxLevel: 10, owned: false },
+            { id: 'multiShot2', name: g('shopItems.multiShot2.name'), icon: '🔫', price: { gold: 200 }, stats: g('shopItems.multiShot2.stats'), owned: this.data.multiShot >= 2, required: { multiShot: 1 } },
+            { id: 'multiShot3', name: g('shopItems.multiShot3.name'), icon: '🔫', price: { gold: 500 }, stats: g('shopItems.multiShot3.stats'), owned: this.data.multiShot >= 3, required: { multiShot: 2 } },
+            { id: 'multiShot5', name: g('shopItems.multiShot5.name'), icon: '🔫', price: { diamonds: 20 }, stats: g('shopItems.multiShot5.stats'), owned: this.data.multiShot >= 5, required: { multiShot: 3 } },
+            { id: 'laserBeam', name: g('shopItems.laserBeam.name'), icon: '⚡', price: { diamonds: 50 }, stats: g('shopItems.laserBeam.stats'), owned: false }
         ];
 
         weapons.forEach(weapon => {
@@ -203,47 +114,13 @@ class ShopSystem {
     }
 
     generatePowerUps() {
+        const g = typeof window !== 'undefined' && typeof window.getText === 'function' ? window.getText : function (k, r) { return k; };
         const powerUps = [
-            {
-                id: 'shield',
-                name: 'Shield Generator',
-                icon: '🛡️',
-                price: { diamonds: 10 },
-                stats: 'Absorbs 5 hits',
-                owned: false
-            },
-            {
-                id: 'smartBomb',
-                name: 'Smart Bomb',
-                icon: '💣',
-                price: { diamonds: 5 },
-                stats: 'Clears all enemies on screen',
-                owned: false
-            },
-            {
-                id: 'coinMagnet',
-                name: 'Coin Magnet',
-                icon: '🧲',
-                price: { gold: 100 },
-                stats: 'Auto-collect coins',
-                owned: (this.data.upgrades && this.data.upgrades.coinMagnet) || false
-            },
-            {
-                id: 'score2x',
-                name: '2x Score Multiplier',
-                icon: '⭐',
-                price: { diamonds: 20 },
-                stats: '2x score for 60 seconds',
-                owned: false
-            },
-            {
-                id: 'extraLife',
-                name: 'Extra Life',
-                icon: '❤️',
-                price: { diamonds: 30 },
-                stats: '+1 continue',
-                owned: false
-            }
+            { id: 'shield', name: g('shopItems.shieldGen.name'), icon: '🛡️', price: { diamonds: 10 }, stats: g('shopItems.shieldGen.stats'), owned: false },
+            { id: 'smartBomb', name: g('shopItems.smartBomb.name'), icon: '💣', price: { diamonds: 5 }, stats: g('shopItems.smartBomb.stats'), owned: false },
+            { id: 'coinMagnet', name: g('shopItems.coinMagnet.name'), icon: '🧲', price: { gold: 100 }, stats: g('shopItems.coinMagnet.stats'), owned: (this.data.upgrades && this.data.upgrades.coinMagnet) || false },
+            { id: 'score2x', name: g('shopItems.score2x.name'), icon: '⭐', price: { diamonds: 20 }, stats: g('shopItems.score2x.stats'), owned: false },
+            { id: 'extraLife', name: g('shopItems.extraLife.name'), icon: '❤️', price: { diamonds: 30 }, stats: g('shopItems.extraLife.stats'), owned: false }
         ];
 
         powerUps.forEach(powerUp => {
@@ -253,31 +130,11 @@ class ShopSystem {
     }
 
     generateUpgrades() {
+        const g = typeof window !== 'undefined' && typeof window.getText === 'function' ? window.getText : function (k, r) { return k; };
         const upgrades = [
-            {
-                id: 'maxHP',
-                name: 'Max HP +10',
-                icon: '❤️',
-                price: { gold: 150 },
-                stats: 'Increase max health by 10',
-                owned: false
-            },
-            {
-                id: 'hpRegen',
-                name: 'HP Regeneration',
-                icon: '💚',
-                price: { gold: 500 },
-                stats: 'Heal 1 HP per second',
-                owned: (this.data.upgrades && this.data.upgrades.hpRegen) || false
-            },
-            {
-                id: 'fasterMovement',
-                name: 'Faster Movement',
-                icon: '🏃',
-                price: { gold: 300 },
-                stats: '+20% movement speed',
-                owned: (this.data.upgrades && this.data.upgrades.fasterMovement) || false
-            }
+            { id: 'maxHP', name: g('shopItems.maxHP.name'), icon: '❤️', price: { gold: 150 }, stats: g('shopItems.maxHP.stats'), owned: false },
+            { id: 'hpRegen', name: g('shopItems.hpRegen.name'), icon: '💚', price: { gold: 500 }, stats: g('shopItems.hpRegen.stats'), owned: (this.data.upgrades && this.data.upgrades.hpRegen) || false },
+            { id: 'fasterMovement', name: g('shopItems.fasterMovement.name'), icon: '🏃', price: { gold: 300 }, stats: g('shopItems.fasterMovement.stats'), owned: (this.data.upgrades && this.data.upgrades.fasterMovement) || false }
         ];
 
         upgrades.forEach(upgrade => {
@@ -298,11 +155,12 @@ class ShopSystem {
         const isEnabled = window.vibrationManager && window.vibrationManager.isEnabled();
         const isSupported = window.vibrationManager && window.vibrationManager.supported;
         
+        const g = typeof window !== 'undefined' && typeof window.getText === 'function' ? window.getText : function (k) { return k; };
         vibrationItem.innerHTML = `
             <div style="font-size: 32px; margin-bottom: 10px;">📳</div>
-            <div style="font-weight: bold; color: #00ffff; margin-bottom: 5px;">Haptic Vibration</div>
+            <div style="font-weight: bold; color: #00ffff; margin-bottom: 5px;">${g('shopItems.vibrationToggle')}</div>
             <div style="color: #aaa; font-size: 12px; margin-bottom: 15px;">
-                ${isSupported ? 'Mobile vibration feedback' : 'Not supported on this device'}
+                ${isSupported ? g('shopItems.vibrationSupported') : g('shopItems.vibrationNotSupported')}
             </div>
             <button id="vibration-toggle" class="shop-item-btn" style="
                 background: ${isEnabled ? '#00aa00' : '#666'};
@@ -314,7 +172,7 @@ class ShopSystem {
                 font-weight: bold;
                 width: 100%;
             ">
-                ${isEnabled ? '✓ Enabled' : '✗ Disabled'}
+                ${isEnabled ? '✓ ' + g('shopItems.enabled') : '✗ ' + g('shopItems.disabled')}
             </button>
         `;
         
@@ -327,7 +185,8 @@ class ShopSystem {
                 if (window.vibrationManager) {
                     const newState = !window.vibrationManager.enabled;
                     window.vibrationManager.setEnabled(newState);
-                    toggleBtn.textContent = newState ? '✓ Enabled' : '✗ Disabled';
+                    var gt = typeof window !== 'undefined' && typeof window.getText === 'function' ? window.getText : function (k) { return k; };
+                    toggleBtn.textContent = newState ? '✓ ' + gt('shopItems.enabled') : '✗ ' + gt('shopItems.disabled');
                     toggleBtn.style.background = newState ? '#00aa00' : '#666';
                     
                     // Test vibration when enabling
@@ -360,7 +219,8 @@ class ShopSystem {
         // Check if player can afford this item
         const canAfford = this.canAffordItem(item);
         
-        const buttonText = item.owned ? 'OWNED' : 'BUY';
+        const g = typeof window !== 'undefined' && typeof window.getText === 'function' ? window.getText : function (k) { return k; };
+        const buttonText = item.owned ? g('shopItems.owned') : g('shopItems.buy');
         const buttonDisabled = item.owned || (item.required && !this.checkRequirement(item.required)) || !canAfford;
         
         div.innerHTML = `
