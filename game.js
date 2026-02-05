@@ -16,8 +16,8 @@ class MenuScene extends Phaser.Scene {
         // Create starry background
         this.createBackground();
 
-        // Title - "BASE DESTROYER"
-        this.titleText = this.add.text(width / 2, height * 0.15, 'BASE DESTROYER', {
+        // Title - i18n
+        this.titleText = this.add.text(width / 2, height * 0.15, typeof getText === 'function' ? getText('menu.title') : 'BASE DESTROYER', {
             fontSize: '64px',
             fontFamily: 'Arial, sans-serif',
             fontWeight: 'bold',
@@ -40,12 +40,8 @@ class MenuScene extends Phaser.Scene {
             ease: 'Sine.easeInOut'
         });
 
-        // Welcome message (БЕЗ "Good luck!")
-        const welcomeText = `Welcome, Commander! 🚀
-
-Defend the base from alien invaders.
-Collect diamonds and upgrade your ship.`;
-
+        // Welcome message - i18n
+        const welcomeText = typeof getText === 'function' ? getText('menu.welcome') : 'Welcome, Commander! 🚀\n\nDefend the base from alien invaders.\nCollect diamonds and upgrade your ship.';
         this.welcomeText = this.add.text(width / 2, height * 0.25, welcomeText, {
             fontSize: '20px',
             fontFamily: 'Arial, sans-serif',
@@ -59,8 +55,8 @@ Collect diamonds and upgrade your ship.`;
         this.welcomeText.setDepth(2);
         this.welcomeText.setShadow(2, 2, '#000000', 3, true);
 
-        // "Good luck! ⭐" - ОКРЕМИЙ елемент
-        this.goodLuckText = this.add.text(width / 2, height * 0.40, 'Good luck! ⭐', {
+        // Good luck - i18n
+        this.goodLuckText = this.add.text(width / 2, height * 0.40, typeof getText === 'function' ? getText('menu.goodLuck') : 'Good luck! ⭐', {
             fontSize: '22px',
             fontFamily: 'Arial, sans-serif',
             fontWeight: 'bold',
@@ -91,7 +87,7 @@ Collect diamonds and upgrade your ship.`;
         this.startBtn.setInteractive({ useHandCursor: true });
         this.startBtn.setDepth(2);
         
-        this.startText = this.add.text(width / 2, height * 0.52, 'START', {
+        this.startText = this.add.text(width / 2, height * 0.52, typeof getText === 'function' ? getText('menu.start') : 'START', {
             fontSize: '36px',
             fontFamily: 'Arial, sans-serif',
             fontWeight: 'bold',
@@ -148,8 +144,44 @@ Collect diamonds and upgrade your ship.`;
             this.scene.start('GameScene');
         });
         
-        // INSTRUCTIONS button (below START button)
-        const instructionsBtnY = height * 0.64; // Below START
+        // LANGUAGE button (between START and How to Play)
+        const languageBtnY = height * 0.58;
+        this.languageBtnBg = this.add.graphics();
+        this.languageBtnBg.setDepth(1);
+        this.languageBtn = this.add.rectangle(width / 2, languageBtnY, 260, 55, 0x2196F3, 0);
+        this.languageBtn.setInteractive({ useHandCursor: true });
+        this.languageBtn.setDepth(2);
+        this.languageText = this.add.text(width / 2, languageBtnY, typeof getText === 'function' ? getText('menu.language') : 'Language 🌐', {
+            fontSize: '22px',
+            fontFamily: 'Arial, sans-serif',
+            fontWeight: 'bold',
+            color: '#ffffff',
+            stroke: '#0066cc',
+            strokeThickness: 2,
+            resolution: 2
+        });
+        this.languageText.setOrigin(0.5);
+        this.languageText.setDepth(3);
+        this.languageBtn.on('pointerover', () => {
+            this.updateLanguageButtonStyle(true);
+            this.tweens.add({ targets: this.languageText, scale: 1.1, duration: 200, ease: 'Back.easeOut' });
+        });
+        this.languageBtn.on('pointerout', () => {
+            this.updateLanguageButtonStyle(false);
+            this.tweens.add({ targets: this.languageText, scale: 1, duration: 200 });
+        });
+        this.languageBtn.on('pointerdown', () => {
+            this.tweens.add({
+                targets: [this.languageBtn, this.languageText],
+                scale: 0.95,
+                duration: 100,
+                yoyo: true,
+                onComplete: () => { this.showLanguageOverlay(); }
+            });
+        });
+        
+        // INSTRUCTIONS button (below Language button)
+        const instructionsBtnY = height * 0.65;
 
         this.instructionsBtnBg = this.add.graphics();
         this.instructionsBtnBg.setDepth(1);
@@ -168,7 +200,7 @@ Collect diamonds and upgrade your ship.`;
         this.instructionsBtnText = this.add.text(
             width / 2,
             instructionsBtnY,
-            'How to Play',
+            typeof getText === 'function' ? getText('menu.howToPlay') : 'How to Play',
             {
                 fontSize: '26px',
                 fontFamily: 'Arial, sans-serif',
@@ -216,7 +248,7 @@ Collect diamonds and upgrade your ship.`;
         });
         
         // RESET PROGRESS button (below Instructions button)
-        const resetBtnY = height * 0.75;
+        const resetBtnY = height * 0.76;
         this.resetBtnBg = this.add.graphics();
         this.resetBtnBg.setDepth(1);
         
@@ -224,7 +256,7 @@ Collect diamonds and upgrade your ship.`;
         this.resetBtn.setInteractive({ useHandCursor: true });
         this.resetBtn.setDepth(2);
         
-        this.resetText = this.add.text(width / 2, resetBtnY, 'Reset Progress', {
+        this.resetText = this.add.text(width / 2, resetBtnY, typeof getText === 'function' ? getText('menu.resetProgress') : 'Reset Progress', {
             fontSize: '20px',
             fontFamily: 'Arial, sans-serif',
             fontWeight: 'bold',
@@ -265,7 +297,7 @@ Collect diamonds and upgrade your ship.`;
         });
 
         // LEADERBOARD button (below Reset Progress)
-        const leaderboardBtnY = height * 0.85;
+        const leaderboardBtnY = height * 0.86;
         this.leaderboardBtnBg = this.add.graphics();
         this.leaderboardBtnBg.setDepth(1);
         
@@ -273,7 +305,7 @@ Collect diamonds and upgrade your ship.`;
         this.leaderboardBtn.setInteractive({ useHandCursor: true });
         this.leaderboardBtn.setDepth(2);
         
-        this.leaderboardText = this.add.text(width / 2, leaderboardBtnY, 'Leaderboard', {
+        this.leaderboardText = this.add.text(width / 2, leaderboardBtnY, typeof getText === 'function' ? getText('menu.leaderboard') : 'Leaderboard', {
             fontSize: '20px',
             fontFamily: 'Arial, sans-serif',
             fontWeight: 'bold',
@@ -315,6 +347,9 @@ Collect diamonds and upgrade your ship.`;
             this.updateMenuLayout(gameSize.width, gameSize.height);
         });
 
+        this.refreshMenuTexts();
+        window.addEventListener('base-invaders:lang-changed', () => this.refreshMenuTexts());
+
         // Farcaster Mini App: hide splash and show canvas when menu is ready
         window.dispatchEvent(new Event('base-invaders:game-ready'));
         if (typeof window.baseInvadersMarkMiniAppReady === 'function') {
@@ -323,6 +358,18 @@ Collect diamonds and upgrade your ship.`;
         if (typeof window.__farcasterCallReady === 'function') {
             window.__farcasterCallReady();
         }
+    }
+
+    refreshMenuTexts() {
+        if (typeof getText !== 'function') return;
+        if (this.titleText) this.titleText.setText(getText('menu.title'));
+        if (this.welcomeText) this.welcomeText.setText(getText('menu.welcome'));
+        if (this.goodLuckText) this.goodLuckText.setText(getText('menu.goodLuck'));
+        if (this.startText) this.startText.setText(getText('menu.start'));
+        if (this.languageText) this.languageText.setText(getText('menu.language'));
+        if (this.instructionsBtnText) this.instructionsBtnText.setText(getText('menu.howToPlay'));
+        if (this.resetText) this.resetText.setText(getText('menu.resetProgress'));
+        if (this.leaderboardText) this.leaderboardText.setText(getText('menu.leaderboard'));
     }
 
     updateMenuButtonStyle(buttonBg, buttonRect, isHover) {
@@ -377,15 +424,29 @@ Collect diamonds and upgrade your ship.`;
         this.instructionsBtnBg.strokeRoundedRect(x, y, width, height, Math.min(15, height * 0.2));
     }
 
+    updateLanguageButtonStyle(isHover) {
+        if (!this.languageBtn || !this.languageBtnBg) return;
+        const w = this.languageBtn.width;
+        const h = this.languageBtn.height;
+        const x = this.languageBtn.x - w / 2;
+        const y = this.languageBtn.y - h / 2;
+        this.languageBtnBg.clear();
+        this.languageBtnBg.fillStyle(isHover ? 0x42a5f5 : 0x2196F3, isHover ? 0.9 : 0.8);
+        this.languageBtnBg.fillRoundedRect(x, y, w, h, Math.min(15, h * 0.2));
+        this.languageBtnBg.lineStyle(3, isHover ? 0x90caf9 : 0x64b5f6, 1);
+        this.languageBtnBg.strokeRoundedRect(x, y, w, h, Math.min(15, h * 0.2));
+    }
+
     updateMenuLayout(width, height) {
         const compact = width < 900;
         const titleSize = Math.max(28, Math.min(width * 0.08, 64));
         const textSize = Math.max(14, Math.min(width * 0.025, 20));
         const buttonX = width * 0.5;
         const startY = height * 0.52;
-        const instructionsY = height * 0.64;
-        const resetY = height * 0.75;
-        const leaderboardY = height * 0.85;
+        const languageY = height * 0.58;
+        const instructionsY = height * 0.65;
+        const resetY = height * 0.76;
+        const leaderboardY = height * 0.86;
 
         this.titleText.setPosition(width / 2, height * 0.15);
         this.titleText.setFontSize(`${titleSize}px`);
@@ -408,6 +469,15 @@ Collect diamonds and upgrade your ship.`;
         this.startText.setPosition(buttonX, startY);
         this.startText.setFontSize('36px');
         this.updateMenuButtonStyle(this.startBtnBg, this.startBtn, false);
+
+        // Language button
+        if (this.languageBtn) {
+            this.languageBtn.setPosition(buttonX, languageY);
+            this.languageBtn.setSize(260, 55);
+            this.languageText.setPosition(buttonX, languageY);
+            this.languageText.setFontSize('22px');
+            this.updateLanguageButtonStyle(false);
+        }
 
         // Instructions button
         if (this.instructionsBtn) {
@@ -509,11 +579,11 @@ Collect diamonds and upgrade your ship.`;
         );
         this.instructionsPanelBorder.setDepth(1001);
         
-        // Title
+        // Title - i18n
         this.instructionsTitle = this.add.text(
             width / 2,
             height / 2 - panelHeight / 2 + 30,
-            '📖 HOW TO PLAY',
+            typeof getText === 'function' ? getText('instructions.title') : '📖 HOW TO PLAY',
             {
                 fontSize: '28px',
                 fontFamily: 'Arial, sans-serif',
@@ -526,32 +596,8 @@ Collect diamonds and upgrade your ship.`;
         this.instructionsTitle.setOrigin(0.5);
         this.instructionsTitle.setDepth(1002);
         
-        // Full instructions text
-        const fullInstructions = `🎮 CONTROLS
-← → or A/D - Move left/right
-↑ ↓ or W/S - Move up/down
-SPACE - Auto-shoot
-ESC - Pause game
-
-🎯 OBJECTIVE
--  Destroy enemies and bases
--  Collect diamonds 💎
--  Pick up power-ups ⚡
--  Upgrade your ship in shop
--  Complete missions and defeat bosses
-
-👾 ENEMIES
-🔴 Red spheres - Weak (fast)
-🔷 Hexagons - Medium (shows HP)
-🟦 Blue cubes - BASES (destroy these!)
-
-🛒 SHOP
--  Buy new spaceships
--  Upgrade weapons
--  Improve stats
--  Increase fire rate & damage
-
-Good luck, Commander! 🚀`;
+        // Full instructions text - i18n
+        const fullInstructions = typeof getText === 'function' ? getText('instructions.body') : '🎮 CONTROLS\n← → or A/D - Move left/right\n↑ ↓ or W/S - Move up/down\nSPACE - Auto-shoot\nESC - Pause game\n\n🎯 OBJECTIVE\n-  Destroy enemies and bases\n-  Collect diamonds 💎\n-  Pick up power-ups ⚡\n-  Upgrade your ship in shop\n-  Complete missions and defeat bosses\n\n👾 ENEMIES\n🔴 Red spheres - Weak (fast)\n🔷 Hexagons - Medium (shows HP)\n🟦 Blue cubes - BASES (destroy these!)\n\n🛒 SHOP\n-  Buy new spaceships\n-  Upgrade weapons\n-  Improve stats\n-  Increase fire rate & damage\n\nGood luck, Commander! 🚀';
         
         this.instructionsContent = this.add.text(
             width / 2,
@@ -633,6 +679,62 @@ Good luck, Commander! 🚀`;
                 });
             }
         });
+    }
+
+    showLanguageOverlay() {
+        const width = this.scale.width;
+        const height = this.scale.height;
+        this.langOverlay = this.add.rectangle(0, 0, width * 2, height * 2, 0x000000, 0.85);
+        this.langOverlay.setOrigin(0, 0);
+        this.langOverlay.setDepth(2000);
+        this.langOverlay.setInteractive();
+        this.langOverlay.on('pointerdown', () => this.closeLanguageOverlay());
+        const panelW = Math.min(320, width * 0.85);
+        const panelH = Math.min(180, height * 0.35);
+        this.langPanel = this.add.rectangle(width / 2, height / 2, panelW, panelH, 0x1a1a2e, 0.98);
+        this.langPanel.setDepth(2001);
+        this.langPanelBorder = this.add.graphics();
+        this.langPanelBorder.lineStyle(2, 0x0052FF, 1);
+        this.langPanelBorder.strokeRoundedRect(width / 2 - panelW / 2, height / 2 - panelH / 2, panelW, panelH, 8);
+        this.langPanelBorder.setDepth(2001);
+        const titleStr = typeof getText === 'function' ? getText('menu.language') : 'Language 🌐';
+        this.langTitle = this.add.text(width / 2, height / 2 - panelH / 2 + 22, titleStr, {
+            fontSize: '20px',
+            fontFamily: 'Arial, sans-serif',
+            fontWeight: 'bold',
+            color: '#00ffff',
+            align: 'center'
+        });
+        this.langTitle.setOrigin(0.5);
+        this.langTitle.setDepth(2002);
+        const enStr = typeof getText === 'function' ? getText('lang.english') : '🇺🇸 English';
+        const hiStr = typeof getText === 'function' ? getText('lang.hindi') : '🇮🇳 हिंदी';
+        this.langEn = this.add.text(width / 2 - 70, height / 2 + 10, enStr, {
+            fontSize: '18px',
+            fontFamily: 'Arial, sans-serif',
+            color: '#ffffff',
+            align: 'center'
+        });
+        this.langEn.setOrigin(0.5);
+        this.langEn.setDepth(2002);
+        this.langEn.setInteractive({ useHandCursor: true });
+        this.langEn.on('pointerdown', (e) => { e.stopPropagation(); if (typeof setLang === 'function') setLang('en').then(() => { this.closeLanguageOverlay(); this.refreshMenuTexts(); }); });
+        this.langHi = this.add.text(width / 2 + 70, height / 2 + 10, hiStr, {
+            fontSize: '18px',
+            fontFamily: 'Arial, sans-serif',
+            color: '#ffffff',
+            align: 'center'
+        });
+        this.langHi.setOrigin(0.5);
+        this.langHi.setDepth(2002);
+        this.langHi.setInteractive({ useHandCursor: true });
+        this.langHi.on('pointerdown', (e) => { e.stopPropagation(); if (typeof setLang === 'function') setLang('hi').then(() => { this.closeLanguageOverlay(); this.refreshMenuTexts(); }); });
+    }
+
+    closeLanguageOverlay() {
+        const el = [this.langOverlay, this.langPanel, this.langPanelBorder, this.langTitle, this.langEn, this.langHi];
+        el.forEach(o => { if (o && o.destroy) o.destroy(); });
+        this.langOverlay = this.langPanel = this.langPanelBorder = this.langTitle = this.langEn = this.langHi = null;
     }
 }
 
@@ -947,6 +1049,16 @@ class GameScene extends Phaser.Scene {
             } catch (e) {
                 console.error('Error creating UI:', e);
             }
+
+            window.addEventListener('base-invaders:lang-changed', () => {
+                if (this.ui) {
+                    if (this.ui.shopBtnText && typeof getText === 'function') this.ui.shopBtnText.setText(getText('ui.shop'));
+                    if (this.gameState) {
+                        this.ui.update(this.gameState);
+                        this.ui.updateCheckInButtonState();
+                    }
+                }
+            });
 
             this.scale.on('resize', () => {
                 if (this.updateMuteButtonPosition) {
@@ -2491,10 +2603,11 @@ class GameScene extends Phaser.Scene {
         }
 
         document.getElementById('gameover-overlay').classList.remove('hidden');
+        const fs = typeof getText === 'function' ? getText : function (k) { return k; };
         document.getElementById('final-stats').innerHTML = `
-            <p>Final Score: ${this.gameState.score.toLocaleString()}</p>
-            <p>Stage Reached: ${this.gameState.stage}</p>
-            <p>Level: ${this.gameState.playerLevel}</p>
+            <p>${fs('gameover.finalScore')}: ${this.gameState.score.toLocaleString()}</p>
+            <p>${fs('gameover.stageReached')}: ${this.gameState.stage}</p>
+            <p>${fs('gameover.level')}: ${this.gameState.playerLevel}</p>
         `;
 
         // Show in-game submit dialog (no confirm() so it works in Farcaster iframe/desktop)
@@ -2858,14 +2971,14 @@ document.addEventListener('DOMContentLoaded', () => {
             window.__baseInvadersPendingLeaderboardSubmit = null;
             return;
         }
+        const gt = typeof getText === 'function' ? getText : function (k) { return k; };
         if (typeof window.baseInvadersSubmitScore !== 'function') {
-            if (statusEl) statusEl.textContent = 'Open in Warpcast to submit.';
-            if (statusEl) statusEl.style.color = '#ff8888';
+            if (statusEl) { statusEl.textContent = gt('leaderboard.openInWarpcast'); statusEl.style.color = '#ff8888'; }
             return;
         }
         const btn = e.target;
-        if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
-        if (statusEl) { statusEl.textContent = 'Submitting...'; statusEl.style.color = '#00ff88'; }
+        if (btn) { btn.disabled = true; btn.textContent = gt('leaderboard.submitting'); }
+        if (statusEl) { statusEl.textContent = gt('leaderboard.submitting'); statusEl.style.color = '#00ff88'; }
         if (window.game?.scene) {
             const g = window.game.scene.getScene('GameScene');
             if (g?.playSound) g.playSound('click');
@@ -2883,38 +2996,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.baseInvadersLeaderboard.setSavedName(name);
             }
             await window.baseInvadersSubmitScore(pending.score, pending.wave, pending.streak, name);
-            if (statusEl) { statusEl.textContent = 'Submitted!'; statusEl.style.color = '#00ff88'; }
+            if (statusEl) { statusEl.textContent = gt('leaderboard.submitted'); statusEl.style.color = '#00ff88'; }
             console.log('[leaderboard] Submit completed successfully');
             window.__baseInvadersPendingLeaderboardSubmit = null;
-            setTimeout(() => { if (overlay) overlay.classList.add('hidden'); if (btn) { btn.disabled = false; btn.textContent = 'Submit'; } }, 1500);
+            setTimeout(() => { if (overlay) overlay.classList.add('hidden'); if (btn) { btn.disabled = false; btn.textContent = gt('leaderboard.submit'); } }, 1500);
         } catch (err) {
             const msg = (err && err.message) ? String(err.message) : 'Submit failed';
             if (statusEl) { statusEl.textContent = msg; statusEl.style.color = '#ff6666'; }
             console.error('Leaderboard submission failed:', err);
-            if (btn) { btn.disabled = false; btn.textContent = 'Submit'; }
+            if (btn) { btn.disabled = false; btn.textContent = gt('leaderboard.submit'); }
         }
     });
 
-    // Manual "Submit my score" from Leaderboard screen (so user can submit even if Game Over dialog was missed)
     document.getElementById('submit-my-score-btn')?.addEventListener('click', async (e) => {
         e.preventDefault();
         e.stopPropagation();
         const statusEl = document.getElementById('leaderboard-submit-my-status');
         const btn = e.target;
+        const gt2 = typeof getText === 'function' ? getText : function (k) { return k; };
         if (typeof window.baseInvadersSubmitScore !== 'function') {
-            if (statusEl) { statusEl.textContent = 'Open in Warpcast to submit.'; statusEl.style.color = '#ff8888'; }
+            if (statusEl) { statusEl.textContent = gt2('leaderboard.openInWarpcast'); statusEl.style.color = '#ff8888'; }
             return;
         }
         const local = window.baseInvadersLeaderboard?.getLocalHighScore ? window.baseInvadersLeaderboard.getLocalHighScore() : null;
         if (!local) {
-            if (statusEl) { statusEl.textContent = 'Play a game first to have a score.'; statusEl.style.color = '#ff8888'; }
+            if (statusEl) { statusEl.textContent = gt2('leaderboard.playFirst'); statusEl.style.color = '#ff8888'; }
             return;
         }
         const score = Number(local.score) || 0;
         const wave = Number(local.wave) || 1;
         const streak = window.baseInvadersLeaderboard?.getCurrentStreak ? window.baseInvadersLeaderboard.getCurrentStreak() : 0;
-        if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
-        if (statusEl) { statusEl.textContent = 'Submitting...'; statusEl.style.color = '#00ff88'; }
+        if (btn) { btn.disabled = true; btn.textContent = gt2('leaderboard.submitting'); }
+        if (statusEl) { statusEl.textContent = gt2('leaderboard.submitting'); statusEl.style.color = '#00ff88'; }
         try {
             let name = '';
             if (typeof window.baseInvadersGetUserName === 'function') name = await window.baseInvadersGetUserName();
@@ -2922,11 +3035,11 @@ document.addEventListener('DOMContentLoaded', () => {
             name = (name && String(name).trim()) || 'Player';
             if (window.baseInvadersLeaderboard?.setSavedName) window.baseInvadersLeaderboard.setSavedName(name);
             await window.baseInvadersSubmitScore(score, wave, streak, name);
-            if (statusEl) { statusEl.textContent = 'Submitted!'; statusEl.style.color = '#00ff88'; }
+            if (statusEl) { statusEl.textContent = gt2('leaderboard.submitted'); statusEl.style.color = '#00ff88'; }
         } catch (err) {
             const msg = (err && err.message) ? String(err.message) : 'Submit failed';
             if (statusEl) { statusEl.textContent = msg; statusEl.style.color = '#ff6666'; }
         }
-        if (btn) { btn.disabled = false; btn.textContent = 'Submit my score'; }
+        if (btn) { btn.disabled = false; btn.textContent = gt2('leaderboard.submitMyScore'); }
     });
 });

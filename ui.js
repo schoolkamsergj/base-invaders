@@ -79,7 +79,7 @@ class UI {
         this.stageText = this.scene.add.text(
             this.scene.scale.width / 2,
             20,
-            'STAGE 1',
+            (typeof getText === 'function' ? getText('ui.stage') : 'STAGE') + ' 1',
             {
                 fontSize: '28px',
                 fontWeight: 'bold',
@@ -107,7 +107,7 @@ class UI {
         this.scoreText = this.scene.add.text(
             this.scene.scale.width - 10,
             10,
-            'Score: 0',
+            (typeof getText === 'function' ? getText('ui.score') : 'Score') + ': 0',
             {
                 fontSize: '20px',
                 fontWeight: 'bold',
@@ -123,7 +123,7 @@ class UI {
         this.levelText = this.scene.add.text(
             this.scene.scale.width - 10,
             40,
-            'Level 1',
+            (typeof getText === 'function' ? getText('ui.level') : 'Level') + ' 1',
             {
                 fontSize: '16px',
                 fontWeight: 'bold',
@@ -205,7 +205,7 @@ class UI {
         
         this.shopBtnText = this.scene.add.text(
             0, 0, // Temporary - set by applyLayout
-            '🛒 SHOP',
+            typeof getText === 'function' ? getText('ui.shop') : '🛒 SHOP',
             {
                 fontSize: '14px',
                 fontWeight: 'bold',
@@ -522,7 +522,7 @@ class UI {
         this.checkInButton.setInteractive({ useHandCursor: true });
         
         // Button text
-        this.checkInButtonText = this.scene.add.text(buttonX, buttonY, '📅 CHECK-IN', {
+        this.checkInButtonText = this.scene.add.text(buttonX, buttonY, typeof getText === 'function' ? getText('ui.checkIn') : '📅 CHECK-IN', {
             fontSize: '13px',
             fontWeight: 'bold',
             color: '#ffffff',
@@ -579,12 +579,12 @@ class UI {
 
             if (typeof window.baseInvadersOnchainCheckIn !== 'function') {
                 console.error('[UI] SDK function not found');
-                this.showNotification('⚠️ SDK not loaded', notifyX, notifyY - 40);
+                this.showNotification('⚠️ ' + (typeof getText === 'function' ? getText('ui.sdkNotLoaded') : 'SDK not loaded'), notifyX, notifyY - 40);
                 return;
             }
 
             this.checkInPending = true;
-            this.checkInButtonText.setText('⛓️ SIGNING...');
+            this.checkInButtonText.setText(typeof getText === 'function' ? getText('ui.signing') : '⛓️ SIGNING...');
             this.checkInButton.disableInteractive();
             this.checkInButtonText.disableInteractive();
 
@@ -596,7 +596,7 @@ class UI {
                 const streakKey = this.getStreakKey();
                 this._lastCheckInKeyUsed = lastKey;
                 localStorage.setItem(lastKey, todayKey);
-                this.showNotification('⛓️ Confirmed on Base!', notifyX, notifyY - 40);
+                this.showNotification(typeof getText === 'function' ? getText('ui.confirmedBase') : '⛓️ Confirmed on Base!', notifyX, notifyY - 40);
 
                 let totalDays = 0;
                 const streakData = localStorage.getItem(streakKey);
@@ -639,12 +639,13 @@ class UI {
                 if (isMilestone) setTimeout(() => this.showMilestoneCelebration(totalDays), 500);
             } catch (error) {
                 console.error('[UI] Check-in tx failed:', error.message);
-                let errorMsg = 'Transaction failed';
-                if (error.message.includes('cancelled') || error.message.includes('rejected')) errorMsg = 'Transaction cancelled';
-                else if (error.message.includes('funds')) errorMsg = 'Insufficient funds';
-                else if (error.message.includes('not available')) errorMsg = 'Wallet not ready, try again';
+                const t = typeof getText === 'function' ? getText : function (k) { return k; };
+                let errorMsg = t('ui.transactionFailed');
+                if (error.message.includes('cancelled') || error.message.includes('rejected')) errorMsg = t('ui.transactionCancelled');
+                else if (error.message.includes('funds')) errorMsg = t('ui.insufficientFunds');
+                else if (error.message.includes('not available')) errorMsg = t('ui.walletNotReady');
                 else if (error.message.includes('Already checked in today')) {
-                    errorMsg = 'Already checked in today';
+                    errorMsg = t('ui.alreadyCheckedIn');
                     const key = this.getLastCheckInKey();
                     this._lastCheckInKeyUsed = key;
                     localStorage.setItem(key, todayKey);
@@ -847,9 +848,9 @@ class UI {
             this.checkInButtonText.setFontSize(Math.max(11, Math.min(13, layout.checkInHeight * 0.35)) + 'px');
             this.checkInButtonText.setPosition(buttonX, buttonY);
             if (isNextMilestone) {
-                this.checkInButtonText.setText(`📅 Day ${nextDay} →${nextDay + 7} 🎉`);
+                this.checkInButtonText.setText(typeof getText === 'function' ? getText('ui.dayMilestone', { next: nextDay, next7: nextDay + 7 }) : `📅 Day ${nextDay} →${nextDay + 7} 🎉`);
             } else {
-                this.checkInButtonText.setText(`📅 Day ${nextDay} →${nextMilestone}`);
+                this.checkInButtonText.setText(typeof getText === 'function' ? getText('ui.dayStreak', { next: nextDay, milestone: nextMilestone }) : `📅 Day ${nextDay} →${nextMilestone}`);
             }
             this.checkInButtonText.setColor('#00ff00');
             this.checkInCountdownText.setVisible(false);
@@ -873,7 +874,7 @@ class UI {
                 const s = timeRemaining.seconds != null ? timeRemaining.seconds : 0;
                 this.checkInButtonText.setText(timeRemaining.hours + 'h ' + timeRemaining.minutes + 'm ' + s + 's');
             } else {
-                this.checkInButtonText.setText('Checked in');
+                this.checkInButtonText.setText(typeof getText === 'function' ? getText('ui.checkedIn') : 'Checked in');
             }
             this.checkInCountdownText.setVisible(false);
 
@@ -1012,18 +1013,20 @@ class UI {
     }
 
     openShop() {
-        // Track if game was already paused before opening shop
         this.wasPausedBeforeShop = this.scene.gameState.paused;
-        
-        // Pause game if not already paused
         if (!this.scene.gameState.paused) {
             this.scene.scene.pause();
             this.scene.gameState.paused = true;
         }
         document.getElementById('shop-overlay').classList.remove('hidden');
+        this.refreshHtmlOverlays();
         if (window.shopSystem) {
             window.shopSystem.updateDisplay();
         }
+    }
+
+    refreshHtmlOverlays() {
+        if (typeof window.refreshHtmlOverlaysI18n === 'function') window.refreshHtmlOverlaysI18n();
     }
 
     update(gameState) {
@@ -1032,28 +1035,29 @@ class UI {
         this.lightningText.setText(`⚡ ${this.formatNumber(gameState.lightning)}`);
         this.diamondsText.setText(`💎 ${this.formatNumber(gameState.diamonds)}`);
         
-        // Update mission/wave display (2 lines so it doesn't overlap Score right / currency left)
+        const missionLabel = typeof getText === 'function' ? getText('ui.mission') : 'Mission';
+        const waveLabel = typeof getText === 'function' ? getText('ui.wave') : 'Wave';
+        const bossLabel = typeof getText === 'function' ? getText('ui.boss') : 'BOSS ⚔️';
+        const stageLabel = typeof getText === 'function' ? getText('ui.stage') : 'STAGE';
+        const scoreLabel = typeof getText === 'function' ? getText('ui.score') : 'Score';
+        const levelLabel = typeof getText === 'function' ? getText('ui.level') : 'Level';
         if (gameState.missionSystem) {
             const m = gameState.missionSystem.currentMission;
             if (gameState.missionSystem.bossActive) {
-                this.stageText.setText(`Mission ${m}\nBOSS ⚔️`);
+                this.stageText.setText(`${missionLabel} ${m}\n${bossLabel}`);
                 this.stageText.setColor('#ff0000');
             } else {
                 const w = gameState.missionSystem.currentWave;
-                this.stageText.setText(`Mission ${m}\nWave ${w}/5`);
+                this.stageText.setText(`${missionLabel} ${m}\n${waveLabel} ${w}/5`);
                 this.stageText.setColor('#00ffff');
             }
         } else {
-            this.stageText.setText(`STAGE ${gameState.stage}`);
+            this.stageText.setText(`${stageLabel} ${gameState.stage}`);
             this.stageText.setColor('#00ffff');
         }
-        
-        // Update score
         const multiplier = gameState.scoreMultiplier || 1;
-        this.scoreText.setText(`Score: ${this.formatNumber(gameState.score * multiplier)}`);
-        
-        // Update level
-        this.levelText.setText(`Level ${gameState.playerLevel}`);
+        this.scoreText.setText(`${scoreLabel}: ${this.formatNumber(gameState.score * multiplier)}`);
+        this.levelText.setText(`${levelLabel} ${gameState.playerLevel}`);
         
         // Update health bar - only if properly initialized and valid coordinates
         if (this.scene.player && this.healthBar && this.healthBarGlow && 
@@ -1237,3 +1241,59 @@ class UI {
     
     console.log('Daily Check-in Debug Helper loaded. Use window.__strikeDebug');
 })();
+
+function refreshHtmlOverlaysI18n() {
+    if (typeof getText !== 'function') return;
+    const g = getText;
+    const shopH2 = document.querySelector('#shop-overlay .shop-header h2');
+    if (shopH2) shopH2.textContent = g('shop.title');
+    document.querySelectorAll('.shop-tabs .tab-btn').forEach(function (btn) {
+        const tab = btn.dataset.tab;
+        if (tab === 'spaceships') btn.textContent = g('shop.tabSpaceships');
+        else if (tab === 'weapons') btn.textContent = g('shop.tabWeapons');
+        else if (tab === 'powerups') btn.textContent = g('shop.tabPowerups');
+        else if (tab === 'upgrades') btn.textContent = g('shop.tabUpgrades');
+    });
+    const pauseH2 = document.querySelector('#pause-overlay h2');
+    if (pauseH2) pauseH2.textContent = g('pause.title');
+    const resumeBtn = document.getElementById('resume-btn');
+    if (resumeBtn) resumeBtn.textContent = g('pause.resume');
+    const mainMenuBtn = document.getElementById('main-menu-btn');
+    if (mainMenuBtn) mainMenuBtn.textContent = g('pause.mainMenu');
+    const resetGameBtn = document.getElementById('reset-game-btn');
+    if (resetGameBtn) resetGameBtn.textContent = g('pause.resetGame');
+    const exitGameBtn = document.getElementById('exit-game-btn');
+    if (exitGameBtn) exitGameBtn.textContent = g('pause.exitGame');
+    const resetConfirmH2 = document.querySelector('#reset-confirm-overlay h2');
+    if (resetConfirmH2) resetConfirmH2.textContent = g('resetConfirm.title');
+    const resetConfirmP = document.querySelector('#reset-confirm-overlay p');
+    if (resetConfirmP) resetConfirmP.textContent = g('resetConfirm.message');
+    const resetCancelBtn = document.getElementById('reset-confirm-cancel');
+    if (resetCancelBtn) resetCancelBtn.textContent = g('resetConfirm.cancel');
+    const resetDoBtn = document.getElementById('reset-confirm-do');
+    if (resetDoBtn) resetDoBtn.textContent = g('resetConfirm.reset');
+    const gameoverH2 = document.querySelector('#gameover-overlay h2');
+    if (gameoverH2) gameoverH2.textContent = g('gameover.title');
+    const restartBtn = document.getElementById('restart-btn');
+    if (restartBtn) restartBtn.textContent = g('gameover.restart');
+    const lbH2 = document.querySelector('#leaderboard-overlay h2');
+    if (lbH2) lbH2.textContent = g('leaderboard.title');
+    const submitMyBtn = document.getElementById('submit-my-score-btn');
+    if (submitMyBtn) submitMyBtn.textContent = g('leaderboard.submitMyScore');
+    const refreshLbBtn = document.getElementById('refresh-leaderboard');
+    if (refreshLbBtn) refreshLbBtn.textContent = g('leaderboard.refresh');
+    const globalStatus = document.getElementById('leaderboard-global-status');
+    if (globalStatus && !globalStatus.dataset.filled) globalStatus.textContent = g('leaderboard.globalStatus');
+    const personalBestH3 = document.querySelector('#leaderboard-overlay .leaderboard-section:last-child h3');
+    if (personalBestH3) personalBestH3.textContent = g('leaderboard.personalBest');
+    const submitOverlayH2 = document.querySelector('#leaderboard-submit-overlay h2');
+    if (submitOverlayH2) submitOverlayH2.textContent = g('leaderboard.submitNewHighTitle');
+    const submitOverlayP = document.querySelector('#leaderboard-submit-overlay p');
+    if (submitOverlayP && submitOverlayP.id !== 'leaderboard-submit-status') submitOverlayP.textContent = g('leaderboard.submitNewHighMessage');
+    const submitDoBtn = document.querySelector('#leaderboard-submit-overlay button#leaderboard-submit-do');
+    if (submitDoBtn) submitDoBtn.textContent = g('leaderboard.submit');
+    const submitCancelBtn = document.getElementById('leaderboard-submit-cancel');
+    if (submitCancelBtn) submitCancelBtn.textContent = g('leaderboard.cancel');
+}
+window.refreshHtmlOverlaysI18n = refreshHtmlOverlaysI18n;
+window.addEventListener('base-invaders:lang-changed', refreshHtmlOverlaysI18n);
