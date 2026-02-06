@@ -89,6 +89,14 @@
             <button id="exit-game-btn" class="menu-btn exit-btn">Exit Game</button>
         </div>
     </div>
+    <!-- Start Menu Overlay (Exit Game -> HTML menu, Resume continues game) -->
+    <div id="start-menu-overlay" class="overlay hidden" style="z-index:10001; background:rgba(0,0,0,0.85); pointer-events: auto;">
+        <div class="pause-container" style="background:#1a1a2e; padding:40px; border-radius:20px; border:2px solid #0052FF;">
+            <h2 style="color:#00ffff; margin-bottom:30px;">START MENU</h2>
+            <button id="resume-game-btn" class="menu-btn" style="margin:10px;">Resume Game</button>
+            <button id="reset-progress-btn" class="menu-btn reset-btn" style="margin:10px;">Reset Progress</button>
+        </div>
+    </div>
     <!-- Reset confirmation (replaces browser confirm() so it works in iframe/desktop) -->
     <div id="reset-confirm-overlay" class="overlay hidden" style="z-index: 10003; pointer-events: auto;">
         <div class="pause-container reset-confirm-box">
