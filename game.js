@@ -130,18 +130,22 @@ class MenuScene extends Phaser.Scene {
                 duration: 100,
                 yoyo: true,
                 onComplete: () => {
-                    if (this.scene.getScene('GameScene') && this.scene.isSleeping('GameScene')) {
-                        const gs = this.scene.getScene('GameScene');
-                        if (gs.wasExitedToMenu) {
-                            gs.wasExitedToMenu = false;
-                            gs.gameState.paused = false;
-                            this.scene.sleep('MenuScene');
-                            this.scene.wake('GameScene');
-                        } else {
-                            this.scene.stop('GameScene');
-                            this.scene.start('GameScene');
+                    const gameScene = this.scene.get('GameScene');
+                    const isSleeping = gameScene && this.scene.isSleeping('GameScene');
+
+                    if (isSleeping && gameScene.wasExitedToMenu) {
+                        console.log('🎮 Continuing game...');
+                        gameScene.wasExitedToMenu = false;
+                        if (gameScene.gameState) {
+                            gameScene.gameState.paused = false;
                         }
+                        this.scene.sleep('MenuScene');
+                        this.scene.wake('GameScene');
                     } else {
+                        console.log('🎮 Starting new game...');
+                        if (gameScene) {
+                            this.scene.stop('GameScene');
+                        }
                         this.scene.start('GameScene');
                     }
                 }
@@ -150,18 +154,22 @@ class MenuScene extends Phaser.Scene {
 
         // Also allow space/enter to start (same logic as Start button)
         const tryStartOrWakeGame = () => {
-            if (this.scene.getScene('GameScene') && this.scene.isSleeping('GameScene')) {
-                const gs = this.scene.getScene('GameScene');
-                if (gs.wasExitedToMenu) {
-                    gs.wasExitedToMenu = false;
-                    gs.gameState.paused = false;
-                    this.scene.sleep('MenuScene');
-                    this.scene.wake('GameScene');
-                } else {
-                    this.scene.stop('GameScene');
-                    this.scene.start('GameScene');
+            const gameScene = this.scene.get('GameScene');
+            const isSleeping = gameScene && this.scene.isSleeping('GameScene');
+
+            if (isSleeping && gameScene.wasExitedToMenu) {
+                console.log('🎮 Continuing game (keyboard)...');
+                gameScene.wasExitedToMenu = false;
+                if (gameScene.gameState) {
+                    gameScene.gameState.paused = false;
                 }
+                this.scene.sleep('MenuScene');
+                this.scene.wake('GameScene');
             } else {
+                console.log('🎮 Starting new game (keyboard)...');
+                if (gameScene) {
+                    this.scene.stop('GameScene');
+                }
                 this.scene.start('GameScene');
             }
         };
