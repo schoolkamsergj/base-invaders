@@ -130,19 +130,43 @@ class MenuScene extends Phaser.Scene {
                 duration: 100,
                 yoyo: true,
                 onComplete: () => {
-                    // Start the game
-                    this.scene.start('GameScene');
+                    if (this.scene.getScene('GameScene') && this.scene.isSleeping('GameScene')) {
+                        const gs = this.scene.getScene('GameScene');
+                        if (gs.wasExitedToMenu) {
+                            gs.wasExitedToMenu = false;
+                            gs.gameState.paused = false;
+                            this.scene.sleep('MenuScene');
+                            this.scene.wake('GameScene');
+                        } else {
+                            this.scene.stop('GameScene');
+                            this.scene.start('GameScene');
+                        }
+                    } else {
+                        this.scene.start('GameScene');
+                    }
                 }
             });
         });
 
-        // Also allow space/enter to start
-        this.input.keyboard.on('keydown-SPACE', () => {
-            this.scene.start('GameScene');
-        });
-        this.input.keyboard.on('keydown-ENTER', () => {
-            this.scene.start('GameScene');
-        });
+        // Also allow space/enter to start (same logic as Start button)
+        const tryStartOrWakeGame = () => {
+            if (this.scene.getScene('GameScene') && this.scene.isSleeping('GameScene')) {
+                const gs = this.scene.getScene('GameScene');
+                if (gs.wasExitedToMenu) {
+                    gs.wasExitedToMenu = false;
+                    gs.gameState.paused = false;
+                    this.scene.sleep('MenuScene');
+                    this.scene.wake('GameScene');
+                } else {
+                    this.scene.stop('GameScene');
+                    this.scene.start('GameScene');
+                }
+            } else {
+                this.scene.start('GameScene');
+            }
+        };
+        this.input.keyboard.on('keydown-SPACE', tryStartOrWakeGame);
+        this.input.keyboard.on('keydown-ENTER', tryStartOrWakeGame);
         
         const languageBtnY = height * (0.38 + 0.09);
         this.languageBtnBg = this.add.graphics();
@@ -2978,7 +3002,7 @@ document.addEventListener('DOMContentLoaded', () => {
         location.reload();
     });
 
-    // EXIT GAME button handler in pause menu
+    // EXIT GAME button handler in pause menu (SLEEP like shop — не знищує гру)
     document.getElementById('exit-game-btn')?.addEventListener('click', () => {
         if (window.game?.scene) {
             const gs = window.game.scene.getScene('GameScene');
@@ -2987,41 +3011,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (window.game?.scene) {
             const gs = window.game.scene.getScene('GameScene');
-            if (gs) {
-                if (gs.saveGameData) gs.saveGameData();
-                if (gs.gameState) {
-                    localStorage.setItem('lastScore', gs.gameState.score.toString());
-                    const highScore = parseInt(localStorage.getItem('highScore') || '0');
-                    if (gs.gameState.score > highScore) {
-                        localStorage.setItem('highScore', gs.gameState.score.toString());
-                    }
-                }
-            }
+            if (gs?.saveGameData) gs.saveGameData();
         }
 
         document.getElementById('pause-overlay').classList.add('hidden');
 
         if (window.game?.scene) {
             const gs = window.game.scene.getScene('GameScene');
+            if (gs) gs.wasExitedToMenu = true;
 
-            try {
-                if (typeof window.game.scene.isPaused === 'function' && window.game.scene.isPaused('GameScene')) {
-                    window.game.scene.resume('GameScene');
-                }
-            } catch (e) {
-                console.warn('Exit Game: resume check failed', e);
+            window.game.scene.sleep('GameScene');
+
+            if (window.game.scene.isActive('MenuScene')) {
+                window.game.scene.wake('MenuScene');
+            } else {
+                window.game.scene.start('MenuScene');
             }
-
-            if (gs?.gameState) {
-                gs.gameState.paused = false;
-            }
-
-            if (gs && typeof gs.shutdown === 'function') {
-                gs.shutdown();
-            }
-
-            window.game.scene.stop('GameScene');
-            window.game.scene.start('MenuScene');
         }
     });
 
