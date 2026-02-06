@@ -121,7 +121,7 @@ class MenuScene extends Phaser.Scene {
             });
         });
 
-        // Click to start game (first load only; Exit Game uses HTML overlay + Resume)
+        // Click to start game (resume if GameScene paused from Exit; else new game)
         this.startBtn.on('pointerdown', () => {
             this.tweens.add({
                 targets: [this.startBtn, this.startText],
@@ -129,19 +129,43 @@ class MenuScene extends Phaser.Scene {
                 duration: 100,
                 yoyo: true,
                 onComplete: () => {
-                    this.scene.start('GameScene');
-                    this.scene.stop('MenuScene');
+                    const gameScene = this.scene.manager.getScene('GameScene');
+                    if (gameScene && gameScene.scene && gameScene.scene.isPaused && gameScene.scene.isPaused()) {
+                        console.log('Resuming GameScene');
+                        this.scene.manager.resume('GameScene');
+                        if (gameScene.gameState) gameScene.gameState.inMenuPause = false;
+                        this.scene.stop('MenuScene');
+                    } else {
+                        this.scene.start('GameScene');
+                        this.scene.stop('MenuScene');
+                    }
                 }
             });
         });
 
         this.input.keyboard.on('keydown-SPACE', () => {
-            this.scene.start('GameScene');
-            this.scene.stop('MenuScene');
+            const gameScene = this.scene.manager.getScene('GameScene');
+            if (gameScene && gameScene.scene && gameScene.scene.isPaused && gameScene.scene.isPaused()) {
+                console.log('Resuming GameScene');
+                this.scene.manager.resume('GameScene');
+                if (gameScene.gameState) gameScene.gameState.inMenuPause = false;
+                this.scene.stop('MenuScene');
+            } else {
+                this.scene.start('GameScene');
+                this.scene.stop('MenuScene');
+            }
         });
         this.input.keyboard.on('keydown-ENTER', () => {
-            this.scene.start('GameScene');
-            this.scene.stop('MenuScene');
+            const gameScene = this.scene.manager.getScene('GameScene');
+            if (gameScene && gameScene.scene && gameScene.scene.isPaused && gameScene.scene.isPaused()) {
+                console.log('Resuming GameScene');
+                this.scene.manager.resume('GameScene');
+                if (gameScene.gameState) gameScene.gameState.inMenuPause = false;
+                this.scene.stop('MenuScene');
+            } else {
+                this.scene.start('GameScene');
+                this.scene.stop('MenuScene');
+            }
         });
         
         const languageBtnY = height * (0.38 + 0.09);
@@ -2980,30 +3004,24 @@ document.addEventListener('DOMContentLoaded', () => {
         location.reload();
     });
 
-    // EXIT GAME: показати HTML start-menu-overlay, GameScene залишається на паузі (без stop/launch)
+    // EXIT GAME: pause (не stop) + launch MenuScene — як магазин, гра відновлюється по Start
     document.getElementById('exit-game-btn')?.addEventListener('click', () => {
         if (window.game?.scene) {
             const gs = window.game.scene.getScene('GameScene');
             if (gs?.playSound) gs.playSound('click');
         }
+
         document.getElementById('pause-overlay').classList.add('hidden');
-        document.getElementById('start-menu-overlay').classList.remove('hidden');
-        console.log('Menu overlay shown');
-    });
 
-    document.getElementById('resume-game-btn')?.addEventListener('click', () => {
-        document.getElementById('start-menu-overlay').classList.add('hidden');
-        const gameScene = window.game?.scene?.getScene('GameScene');
-        if (gameScene) {
-            window.game.scene.resume('GameScene');
-            if (gameScene.gameState) gameScene.gameState.paused = false;
+        if (window.game?.scene) {
+            const gs = window.game.scene.getScene('GameScene');
+            if (gs && gs.gameState) {
+                gs.gameState.inMenuPause = true;
+            }
+            window.game.scene.pause('GameScene');
+            console.log('Paused for Menu');
+            window.game.scene.launch('MenuScene');
         }
-        console.log('Game resumed');
-    });
-
-    document.getElementById('reset-progress-btn')?.addEventListener('click', () => {
-        localStorage.clear();
-        location.reload();
     });
 
     document.getElementById('restart-btn')?.addEventListener('click', () => {
