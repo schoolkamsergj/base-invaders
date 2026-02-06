@@ -2594,6 +2594,30 @@ class GameScene extends Phaser.Scene {
         }
     }
 
+    shutdown() {
+        console.log('🧹 GameScene shutdown - cleaning up...');
+
+        if (this.syncProgressInterval) {
+            clearInterval(this.syncProgressInterval);
+            this.syncProgressInterval = null;
+        }
+
+        if (this.ui && this.ui.countdownInterval) {
+            clearInterval(this.ui.countdownInterval);
+            this.ui.countdownInterval = null;
+        }
+
+        if (this.input && this.input.keyboard) {
+            this.input.keyboard.removeAllListeners();
+        }
+
+        if (this.bgMusic) {
+            this.bgMusic.stop();
+        }
+
+        console.log('✅ GameScene cleanup complete!');
+    }
+
     gameOver() {
         this.gameState.gameOver = true;
         this.scene.pause();
@@ -2947,8 +2971,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Close pause overlay
         document.getElementById('pause-overlay').classList.add('hidden');
         
-        // Return to main menu (MenuScene). Resume GameScene before stop so scene manager
-        // cleans up a running scene, not a paused one (fixes freeze on next Start).
+        // 1) Resume scene if paused (so Phaser will call shutdown() on stop)
+        // 2) Stop GameScene (triggers shutdown() — clears intervals, keyboard, bgMusic)
+        // 3) Start MenuScene
         if (window.game && window.game.scene) {
             if (window.game.scene.isPaused && window.game.scene.isPaused('GameScene')) {
                 window.game.scene.resume('GameScene');
