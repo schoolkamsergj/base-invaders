@@ -2949,17 +2949,19 @@ document.addEventListener('DOMContentLoaded', () => {
         location.reload();
     });
 
-    // EXIT GAME: працює як Resume — просто ховаємо паузу і продовжуємо гру (як магазин)
+    // EXIT GAME: ховаємо паузу, показуємо exit-menu (гра лишається на паузі, як магазин)
     document.getElementById('exit-game-btn')?.addEventListener('click', () => {
         if (window.game?.scene) {
             const gs = window.game.scene.getScene('GameScene');
             if (gs?.playSound) gs.playSound('click');
         }
-
-        // Ховаємо паузу
         document.getElementById('pause-overlay').classList.add('hidden');
+        document.getElementById('exit-menu-overlay').classList.remove('hidden');
+    });
 
-        // Resume гри — те саме що Resume кнопка
+    // EXIT MENU: Continue Game — resume гри (як закриття магазину)
+    document.getElementById('exit-continue-btn')?.addEventListener('click', () => {
+        document.getElementById('exit-menu-overlay').classList.add('hidden');
         if (window.game && window.game.scene) {
             const gameScene = window.game.scene.getScene('GameScene');
             if (gameScene) {
@@ -2972,6 +2974,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 gameScene.gameState.paused = false;
             }
         }
+    });
+
+    // EXIT MENU: New Game — перезавантаження
+    document.getElementById('exit-newgame-btn')?.addEventListener('click', () => {
+        location.reload();
     });
 
     document.getElementById('restart-btn')?.addEventListener('click', () => {

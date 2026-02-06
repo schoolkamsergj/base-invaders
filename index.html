@@ -89,6 +89,14 @@
             <button id="exit-game-btn" class="menu-btn exit-btn">Exit Game</button>
         </div>
     </div>
+    <!-- Exit Menu Overlay (game stays paused, HTML overlay like shop) -->
+    <div id="exit-menu-overlay" class="overlay hidden" style="z-index: 10002; pointer-events: auto;">
+        <div class="pause-container">
+            <h2>⏸️ GAME PAUSED</h2>
+            <button id="exit-continue-btn" class="menu-btn">▶ Continue Game</button>
+            <button id="exit-newgame-btn" class="menu-btn reset-btn">🔄 New Game</button>
+        </div>
+    </div>
     <!-- Reset confirmation (replaces browser confirm() so it works in iframe/desktop) -->
     <div id="reset-confirm-overlay" class="overlay hidden" style="z-index: 10003; pointer-events: auto;">
         <div class="pause-container reset-confirm-box">
