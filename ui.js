@@ -583,6 +583,11 @@ class UI {
                 return;
             }
 
+            const wasAlreadyPaused = this.gameState.paused;
+            if (!wasAlreadyPaused && this.scene.togglePause) {
+                this.scene.togglePause();
+            }
+
             this.checkInPending = true;
             this.checkInButtonText.setText(typeof getText === 'function' ? getText('ui.signing') : '⛓️ SIGNING...');
             this.checkInButton.disableInteractive();
@@ -655,6 +660,9 @@ class UI {
                 }
                 this.showNotification('⚠️ ' + errorMsg, notifyX, notifyY - 40);
             } finally {
+                if (!wasAlreadyPaused && this.scene.togglePause) {
+                    this.scene.togglePause();
+                }
                 this.checkInPending = false;
                 this.checkInButton.setInteractive({ useHandCursor: true });
                 this.checkInButtonText.setInteractive({ useHandCursor: true });
