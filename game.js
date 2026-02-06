@@ -2595,7 +2595,7 @@ class GameScene extends Phaser.Scene {
     }
 
     shutdown() {
-        console.log('🧹 GameScene shutdown - cleaning up...');
+        console.log('🧹 Cleaning up GameScene...');
 
         if (this.syncProgressInterval) {
             clearInterval(this.syncProgressInterval);
@@ -2607,15 +2607,49 @@ class GameScene extends Phaser.Scene {
             this.ui.countdownInterval = null;
         }
 
+        if (this.bullets) {
+            this.bullets.clear(true, true);
+            this.bullets = null;
+        }
+
+        if (this.enemyBullets) {
+            this.enemyBullets.clear(true, true);
+            this.enemyBullets = null;
+        }
+
+        if (this.enemies) {
+            this.enemies.clear(true, true);
+            this.enemies = null;
+        }
+
+        if (this.powerUps) {
+            this.powerUps.clear(true, true);
+            this.powerUps = null;
+        }
+
+        if (this.particles) {
+            this.particles.clear(true, true);
+            this.particles = null;
+        }
+
+        if (this.tweens) {
+            this.tweens.killAll();
+        }
+
         if (this.input && this.input.keyboard) {
             this.input.keyboard.removeAllListeners();
         }
 
-        if (this.bgMusic) {
+        if (this.bgMusic && this.bgMusic.isPlaying) {
             this.bgMusic.stop();
         }
 
-        console.log('✅ GameScene cleanup complete!');
+        if (this.player && this.player.sprite) {
+            this.player.sprite.destroy();
+            this.player = null;
+        }
+
+        console.log('✅ GameScene cleanup complete');
     }
 
     gameOver() {
@@ -2936,56 +2970,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // EXIT GAME button handler in pause menu
     document.getElementById('exit-game-btn')?.addEventListener('click', () => {
-        // Play click sound
-        if (window.game && window.game.scene) {
-            const gameScene = window.game.scene.getScene('GameScene');
-            if (gameScene && gameScene.playSound) {
-                gameScene.playSound('click');
-            }
+        if (window.game?.scene) {
+            const gs = window.game.scene.getScene('GameScene');
+            if (gs?.playSound) gs.playSound('click');
         }
-        
-        // Get GameScene to access gameState
-        if (window.game && window.game.scene) {
-            const gameScene = window.game.scene.getScene('GameScene');
-            if (gameScene && gameScene.gameState) {
-                // Save current score to localStorage as 'lastScore'
-                localStorage.setItem('lastScore', gameScene.gameState.score.toString());
-                
-                // Update high score in localStorage if current score is higher
-                const currentHighScore = parseInt(localStorage.getItem('highScore') || '0');
-                if (gameScene.gameState.score > currentHighScore) {
-                    localStorage.setItem('highScore', gameScene.gameState.score.toString());
-                    console.log('🏆 New high score:', gameScene.gameState.score);
-                }
-                
-                // Save timestamp as 'lastPlayed'
-                localStorage.setItem('lastPlayed', new Date().toISOString());
-                
-                // Save game data
-                if (gameScene.saveGameData) {
-                    gameScene.saveGameData();
+
+        if (window.game?.scene) {
+            const gs = window.game.scene.getScene('GameScene');
+            if (gs) {
+                if (gs.saveGameData) gs.saveGameData();
+                if (gs.gameState) {
+                    localStorage.setItem('lastScore', gs.gameState.score.toString());
+                    const highScore = parseInt(localStorage.getItem('highScore') || '0');
+                    if (gs.gameState.score > highScore) {
+                        localStorage.setItem('highScore', gs.gameState.score.toString());
+                    }
                 }
             }
         }
-        
-        // Close pause overlay
+
         document.getElementById('pause-overlay').classList.add('hidden');
-        
-        // 1) Resume scene if paused (so Phaser will call shutdown() on stop)
-        // 2) Stop GameScene (triggers shutdown() — clears intervals, keyboard, bgMusic)
-        // 3) Start MenuScene
-        if (window.game && window.game.scene) {
-            if (window.game.scene.isPaused && window.game.scene.isPaused('GameScene')) {
+
+        if (window.game?.scene) {
+            const gs = window.game.scene.getScene('GameScene');
+
+            if (window.game.scene.isPaused('GameScene')) {
+                console.log('Resuming paused scene...');
                 window.game.scene.resume('GameScene');
-                const gs = window.game.scene.getScene('GameScene');
-                if (gs && gs.scene && gs.scene.resume) gs.scene.resume();
-                if (gs && gs.gameState) gs.gameState.paused = false;
             }
+
+            if (gs?.gameState) {
+                gs.gameState.paused = false;
+            }
+
+            console.log('Stopping GameScene...');
             window.game.scene.stop('GameScene');
-            window.game.scene.start('MenuScene');
-        } else {
-            // If game not initialized, just reload page
-            location.reload();
+
+            setTimeout(() => {
+                console.log('Starting MenuScene...');
+                window.game.scene.start('MenuScene');
+            }, 100);
         }
     });
 
