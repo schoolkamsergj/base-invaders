@@ -1071,6 +1071,8 @@ class GameScene extends Phaser.Scene {
                 console.error('Error creating UI:', e);
             }
 
+            this.sceneReady = true;
+
             window.addEventListener('base-invaders:lang-changed', () => {
                 if (this.ui) {
                     if (this.ui.shopBtnText && typeof getText === 'function') this.ui.shopBtnText.setText(getText('ui.shop'));
@@ -1135,8 +1137,6 @@ class GameScene extends Phaser.Scene {
             }
             
             console.log('Game running');
-
-            this.sceneReady = true;
 
             setTimeout(() => {
                 console.log('🎮 Dispatching base-invaders:game-ready event...');
@@ -3004,7 +3004,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.game?.scene) {
             const gs = window.game.scene.getScene('GameScene');
 
-            // Resume if paused (shutdown() викликається лише якщо сцена не на паузі)
             try {
                 if (typeof window.game.scene.isPaused === 'function' && window.game.scene.isPaused('GameScene')) {
                     window.game.scene.resume('GameScene');
@@ -3017,11 +3016,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 gs.gameState.paused = false;
             }
 
-            window.game.scene.stop('GameScene');
+            if (gs && typeof gs.shutdown === 'function') {
+                gs.shutdown();
+            }
 
-            setTimeout(() => {
-                window.game.scene.start('MenuScene');
-            }, 100);
+            window.game.scene.stop('GameScene');
+            window.game.scene.start('MenuScene');
         }
     });
 
