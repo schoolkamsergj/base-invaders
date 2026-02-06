@@ -1716,6 +1716,11 @@ class GameScene extends Phaser.Scene {
     }
 
     update(time, delta) {
+        // 🔥 КРИТИЧНО! Зупинити update() якщо сцена неактивна
+        if (!this.scene.isActive('GameScene')) {
+            return;
+        }
+
         try {
             if (this.gameState.paused || this.gameState.gameOver) return;
             
@@ -2595,61 +2600,39 @@ class GameScene extends Phaser.Scene {
     }
 
     shutdown() {
-        console.log('🧹 Cleaning up GameScene...');
+        console.log('🧹 Shutdown GameScene');
 
+        // Clear intervals
         if (this.syncProgressInterval) {
             clearInterval(this.syncProgressInterval);
             this.syncProgressInterval = null;
         }
 
-        if (this.ui && this.ui.countdownInterval) {
+        if (this.ui?.countdownInterval) {
             clearInterval(this.ui.countdownInterval);
             this.ui.countdownInterval = null;
         }
 
-        if (this.bullets) {
-            this.bullets.clear(true, true);
-            this.bullets = null;
-        }
+        // КРИТИЧНО! Очистити ВСІ групи
+        const groups = [this.bullets, this.enemyBullets, this.enemies, this.powerUps, this.particles];
+        groups.forEach(group => {
+            if (group) {
+                group.clear(true, true);
+            }
+        });
 
-        if (this.enemyBullets) {
-            this.enemyBullets.clear(true, true);
-            this.enemyBullets = null;
-        }
+        // Stop all tweens
+        this.tweens?.killAll();
 
-        if (this.enemies) {
-            this.enemies.clear(true, true);
-            this.enemies = null;
-        }
+        // Remove listeners
+        this.input?.keyboard?.removeAllListeners();
 
-        if (this.powerUps) {
-            this.powerUps.clear(true, true);
-            this.powerUps = null;
-        }
-
-        if (this.particles) {
-            this.particles.clear(true, true);
-            this.particles = null;
-        }
-
-        if (this.tweens) {
-            this.tweens.killAll();
-        }
-
-        if (this.input && this.input.keyboard) {
-            this.input.keyboard.removeAllListeners();
-        }
-
-        if (this.bgMusic && this.bgMusic.isPlaying) {
+        // Stop music
+        if (this.bgMusic?.isPlaying) {
             this.bgMusic.stop();
         }
 
-        if (this.player && this.player.sprite) {
-            this.player.sprite.destroy();
-            this.player = null;
-        }
-
-        console.log('✅ GameScene cleanup complete');
+        console.log('✅ Cleanup done');
     }
 
     gameOver() {
@@ -2994,20 +2977,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.game?.scene) {
             const gs = window.game.scene.getScene('GameScene');
 
+            // Resume if paused
             if (window.game.scene.isPaused('GameScene')) {
-                console.log('Resuming paused scene...');
                 window.game.scene.resume('GameScene');
             }
 
+            // Reset state
             if (gs?.gameState) {
                 gs.gameState.paused = false;
             }
 
-            console.log('Stopping GameScene...');
+            // Stop scene (calls shutdown)
             window.game.scene.stop('GameScene');
 
+            // Wait 100ms then start menu
             setTimeout(() => {
-                console.log('Starting MenuScene...');
                 window.game.scene.start('MenuScene');
             }, 100);
         }
