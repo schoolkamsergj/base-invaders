@@ -868,6 +868,8 @@ class GameScene extends Phaser.Scene {
     async create() {
         console.log('Game create() started');
 
+        this.sceneReady = false;
+
         // 🔥 V2 RESET: One-time localStorage clear for all players
         if (!localStorage.getItem('base_invaders_v2_migrated')) {
             console.log('🔄 Migrating to V2: Clearing old data...');
@@ -1133,7 +1135,9 @@ class GameScene extends Phaser.Scene {
             }
             
             console.log('Game running');
-            
+
+            this.sceneReady = true;
+
             setTimeout(() => {
                 console.log('🎮 Dispatching base-invaders:game-ready event...');
                 window.dispatchEvent(new Event('base-invaders:game-ready'));
@@ -1718,6 +1722,10 @@ class GameScene extends Phaser.Scene {
     update(time, delta) {
         // 🔥 КРИТИЧНО! Зупинити update() якщо сцена неактивна
         if (!this.scene.isActive('GameScene')) {
+            return;
+        }
+        // 🔥 КРИТИЧНО! Не оновлювати поки create() не завершив ініціалізацію (async create → update може бігти зі старими refs)
+        if (!this.sceneReady) {
             return;
         }
 
@@ -2602,6 +2610,8 @@ class GameScene extends Phaser.Scene {
     shutdown() {
         console.log('🧹 Shutdown GameScene');
 
+        this.sceneReady = false;
+
         // Clear intervals
         if (this.syncProgressInterval) {
             clearInterval(this.syncProgressInterval);
@@ -2613,12 +2623,19 @@ class GameScene extends Phaser.Scene {
             this.ui.countdownInterval = null;
         }
 
-        // КРИТИЧНО! Очистити ВСІ групи
-        const groups = [this.bullets, this.enemyBullets, this.enemies, this.powerUps, this.particles];
-        groups.forEach(group => {
+        // КРИТИЧНО! Очистити ВСІ групи і обнулити посилання (щоб update() не використовував старі refs після рестарту)
+        const groups = [
+            ['bullets', this.bullets],
+            ['enemyBullets', this.enemyBullets],
+            ['enemies', this.enemies],
+            ['powerUps', this.powerUps],
+            ['particles', this.particles]
+        ];
+        groups.forEach(([name, group]) => {
             if (group) {
                 group.clear(true, true);
             }
+            this[name] = null;
         });
 
         // Stop all tweens
@@ -2631,6 +2648,16 @@ class GameScene extends Phaser.Scene {
         if (this.bgMusic?.isPlaying) {
             this.bgMusic.stop();
         }
+
+        // КРИТИЧНО! Знищити гравця, інакше при рестарті update() бачить старий sprite (glTexture помилки)
+        if (this.player && this.player.sprite) {
+            try {
+                this.player.sprite.destroy();
+            } catch (e) {}
+            this.player = null;
+        }
+
+        this.ui = null;
 
         console.log('✅ Cleanup done');
     }
@@ -2977,20 +3004,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.game?.scene) {
             const gs = window.game.scene.getScene('GameScene');
 
-            // Resume if paused
-            if (window.game.scene.isPaused('GameScene')) {
-                window.game.scene.resume('GameScene');
+            // Resume if paused (shutdown() викликається лише якщо сцена не на паузі)
+            try {
+                if (typeof window.game.scene.isPaused === 'function' && window.game.scene.isPaused('GameScene')) {
+                    window.game.scene.resume('GameScene');
+                }
+            } catch (e) {
+                console.warn('Exit Game: resume check failed', e);
             }
 
-            // Reset state
             if (gs?.gameState) {
                 gs.gameState.paused = false;
             }
 
-            // Stop scene (calls shutdown)
             window.game.scene.stop('GameScene');
 
-            // Wait 100ms then start menu
             setTimeout(() => {
                 window.game.scene.start('MenuScene');
             }, 100);
