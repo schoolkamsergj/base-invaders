@@ -121,7 +121,7 @@ class MenuScene extends Phaser.Scene {
             });
         });
 
-        // Click to start game (resume if GameScene paused from Exit; else new game)
+        // Click to start game
         this.startBtn.on('pointerdown', () => {
             this.tweens.add({
                 targets: [this.startBtn, this.startText],
@@ -129,43 +129,19 @@ class MenuScene extends Phaser.Scene {
                 duration: 100,
                 yoyo: true,
                 onComplete: () => {
-                    const gameScene = this.scene.manager.getScene('GameScene');
-                    if (gameScene && gameScene.scene && gameScene.scene.isPaused && gameScene.scene.isPaused()) {
-                        console.log('Resuming GameScene');
-                        this.scene.manager.resume('GameScene');
-                        if (gameScene.gameState) gameScene.gameState.inMenuPause = false;
-                        this.scene.stop('MenuScene');
-                    } else {
-                        this.scene.start('GameScene');
-                        this.scene.stop('MenuScene');
-                    }
+                    this.scene.start('GameScene');
+                    this.scene.stop('MenuScene');
                 }
             });
         });
 
         this.input.keyboard.on('keydown-SPACE', () => {
-            const gameScene = this.scene.manager.getScene('GameScene');
-            if (gameScene && gameScene.scene && gameScene.scene.isPaused && gameScene.scene.isPaused()) {
-                console.log('Resuming GameScene');
-                this.scene.manager.resume('GameScene');
-                if (gameScene.gameState) gameScene.gameState.inMenuPause = false;
-                this.scene.stop('MenuScene');
-            } else {
-                this.scene.start('GameScene');
-                this.scene.stop('MenuScene');
-            }
+            this.scene.start('GameScene');
+            this.scene.stop('MenuScene');
         });
         this.input.keyboard.on('keydown-ENTER', () => {
-            const gameScene = this.scene.manager.getScene('GameScene');
-            if (gameScene && gameScene.scene && gameScene.scene.isPaused && gameScene.scene.isPaused()) {
-                console.log('Resuming GameScene');
-                this.scene.manager.resume('GameScene');
-                if (gameScene.gameState) gameScene.gameState.inMenuPause = false;
-                this.scene.stop('MenuScene');
-            } else {
-                this.scene.start('GameScene');
-                this.scene.stop('MenuScene');
-            }
+            this.scene.start('GameScene');
+            this.scene.stop('MenuScene');
         });
         
         const languageBtnY = height * (0.38 + 0.09);
@@ -1755,8 +1731,7 @@ class GameScene extends Phaser.Scene {
         }
 
         try {
-            if (this.gameState.paused && !this.gameState.inMenuPause) return;
-            if (this.gameState.gameOver) return;
+            if (this.gameState.paused || this.gameState.gameOver) return;
             
             // Safety check
             if (!this.player || !this.player.sprite) {
@@ -3004,23 +2979,27 @@ document.addEventListener('DOMContentLoaded', () => {
         location.reload();
     });
 
-    // EXIT GAME: pause (не stop) + launch MenuScene — як магазин, гра відновлюється по Start
+    // EXIT GAME: зберегти, приховати паузу, resume (щоб shutdown спрацював), stop + start MenuScene — без зависання
     document.getElementById('exit-game-btn')?.addEventListener('click', () => {
         if (window.game?.scene) {
             const gs = window.game.scene.getScene('GameScene');
             if (gs?.playSound) gs.playSound('click');
+            if (gs?.saveGameData) gs.saveGameData();
+            if (gs?.gameState) {
+                localStorage.setItem('lastScore', String(gs.gameState.score));
+                const high = parseInt(localStorage.getItem('highScore') || '0', 10);
+                if (gs.gameState.score > high) localStorage.setItem('highScore', String(gs.gameState.score));
+            }
         }
 
         document.getElementById('pause-overlay').classList.add('hidden');
 
         if (window.game?.scene) {
-            const gs = window.game.scene.getScene('GameScene');
-            if (gs && gs.gameState) {
-                gs.gameState.inMenuPause = true;
+            if (window.game.scene.isPaused && window.game.scene.isPaused('GameScene')) {
+                window.game.scene.resume('GameScene');
             }
-            window.game.scene.pause('GameScene');
-            console.log('Paused for Menu');
-            window.game.scene.launch('MenuScene');
+            window.game.scene.stop('GameScene');
+            window.game.scene.start('MenuScene');
         }
     });
 
