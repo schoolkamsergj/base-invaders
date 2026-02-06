@@ -194,6 +194,12 @@
     function open() {
         const overlay = getOverlay();
         if (overlay) {
+            if (window.game && window.game.scene) {
+                const gameScene = window.game.scene.getScene('GameScene');
+                if (gameScene?.gameState && !gameScene.gameState.paused && gameScene.togglePause) {
+                    gameScene.togglePause();
+                }
+            }
             overlay.classList.remove('hidden');
             loadGlobal();
             loadLocal();
@@ -203,6 +209,10 @@
     function close() {
         const overlay = getOverlay();
         if (overlay) overlay.classList.add('hidden');
+        if (window.game && window.game.scene) {
+            window.game.scene.stop('GameScene');
+            window.game.scene.start('MenuScene');
+        }
     }
 
     function onDomReady() {
@@ -214,6 +224,10 @@
 
         const refreshBtn = document.getElementById(REFRESH_BTN_ID);
         if (refreshBtn) refreshBtn.addEventListener('click', function () {
+            if (window.game && window.game.scene) {
+                const g = window.game.scene.getScene('GameScene');
+                if (g?.gameState && !g.gameState.paused && g.togglePause) g.togglePause();
+            }
             loadGlobal();
             loadLocal();
         });

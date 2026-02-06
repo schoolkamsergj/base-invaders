@@ -122,8 +122,8 @@
         </div>
     </div>
     
-    <!-- Leaderboard Overlay -->
-    <div id="leaderboard-overlay" class="overlay hidden">
+    <!-- Leaderboard Overlay (high z-index so game stays paused, blocks clicks) -->
+    <div id="leaderboard-overlay" class="overlay hidden" style="z-index: 10005; pointer-events: auto;">
         <div class="leaderboard-container">
             <div class="leaderboard-header">
                 <h2>🏆 LEADERBOARD</h2>

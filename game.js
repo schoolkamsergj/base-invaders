@@ -3030,6 +3030,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('submit-my-score-btn')?.addEventListener('click', async (e) => {
         e.preventDefault();
         e.stopPropagation();
+        if (window.game && window.game.scene) {
+            const g = window.game.scene.getScene('GameScene');
+            if (g?.gameState && !g.gameState.paused && g.togglePause) g.togglePause();
+        }
         const statusEl = document.getElementById('leaderboard-submit-my-status');
         const btn = e.target;
         const gt2 = typeof getText === 'function' ? getText : function (k) { return k; };
