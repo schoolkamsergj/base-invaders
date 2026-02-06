@@ -121,7 +121,7 @@ class MenuScene extends Phaser.Scene {
             });
         });
 
-        // Click to start game
+        // Click to start game (this.scene.start auto-stops current scene)
         this.startBtn.on('pointerdown', () => {
             this.tweens.add({
                 targets: [this.startBtn, this.startText],
@@ -130,18 +130,15 @@ class MenuScene extends Phaser.Scene {
                 yoyo: true,
                 onComplete: () => {
                     this.scene.start('GameScene');
-                    this.scene.stop('MenuScene');
                 }
             });
         });
 
         this.input.keyboard.on('keydown-SPACE', () => {
             this.scene.start('GameScene');
-            this.scene.stop('MenuScene');
         });
         this.input.keyboard.on('keydown-ENTER', () => {
             this.scene.start('GameScene');
-            this.scene.stop('MenuScene');
         });
         
         const languageBtnY = height * (0.38 + 0.09);
@@ -865,7 +862,7 @@ class GameScene extends Phaser.Scene {
         console.log('Preload complete - loading spaceship sprites and sounds');
     }
 
-    async create() {
+    create() {
         console.log('Game create() started');
 
         this.sceneReady = false;
@@ -952,78 +949,51 @@ class GameScene extends Phaser.Scene {
                 coinMagnet: false
             };
 
-            // --- Синхронізація прогресу (Supabase): завантаження по FID поточного користувача (не TEST_FID для реальних акаунтів) ---
+            // --- Синхронізація прогресу (Supabase) — без блокування create() ---
+            this.loadGameData();
+            const loadFid = (window.__baseInvadersCheckInFid && window.__baseInvadersCheckInFid !== 'default') ? window.__baseInvadersCheckInFid : TEST_FID;
             try {
-                await new Promise(r => setTimeout(r, 350));
-                const loadFid = (window.__baseInvadersCheckInFid && window.__baseInvadersCheckInFid !== 'default') ? window.__baseInvadersCheckInFid : TEST_FID;
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 3000);
                 if (!localStorage.getItem('beta_reset_v2')) {
                     localStorage.clear();
                     localStorage.setItem('beta_reset_v2', 'true');
-                    this.gameState.gold = 0;
-                    this.gameState.lightning = 0;
-                    this.gameState.diamonds = 0;
-                    this.gameState.playerLevel = 1;
-                    this.gameState.stage = 1;
-                    this.gameState.xp = 0;
-                    this.gameState.xpToNext = 100;
-                    this.missionSystem.currentMission = 1;
-                    this.missionSystem.currentWave = 1;
-                    this.missionSystem.bossActive = false;
-                    this.playerStats.fireRate = 300;
-                    this.playerStats.damage = 1;
-                    this.playerStats.multiShot = 1;
-                    this.playerStats.maxHP = 100;
-                    this.playerStats.speed = 300;
+                    this.gameState.gold = 0; this.gameState.lightning = 0; this.gameState.diamonds = 0;
+                    this.gameState.playerLevel = 1; this.gameState.stage = 1;
+                    this.gameState.xp = 0; this.gameState.xpToNext = 100;
+                    this.missionSystem.currentMission = 1; this.missionSystem.currentWave = 1; this.missionSystem.bossActive = false;
+                    this.playerStats.fireRate = 300; this.playerStats.damage = 1; this.playerStats.multiShot = 1; this.playerStats.maxHP = 100; this.playerStats.speed = 300;
                     const payload = { fid: loadFid, gold: 0, diamonds: 0, lightning: 0, wave: 1, mission: 1, level: 1, best_score: 0, upgrades: { fireRate: 300, damage: 1, multiShot: 1, maxHP: 100, speed: 300 }, achievements: {}, daily_streak: 0, last_checkin: null };
-                    try {
-                        await fetch('/api/progress', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    } catch (e) {
-                        console.log('[progress] Beta reset POST failed:', e.message);
-                    }
+                    fetch('/api/progress', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: controller.signal }).catch(() => {});
                     console.log('🔄 Beta reset completed. Starting from zero.');
                 } else {
-                    const res = await fetch(`/api/progress?fid=${encodeURIComponent(loadFid)}`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data && typeof data === 'object' && (data.gold != null || data.diamonds != null)) {
-                            if (typeof data.upgrades === 'string') {
-                                try { data.upgrades = JSON.parse(data.upgrades); } catch (e) { data.upgrades = null; }
-                            }
-                            this.gameState.gold = Number(data.gold) || 0;
-                            this.gameState.lightning = Number(data.lightning) || 0;
-                            this.gameState.diamonds = Number(data.diamonds) || 0;
-                            this.gameState.playerLevel = Number(data.level) || 1;
-                            this.gameState.stage = Number(data.wave) || 1;
-                            this.missionSystem.currentMission = Number(data.mission) || 1;
-                            this.missionSystem.currentWave = Number(data.wave) || 1;
+                    fetch(`/api/progress?fid=${encodeURIComponent(loadFid)}`, { signal: controller.signal })
+                        .then(res => res.ok ? res.json() : null)
+                        .then(data => {
+                            if (!data || typeof data !== 'object') return;
+                            if (typeof data.upgrades === 'string') { try { data.upgrades = JSON.parse(data.upgrades); } catch (e) { data.upgrades = null; } }
+                            this.gameState.gold = Number(data.gold) || this.gameState.gold;
+                            this.gameState.lightning = Number(data.lightning) || this.gameState.lightning;
+                            this.gameState.diamonds = Number(data.diamonds) || this.gameState.diamonds;
+                            this.gameState.playerLevel = Number(data.level) || this.gameState.playerLevel;
+                            this.gameState.stage = Number(data.wave) || this.gameState.stage;
+                            this.missionSystem.currentMission = Number(data.mission) || this.missionSystem.currentMission;
+                            this.missionSystem.currentWave = Number(data.wave) || this.missionSystem.currentWave;
                             if (data.upgrades && typeof data.upgrades === 'object') {
-                                this.playerStats.fireRate = data.upgrades.fireRate ?? 300;
-                                this.playerStats.damage = data.upgrades.damage ?? 1;
-                                this.playerStats.multiShot = data.upgrades.multiShot ?? 1;
-                                this.playerStats.maxHP = data.upgrades.maxHP ?? 100;
-                                this.playerStats.speed = data.upgrades.speed ?? 300;
-                            }
-                            localStorage.setItem('baseInvadersData', JSON.stringify({ gold: this.gameState.gold, lightning: this.gameState.lightning, diamonds: this.gameState.diamonds, playerLevel: this.gameState.playerLevel, highScore: Number(data.best_score) || 0 }));
-                            const shopData = localStorage.getItem('baseInvadersShop');
-                            const shop = shopData ? JSON.parse(shopData) : {};
-                            Object.assign(shop, { fireRate: this.playerStats.fireRate, damage: this.playerStats.damage, multiShot: this.playerStats.multiShot, maxHP: this.playerStats.maxHP, speed: this.playerStats.speed });
-                            localStorage.setItem('baseInvadersShop', JSON.stringify(shop));
-                            if (data.daily_streak != null || data.last_checkin != null) {
-                                const checkInFidForStorage = (window.__baseInvadersCheckInFid && window.__baseInvadersCheckInFid !== 'default') ? window.__baseInvadersCheckInFid : loadFid;
-                                localStorage.setItem('checkInStreak_' + checkInFidForStorage, JSON.stringify({ totalDays: Number(data.daily_streak) || 0, lastDate: data.last_checkin || '' }));
-                                if (data.last_checkin) localStorage.setItem('lastCheckIn_' + checkInFidForStorage, String(data.last_checkin));
+                                this.playerStats.fireRate = data.upgrades.fireRate ?? this.playerStats.fireRate;
+                                this.playerStats.damage = data.upgrades.damage ?? this.playerStats.damage;
+                                this.playerStats.multiShot = data.upgrades.multiShot ?? this.playerStats.multiShot;
+                                this.playerStats.maxHP = data.upgrades.maxHP ?? this.playerStats.maxHP;
+                                this.playerStats.speed = data.upgrades.speed ?? this.playerStats.speed;
                             }
                             if (data.best_score != null) localStorage.setItem('highScore', String(data.best_score));
-                            console.log('✅ Progress loaded from server');
-                        } else {
-                            this.loadGameData();
-                        }
-                    } else {
-                        this.loadGameData();
-                    }
+                            if (this.ui) this.ui.update(this.gameState);
+                            console.log('✅ Progress loaded from server (async)');
+                        })
+                        .catch(() => console.log('⚠️ Server sync skipped'))
+                        .finally(() => clearTimeout(timeout));
                 }
             } catch (e) {
-                this.loadGameData();
                 console.log('⚠️ Offline mode');
             }
 
