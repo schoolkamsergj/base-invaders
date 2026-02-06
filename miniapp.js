@@ -3,7 +3,7 @@
  * SDK from UMD (window.MiniAppSDK), viem loaded at runtime (no static import).
  * Must be loaded as <script type="module"> for dynamic import(viem).
  */
-const CHECKIN_ADDR = '0xb13102BbC97C25ba39967208eDd20b109104AAF4';
+const CHECKIN_ADDR = '0x709Ef1bc52a302206E1244Df92Ae0329a9d3C736';
 const LEADERBOARD_ADDR = '0xAC89DA9d8508d0865c55083552da91894537aC89'; // V2 contract with clear function
 
 // viem: use esm.sh only (Skypack pulls "ox/tempo" which fails in browser)
