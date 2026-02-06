@@ -2949,36 +2949,28 @@ document.addEventListener('DOMContentLoaded', () => {
         location.reload();
     });
 
-    // EXIT GAME: ховаємо паузу, показуємо exit-menu (гра лишається на паузі, як магазин)
+    // EXIT GAME: зберегти, приховати паузу, resume (щоб shutdown спрацював), stop + start MenuScene
     document.getElementById('exit-game-btn')?.addEventListener('click', () => {
         if (window.game?.scene) {
             const gs = window.game.scene.getScene('GameScene');
             if (gs?.playSound) gs.playSound('click');
-        }
-        document.getElementById('pause-overlay').classList.add('hidden');
-        document.getElementById('exit-menu-overlay').classList.remove('hidden');
-    });
-
-    // EXIT MENU: Continue Game — resume гри (як закриття магазину)
-    document.getElementById('exit-continue-btn')?.addEventListener('click', () => {
-        document.getElementById('exit-menu-overlay').classList.add('hidden');
-        if (window.game && window.game.scene) {
-            const gameScene = window.game.scene.getScene('GameScene');
-            if (gameScene) {
-                if (window.game.scene.isPaused('GameScene')) {
-                    window.game.scene.resume('GameScene');
-                }
-                if (gameScene.scene.isPaused()) {
-                    gameScene.scene.resume();
-                }
-                gameScene.gameState.paused = false;
+            if (gs?.saveGameData) gs.saveGameData();
+            if (gs?.gameState) {
+                localStorage.setItem('lastScore', String(gs.gameState.score));
+                const high = parseInt(localStorage.getItem('highScore') || '0', 10);
+                if (gs.gameState.score > high) localStorage.setItem('highScore', String(gs.gameState.score));
             }
         }
-    });
 
-    // EXIT MENU: New Game — перезавантаження
-    document.getElementById('exit-newgame-btn')?.addEventListener('click', () => {
-        location.reload();
+        document.getElementById('pause-overlay').classList.add('hidden');
+
+        if (window.game?.scene) {
+            if (window.game.scene.isPaused && window.game.scene.isPaused('GameScene')) {
+                window.game.scene.resume('GameScene');
+            }
+            window.game.scene.stop('GameScene');
+            window.game.scene.start('MenuScene');
+        }
     });
 
     document.getElementById('restart-btn')?.addEventListener('click', () => {
