@@ -130,51 +130,18 @@ class MenuScene extends Phaser.Scene {
                 duration: 100,
                 yoyo: true,
                 onComplete: () => {
-                    const gameScene = this.scene.get('GameScene');
-                    const isSleeping = gameScene && this.scene.isSleeping('GameScene');
-
-                    if (isSleeping && gameScene.wasExitedToMenu) {
-                        console.log('🎮 Continuing game...');
-                        gameScene.wasExitedToMenu = false;
-                        if (gameScene.gameState) {
-                            gameScene.gameState.paused = false;
-                        }
-                        this.scene.sleep('MenuScene');
-                        this.scene.wake('GameScene');
-                    } else {
-                        console.log('🎮 Starting new game...');
-                        if (gameScene) {
-                            this.scene.stop('GameScene');
-                        }
-                        this.scene.start('GameScene');
-                    }
+                    this.scene.start('GameScene');
                 }
             });
         });
 
         // Also allow space/enter to start (same logic as Start button)
-        const tryStartOrWakeGame = () => {
-            const gameScene = this.scene.get('GameScene');
-            const isSleeping = gameScene && this.scene.isSleeping('GameScene');
-
-            if (isSleeping && gameScene.wasExitedToMenu) {
-                console.log('🎮 Continuing game (keyboard)...');
-                gameScene.wasExitedToMenu = false;
-                if (gameScene.gameState) {
-                    gameScene.gameState.paused = false;
-                }
-                this.scene.sleep('MenuScene');
-                this.scene.wake('GameScene');
-            } else {
-                console.log('🎮 Starting new game (keyboard)...');
-                if (gameScene) {
-                    this.scene.stop('GameScene');
-                }
-                this.scene.start('GameScene');
-            }
-        };
-        this.input.keyboard.on('keydown-SPACE', tryStartOrWakeGame);
-        this.input.keyboard.on('keydown-ENTER', tryStartOrWakeGame);
+        this.input.keyboard.on('keydown-SPACE', () => {
+            this.scene.start('GameScene');
+        });
+        this.input.keyboard.on('keydown-ENTER', () => {
+            this.scene.start('GameScene');
+        });
         
         const languageBtnY = height * (0.38 + 0.09);
         this.languageBtnBg = this.add.graphics();
@@ -3010,7 +2977,7 @@ document.addEventListener('DOMContentLoaded', () => {
         location.reload();
     });
 
-    // EXIT GAME button handler in pause menu (SLEEP like shop — не знищує гру)
+    // EXIT GAME: зберегти прогрес, приховати паузу, зупинити гру і запустити меню (чистий екран без HUD гри)
     document.getElementById('exit-game-btn')?.addEventListener('click', () => {
         if (window.game?.scene) {
             const gs = window.game.scene.getScene('GameScene');
@@ -3019,22 +2986,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (window.game?.scene) {
             const gs = window.game.scene.getScene('GameScene');
-            if (gs?.saveGameData) gs.saveGameData();
+            if (gs) {
+                if (gs.saveGameData) gs.saveGameData();
+                if (gs.gameState) {
+                    localStorage.setItem('lastScore', String(gs.gameState.score));
+                    const high = parseInt(localStorage.getItem('highScore') || '0', 10);
+                    if (gs.gameState.score > high) {
+                        localStorage.setItem('highScore', String(gs.gameState.score));
+                    }
+                }
+            }
         }
 
         document.getElementById('pause-overlay').classList.add('hidden');
 
         if (window.game?.scene) {
-            const gs = window.game.scene.getScene('GameScene');
-            if (gs) gs.wasExitedToMenu = true;
-
-            window.game.scene.sleep('GameScene');
-
-            if (window.game.scene.isActive('MenuScene')) {
-                window.game.scene.wake('MenuScene');
-            } else {
-                window.game.scene.start('MenuScene');
+            if (window.game.scene.isPaused && window.game.scene.isPaused('GameScene')) {
+                window.game.scene.resume('GameScene');
             }
+            window.game.scene.stop('GameScene');
+            window.game.scene.start('MenuScene');
         }
     });
 
