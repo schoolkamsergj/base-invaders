@@ -2947,8 +2947,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // Close pause overlay
         document.getElementById('pause-overlay').classList.add('hidden');
         
-        // Return to main menu (MenuScene)
+        // Return to main menu (MenuScene). Resume GameScene before stop so scene manager
+        // cleans up a running scene, not a paused one (fixes freeze on next Start).
         if (window.game && window.game.scene) {
+            if (window.game.scene.isPaused && window.game.scene.isPaused('GameScene')) {
+                window.game.scene.resume('GameScene');
+                const gs = window.game.scene.getScene('GameScene');
+                if (gs && gs.scene && gs.scene.resume) gs.scene.resume();
+                if (gs && gs.gameState) gs.gameState.paused = false;
+            }
             window.game.scene.stop('GameScene');
             window.game.scene.start('MenuScene');
         } else {
@@ -3032,7 +3039,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.stopPropagation();
         if (window.game && window.game.scene) {
             const g = window.game.scene.getScene('GameScene');
-            if (g?.gameState && !g.gameState.paused && g.togglePause) g.togglePause();
+            if (g?.scene?.isActive && g.scene.isActive() && g?.gameState && !g.gameState.paused && g.togglePause) g.togglePause();
         }
         const statusEl = document.getElementById('leaderboard-submit-my-status');
         const btn = e.target;

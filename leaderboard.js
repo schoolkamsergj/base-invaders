@@ -196,7 +196,8 @@
         if (overlay) {
             if (window.game && window.game.scene) {
                 const gameScene = window.game.scene.getScene('GameScene');
-                if (gameScene?.gameState && !gameScene.gameState.paused && gameScene.togglePause) {
+                // Only pause if GameScene is actually running (active), not when already stopped (e.g. after Exit Game).
+                if (gameScene?.scene?.isActive && gameScene.scene.isActive() && gameScene?.gameState && !gameScene.gameState.paused && gameScene.togglePause) {
                     gameScene.togglePause();
                 }
             }
@@ -209,7 +210,7 @@
     function close() {
         const overlay = getOverlay();
         if (overlay) overlay.classList.add('hidden');
-        if (window.game && window.game.scene) {
+        if (window.game && window.game.scene && window.game.scene.isActive && window.game.scene.isActive('GameScene')) {
             window.game.scene.stop('GameScene');
             window.game.scene.start('MenuScene');
         }
@@ -226,7 +227,8 @@
         if (refreshBtn) refreshBtn.addEventListener('click', function () {
             if (window.game && window.game.scene) {
                 const g = window.game.scene.getScene('GameScene');
-                if (g?.gameState && !g.gameState.paused && g.togglePause) g.togglePause();
+                // Only toggle pause if GameScene is actually running; avoid calling on stopped scene (freeze fix).
+                if (g?.scene?.isActive && g.scene.isActive() && g?.gameState && !g.gameState.paused && g.togglePause) g.togglePause();
             }
             loadGlobal();
             loadLocal();
