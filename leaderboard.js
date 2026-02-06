@@ -210,8 +210,10 @@
     function close() {
         const overlay = getOverlay();
         if (overlay) overlay.classList.add('hidden');
-        if (window.game && window.game.scene && window.game.scene.isActive && window.game.scene.isActive('GameScene')) {
-            window.game.scene.stop('GameScene');
+        if (window.game && window.game.scene) {
+            if (window.game.scene.isActive && window.game.scene.isActive('GameScene')) {
+                window.game.scene.stop('GameScene');
+            }
             window.game.scene.start('MenuScene');
         }
     }
