@@ -189,6 +189,10 @@ class Player {
     }
 
     update(time, delta, cursors, wasd, stats) {
+        if (this.hp <= 0 || (this.scene.leaderboardPending)) {
+            this.sprite.setActive(false).setVisible(false);
+            return;
+        }
         // Initialize engine trail if particle texture is ready
         if (!this.engineTrail && this.scene.textures.exists('particle')) {
             this.engineTrail = this.scene.add.particles(this.sprite.x, this.sprite.y + 20, 'particle', {
@@ -237,6 +241,10 @@ class Player {
     }
 
     takeDamage(amount) {
+        if (this.hp <= 0 || (this.scene.leaderboardPending)) {
+            this.sprite.setActive(false).setVisible(false);
+            return;
+        }
         if (this.shield > 0) {
             this.shield--;
             // Shield hit effect

@@ -2653,6 +2653,16 @@ class GameScene extends Phaser.Scene {
         const isNewHigh = !localHigh || this.gameState.score > (localHigh.score || 0);
         console.log('[leaderboard] Game over — score:', this.gameState.score, 'localHigh:', localHigh?.score ?? 'none', 'isNewHigh:', isNewHigh);
 
+        const lastLb = parseInt(localStorage.getItem('lastLbSubmit') || '0', 10);
+        const prevHigh = (localHigh && localHigh.score != null) ? Number(localHigh.score) : 0;
+        if (Date.now() - lastLb < 300000 || this.gameState.score <= prevHigh * 1.1) {
+            const nx = this.scale?.width ? this.scale.width / 2 : 200;
+            const ny = this.scale?.height ? this.scale.height / 2 - 50 : 200;
+            if (this.ui?.showNotification) {
+                this.ui.showNotification(typeof getText === 'function' ? (getText('leaderboard.tooSoon') || 'Too soon, try later!') : 'Too soon, try later!', nx, ny);
+            }
+            return;
+        }
         if (!isNewHigh) {
             return;
         }
@@ -2662,6 +2672,9 @@ class GameScene extends Phaser.Scene {
             this.togglePause();
         }
         this.leaderboardPending = true;
+        if (this.player?.sprite) {
+            this.player.sprite.setActive(false).setVisible(false);
+        }
 
         try {
             const submitFn = window.baseInvadersOnchainSubmitScore || (async (opts) => {
@@ -2674,6 +2687,7 @@ class GameScene extends Phaser.Scene {
                 return window.baseInvadersSubmitScore?.(s, w, st, name);
             });
             await submitFn({ score: this.gameState.score, wave: waveLevel, streak });
+            localStorage.setItem('lastLbSubmit', String(Date.now()));
             if (window.baseInvadersLeaderboard?.saveLocalHighScore) {
                 window.baseInvadersLeaderboard.saveLocalHighScore(localEntry);
             }
@@ -2683,6 +2697,7 @@ class GameScene extends Phaser.Scene {
                 this.ui.showNotification(typeof getText === 'function' ? getText('leaderboard.recordSubmitted') || 'Рекорд відправлено!' : 'Рекорд відправлено!', notifyX, notifyY);
             }
             if (this.player) {
+                this.player.sprite.setActive(true).setVisible(true);
                 this.player.hp = this.player.maxHP;
             }
         } catch (err) {
