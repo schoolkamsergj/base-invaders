@@ -2654,6 +2654,9 @@ class GameScene extends Phaser.Scene {
         console.log('[leaderboard] Game over — score:', this.gameState.score, 'localHigh:', localHigh?.score ?? 'none', 'isNewHigh:', isNewHigh);
 
         if (!isNewHigh) {
+            this.gameState.gameOver = true;
+            this.scene.pause();
+            document.getElementById('pause-overlay').classList.remove('hidden');
             return;
         }
 
