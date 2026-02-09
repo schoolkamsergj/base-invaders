@@ -218,6 +218,17 @@ window.baseInvadersOnchainCheckIn = async function () {
     }
 };
 
+/** Same as check-in flow: one call with { score, wave, streak }, tx on Base. Used by game on new high (no game over). */
+window.baseInvadersOnchainSubmitScore = async function (opts) {
+    const score = opts?.score ?? 0;
+    const wave = opts?.wave ?? 1;
+    const streak = opts?.streak ?? 0;
+    let name = '';
+    if (typeof window.baseInvadersGetUserName === 'function') name = await window.baseInvadersGetUserName();
+    name = (name && String(name).trim()) || 'Player';
+    return window.baseInvadersSubmitScore(score, wave, streak, name);
+};
+
 window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
     console.log('[miniapp] baseInvadersSubmitScore CALLED — score:', score, 'wave:', wave, 'streak:', streak, 'name:', name);
     try {

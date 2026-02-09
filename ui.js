@@ -892,6 +892,13 @@ class UI {
         }
     }
 
+    /** Show toast (used by game for leaderboard submit result, same pattern as check-in). */
+    showNotify(text, x, y) {
+        const px = x ?? (this.scene?.scale?.width ? this.scene.scale.width / 2 : 200);
+        const py = y ?? (this.scene?.scale?.height ? this.scene.scale.height / 2 - 50 : 200);
+        this.showNotification(text, px, py);
+    }
+
     showNotification(text, x, y) {
         const notification = this.scene.add.text(x, y, text, {
             fontSize: '18px',
