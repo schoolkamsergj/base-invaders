@@ -50,7 +50,7 @@
      * @returns {Promise<void>}
      */
     function setLang(lang) {
-        if (lang !== 'en' && lang !== 'hi' && lang !== 'ru' && lang !== 'uk' && lang !== 'tg' && lang !== 'id' && lang !== 'vi') lang = DEFAULT_LANG;
+        if (lang !== 'en' && lang !== 'hi' && lang !== 'ru' && lang !== 'uk' && lang !== 'tg' && lang !== 'id' && lang !== 'vi' && lang !== 'pt') lang = DEFAULT_LANG;
         currentLang = lang;
         localStorage.setItem(STORAGE_KEY, lang);
         loadLocale(lang);
@@ -136,6 +136,16 @@
         if (lang === 'vi') {
             try {
                 strings = JSON.parse(JSON.stringify(viFallback));
+                if (typeof global !== 'undefined') global.__i18nStrings = strings;
+            } catch (e) {
+                strings = JSON.parse(JSON.stringify(enFallback));
+                if (typeof global !== 'undefined') global.__i18nStrings = strings;
+            }
+            return;
+        }
+        if (lang === 'pt') {
+            try {
+                strings = JSON.parse(JSON.stringify(ptFallback));
                 if (typeof global !== 'undefined') global.__i18nStrings = strings;
             } catch (e) {
                 strings = JSON.parse(JSON.stringify(enFallback));
@@ -272,7 +282,8 @@
             "ukrainian": "🇺🇦 Українська",
             "tagalog": "🇵🇭 Tagalog",
             "indonesian": "🇮🇩 Indonesian",
-            "vietnamese": "🇻🇳 Tiếng Việt"
+            "vietnamese": "🇻🇳 Tiếng Việt",
+            "portuguese": "🇧🇷 Português"
         }
     };
 
@@ -392,7 +403,8 @@
             ukrainian: "🇺🇦 Українська",
             tagalog: "🇵🇭 Tagalog",
             indonesian: "🇮🇩 Indonesian",
-            vietnamese: "🇻🇳 Tiếng Việt"
+            vietnamese: "🇻🇳 Tiếng Việt",
+            portuguese: "🇧🇷 Português"
         }
     };
 
@@ -512,7 +524,8 @@
             ukrainian: "🇺🇦 Українська",
             tagalog: "🇵🇭 Tagalog",
             indonesian: "🇮🇩 Indonesian",
-            vietnamese: "🇻🇳 Tiếng Việt"
+            vietnamese: "🇻🇳 Tiếng Việt",
+            portuguese: "🇧🇷 Português"
         }
     };
 
@@ -632,7 +645,8 @@
             ukrainian: "🇺🇦 Українська",
             tagalog: "🇵🇭 Tagalog",
             indonesian: "🇮🇩 Indonesian",
-            vietnamese: "🇻🇳 Tiếng Việt"
+            vietnamese: "🇻🇳 Tiếng Việt",
+            portuguese: "🇧🇷 Português"
         }
     };
 
@@ -753,7 +767,8 @@
             ukrainian: "🇺🇦 Українська",
             tagalog: "🇵🇭 Tagalog",
             indonesian: "🇮🇩 Indonesian",
-            vietnamese: "🇻🇳 Tiếng Việt"
+            vietnamese: "🇻🇳 Tiếng Việt",
+            portuguese: "🇧🇷 Português"
         }
     };
 
@@ -874,7 +889,8 @@
             ukrainian: "🇺🇦 Українська",
             tagalog: "🇵🇭 Tagalog",
             indonesian: "🇮🇩 Indonesian",
-            vietnamese: "🇻🇳 Tiếng Việt"
+            vietnamese: "🇻🇳 Tiếng Việt",
+            portuguese: "🇧🇷 Português"
         }
     };
 
@@ -995,7 +1011,130 @@
             ukrainian: "🇺🇦 Українська",
             tagalog: "🇵🇭 Tagalog",
             indonesian: "🇮🇩 Indonesian",
-            vietnamese: "🇻🇳 Tiếng Việt"
+            vietnamese: "🇻🇳 Tiếng Việt",
+            portuguese: "🇧🇷 Português"
+        }
+    };
+
+    var ptFallback = {
+        menu: {
+            title: "DESTRUIDOR DE BASE",
+            welcome: "Bem-vindo, Comandante! Proteja a base dos invasores alienígenas. Colete diamantes e melhore sua nave.",
+            goodLuck: "Boa sorte! 🌟",
+            start: "COMEÇAR",
+            howToPlay: "Como Jogar",
+            language: "Idioma 🌐",
+            resetProgress: "Resetar Progresso",
+            leaderboard: "Classificação"
+        },
+        instructions: {
+            title: "COMO JOGAR",
+            body: "CONTROLES:\n← ou A/D - Esquerda/direita\n↑ ou W/S - Cima/baixo\nDisparo automático\n⏸ - Pausar\n\nOBJETIVO:\n- Destrua inimigos e bases\n- Colete diamantes 💎\n- Pegue power-ups\n- Melhore sua nave na loja\n- Derrote os chefes\n\nBoa sorte, Comandante! 🚀"
+        },
+        ui: {
+            stage: "ESTÁGIO",
+            mission: "Missão",
+            wave: "Onda",
+            boss: "CHEFE",
+            score: "Pontuação",
+            level: "Nível",
+            shop: "LOJA",
+            checkIn: "CHECK-IN",
+            checkedIn: "Check-in feito",
+            dayStreak: "Dia {next} (até {milestone})",
+            dayMilestone: "Dia {next} ({next7}/7)",
+            signing: "ASSINANDO...",
+            confirmedBase: "Confirmado na Base!",
+            transactionFailed: "Transação falhou",
+            transactionCancelled: "Cancelado",
+            insufficientFunds: "Fundos insuficientes",
+            walletNotReady: "Carteira não pronta",
+            tryAgain: "Tente novamente",
+            alreadyCheckedIn: "Já fez check-in hoje",
+            sdkNotLoaded: "SDK não carregado"
+        },
+        shop: {
+            title: "LOJA",
+            tabSpaceships: "Naves Espaciais",
+            tabWeapons: "Armas",
+            tabPowerups: "Power-ups",
+            tabUpgrades: "Melhorias"
+        },
+        shopItems: {
+            starterShip: { name: "Nave Inicial", stats: "HP: 100 | Velocidade: 300 | Equilibrada" },
+            speedDemon: { name: "Demônio da Velocidade", stats: "HP: 90 | Velocidade: 390 | +30% velocidade" },
+            baseDefender: { name: "Defensor da Base", stats: "HP: 150 | Velocidade: 300 | +50% HP" },
+            tank: { name: "Tanque", stats: "HP: 200 | Velocidade: 240 | Lento mas forte" },
+            lightningStrike: { name: "Ataque Relâmpago", stats: "HP: 120 | Velocidade: 450 | Muito rápida" },
+            legendary: { name: "Lendária", stats: "HP: 250 | Velocidade: 400 | Melhores stats" },
+            fireRate: { name: "Taxa de Disparo", stats: "Nível {level}/10 | Atual: {rate}ms" },
+            damage: { name: "Dano", stats: "Nível {level}/10 | Atual: {damage}" },
+            multiShot2: { name: "Tiro Múltiplo x2", stats: "Atire 2 balas de uma vez" },
+            multiShot3: { name: "Tiro Múltiplo x3", stats: "Atire 3 balas de uma vez" },
+            multiShot5: { name: "Tiro Múltiplo x5", stats: "Atire 5 balas de uma vez" },
+            laserBeam: { name: "Raio Laser", stats: "Ataque contínuo" },
+            shieldGen: { name: "Gerador de Escudo", stats: "Absorve 5 acertos" },
+            smartBomb: { name: "Bomba Inteligente", stats: "Limpa todos os inimigos" },
+            coinMagnet: { name: "Ímã de Moedas", stats: "Coleta automática de moedas" },
+            score2x: { name: "Multiplicador de Pontos 2x", stats: "2x pontos por 60 segundos" },
+            extraLife: { name: "Vida Extra", stats: "+1 continuação" },
+            maxHP: { name: "HP Máx +10", stats: "Aumenta saúde em 10" },
+            hpRegen: { name: "Regeneração de HP", stats: "Cura 1 HP/segundo" },
+            fasterMovement: { name: "Movimento Mais Rápido", stats: "+20% velocidade" },
+            owned: "POSSUI",
+            buy: "COMPRAR",
+            vibrationToggle: "Vibração Tátil",
+            vibrationSupported: "Ativado",
+            vibrationNotSupported: "Não suportado neste dispositivo",
+            enabled: "Ativado",
+            disabled: "Desativado"
+        },
+        pause: {
+            title: "PAUSADO",
+            resume: "Continuar",
+            mainMenu: "Menu Principal",
+            resetGame: "Resetar Jogo",
+            exitGame: "Sair"
+        },
+        resetConfirm: {
+            title: "Resetar progresso?",
+            message: "Isso limpará moeda, compras, pontuação e todos os dados salvos. Não pode ser desfeito.",
+            cancel: "Cancelar",
+            reset: "Resetar"
+        },
+        gameover: {
+            title: "FIM DE JOGO",
+            restart: "Reiniciar",
+            finalScore: "Pontuação Final",
+            stageReached: "Estágio Alcançado",
+            level: "Nível"
+        },
+        leaderboard: {
+            title: "CLASSIFICAÇÃO",
+            submitMyScore: "Enviar minha pontuação",
+            refresh: "Atualizar",
+            globalStatus: "Classificação global (on-chain)",
+            personalBest: "Melhor pessoal (local)",
+            loading: "Carregando...",
+            playToSetBest: "Jogue para estabelecer um recorde.",
+            submitNewHighTitle: "Novo recorde!",
+            submitNewHighMessage: "Enviar para classificação global? Requer transação na carteira.",
+            submit: "Enviar",
+            cancel: "Cancelar",
+            submitting: "Enviando...",
+            submitted: "Enviado!",
+            openInWarpcast: "Abra no Warpcast para enviar.",
+            playFirst: "Jogue primeiro."
+        },
+        lang: {
+            english: "🇺🇸 English",
+            hindi: "🇮🇳 हिंदी",
+            russian: "🇷🇺 Русский",
+            ukrainian: "🇺🇦 Українська",
+            tagalog: "🇵🇭 Tagalog",
+            indonesian: "🇮🇩 Indonesian",
+            vietnamese: "🇻🇳 Tiếng Việt",
+            portuguese: "🇧🇷 Português"
         }
     };
 
