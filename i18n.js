@@ -50,7 +50,7 @@
      * @returns {Promise<void>}
      */
     function setLang(lang) {
-        if (lang !== 'en' && lang !== 'hi' && lang !== 'ru' && lang !== 'uk' && lang !== 'tg' && lang !== 'id' && lang !== 'vi' && lang !== 'pt' && lang !== 'fr') lang = DEFAULT_LANG;
+        if (lang !== 'en' && lang !== 'hi' && lang !== 'ru' && lang !== 'uk' && lang !== 'tg' && lang !== 'id' && lang !== 'vi' && lang !== 'pt' && lang !== 'fr' && lang !== 'de') lang = DEFAULT_LANG;
         currentLang = lang;
         localStorage.setItem(STORAGE_KEY, lang);
         loadLocale(lang);
@@ -156,6 +156,16 @@
         if (lang === 'fr') {
             try {
                 strings = JSON.parse(JSON.stringify(frFallback));
+                if (typeof global !== 'undefined') global.__i18nStrings = strings;
+            } catch (e) {
+                strings = JSON.parse(JSON.stringify(enFallback));
+                if (typeof global !== 'undefined') global.__i18nStrings = strings;
+            }
+            return;
+        }
+        if (lang === 'de') {
+            try {
+                strings = JSON.parse(JSON.stringify(deFallback));
                 if (typeof global !== 'undefined') global.__i18nStrings = strings;
             } catch (e) {
                 strings = JSON.parse(JSON.stringify(enFallback));
@@ -294,7 +304,8 @@
             "indonesian": "🇮🇩 Indonesian",
             "vietnamese": "🇻🇳 Tiếng Việt",
             "portuguese": "🇧🇷 Português",
-            "french": "🇫🇷 Français"
+            "french": "🇫🇷 Français",
+            "german": "🇩🇪 Deutsch"
         }
     };
 
@@ -416,7 +427,8 @@
             indonesian: "🇮🇩 Indonesian",
             vietnamese: "🇻🇳 Tiếng Việt",
             portuguese: "🇧🇷 Português",
-            french: "🇫🇷 Français"
+            french: "🇫🇷 Français",
+            german: "🇩🇪 Deutsch"
         }
     };
 
@@ -538,7 +550,8 @@
             indonesian: "🇮🇩 Indonesian",
             vietnamese: "🇻🇳 Tiếng Việt",
             portuguese: "🇧🇷 Português",
-            french: "🇫🇷 Français"
+            french: "🇫🇷 Français",
+            german: "🇩🇪 Deutsch"
         }
     };
 
@@ -660,7 +673,8 @@
             indonesian: "🇮🇩 Indonesian",
             vietnamese: "🇻🇳 Tiếng Việt",
             portuguese: "🇧🇷 Português",
-            french: "🇫🇷 Français"
+            french: "🇫🇷 Français",
+            german: "🇩🇪 Deutsch"
         }
     };
 
@@ -783,7 +797,8 @@
             indonesian: "🇮🇩 Indonesian",
             vietnamese: "🇻🇳 Tiếng Việt",
             portuguese: "🇧🇷 Português",
-            french: "🇫🇷 Français"
+            french: "🇫🇷 Français",
+            german: "🇩🇪 Deutsch"
         }
     };
 
@@ -906,7 +921,8 @@
             indonesian: "🇮🇩 Indonesian",
             vietnamese: "🇻🇳 Tiếng Việt",
             portuguese: "🇧🇷 Português",
-            french: "🇫🇷 Français"
+            french: "🇫🇷 Français",
+            german: "🇩🇪 Deutsch"
         }
     };
 
@@ -1029,7 +1045,8 @@
             indonesian: "🇮🇩 Indonesian",
             vietnamese: "🇻🇳 Tiếng Việt",
             portuguese: "🇧🇷 Português",
-            french: "🇫🇷 Français"
+            french: "🇫🇷 Français",
+            german: "🇩🇪 Deutsch"
         }
     };
 
@@ -1152,7 +1169,8 @@
             indonesian: "🇮🇩 Indonesian",
             vietnamese: "🇻🇳 Tiếng Việt",
             portuguese: "🇧🇷 Português",
-            french: "🇫🇷 Français"
+            french: "🇫🇷 Français",
+            german: "🇩🇪 Deutsch"
         }
     };
 
@@ -1275,7 +1293,132 @@
             indonesian: "🇮🇩 Indonesian",
             vietnamese: "🇻🇳 Tiếng Việt",
             portuguese: "🇧🇷 Português",
-            french: "🇫🇷 Français"
+            french: "🇫🇷 Français",
+            german: "🇩🇪 Deutsch"
+        }
+    };
+
+    var deFallback = {
+        menu: {
+            title: "BASEN-ZERSTÖRER",
+            welcome: "Willkommen, Commander! Schützen Sie die Basis vor außerirdischen Invasoren. Sammeln Sie Diamanten und verbessern Sie Ihr Raumschiff.",
+            goodLuck: "Viel Glück! 🌟",
+            start: "START",
+            howToPlay: "Spielanleitung",
+            language: "Sprache 🌐",
+            resetProgress: "Fortschritt zurücksetzen",
+            leaderboard: "Bestenliste"
+        },
+        instructions: {
+            title: "SPIELANLEITUNG",
+            body: "STEUERUNG:\n← oder A/D - Links/rechts\n↑ oder W/S - Hoch/runter\nAuto-Schuss\n⏸ - Pause\n\nZIEL:\n- Zerstöre Feinde und Basen\n- Sammle Diamanten 💎\n- Nimm Power-ups auf\n- Verbessere dein Schiff im Shop\n- Besiege die Bosse\n\nViel Glück, Commander! 🚀"
+        },
+        ui: {
+            stage: "STUFE",
+            mission: "Mission",
+            wave: "Welle",
+            boss: "BOSS",
+            score: "Punkte",
+            level: "Level",
+            shop: "SHOP",
+            checkIn: "CHECK-IN",
+            checkedIn: "Eingecheckt",
+            dayStreak: "Tag {next} (bis {milestone})",
+            dayMilestone: "Tag {next} ({next7}/7)",
+            signing: "SIGNIERE...",
+            confirmedBase: "Auf Base bestätigt!",
+            transactionFailed: "Transaktion fehlgeschlagen",
+            transactionCancelled: "Abgebrochen",
+            insufficientFunds: "Unzureichende Mittel",
+            walletNotReady: "Wallet nicht bereit",
+            tryAgain: "Erneut versuchen",
+            alreadyCheckedIn: "Heute schon eingecheckt",
+            sdkNotLoaded: "SDK nicht geladen"
+        },
+        shop: {
+            title: "SHOP",
+            tabSpaceships: "Raumschiffe",
+            tabWeapons: "Waffen",
+            tabPowerups: "Power-ups",
+            tabUpgrades: "Upgrades"
+        },
+        shopItems: {
+            starterShip: { name: "Starter-Schiff", stats: "HP: 100 | Geschwindigkeit: 300 | Ausgewogen" },
+            speedDemon: { name: "Geschwindigkeits-Dämon", stats: "HP: 90 | Geschwindigkeit: 390 | +30% Geschwindigkeit" },
+            baseDefender: { name: "Basen-Verteidiger", stats: "HP: 150 | Geschwindigkeit: 300 | +50% HP" },
+            tank: { name: "Panzer", stats: "HP: 200 | Geschwindigkeit: 240 | Langsam aber stark" },
+            lightningStrike: { name: "Blitzangriff", stats: "HP: 120 | Geschwindigkeit: 450 | Sehr schnell" },
+            legendary: { name: "Legendär", stats: "HP: 250 | Geschwindigkeit: 400 | Beste Stats" },
+            fireRate: { name: "Feuerrate", stats: "Level {level}/10 | Aktuell: {rate}ms" },
+            damage: { name: "Schaden", stats: "Level {level}/10 | Aktuell: {damage}" },
+            multiShot2: { name: "Mehrfach-Schuss x2", stats: "Schieße 2 Kugeln gleichzeitig" },
+            multiShot3: { name: "Mehrfach-Schuss x3", stats: "Schieße 3 Kugeln gleichzeitig" },
+            multiShot5: { name: "Mehrfach-Schuss x5", stats: "Schieße 5 Kugeln gleichzeitig" },
+            laserBeam: { name: "Laserstrahl", stats: "Kontinuierlicher Angriff" },
+            shieldGen: { name: "Schild-Generator", stats: "Absorbiert 5 Treffer" },
+            smartBomb: { name: "Intelligente Bombe", stats: "Beseitigt alle Feinde" },
+            coinMagnet: { name: "Münz-Magnet", stats: "Automatisches Münzen sammeln" },
+            score2x: { name: "2x Punkte-Multiplikator", stats: "2x Punkte für 60 Sekunden" },
+            extraLife: { name: "Extra-Leben", stats: "+1 Fortsetzung" },
+            maxHP: { name: "Max HP +10", stats: "Erhöht Gesundheit um 10" },
+            hpRegen: { name: "HP-Regeneration", stats: "Heilt 1 HP/Sekunde" },
+            fasterMovement: { name: "Schnellere Bewegung", stats: "+20% Geschwindigkeit" },
+            owned: "BESESSEN",
+            buy: "KAUFEN",
+            vibrationToggle: "Haptische Vibration",
+            vibrationSupported: "Aktiviert",
+            vibrationNotSupported: "Auf diesem Gerät nicht unterstützt",
+            enabled: "Aktiviert",
+            disabled: "Deaktiviert"
+        },
+        pause: {
+            title: "PAUSIERT",
+            resume: "Fortsetzen",
+            mainMenu: "Hauptmenü",
+            resetGame: "Spiel zurücksetzen",
+            exitGame: "Beenden"
+        },
+        resetConfirm: {
+            title: "Fortschritt zurücksetzen?",
+            message: "Dies löscht Währung, Käufe, Punktzahl und alle gespeicherten Daten. Kann nicht rückgängig gemacht werden.",
+            cancel: "Abbrechen",
+            reset: "Zurücksetzen"
+        },
+        gameover: {
+            title: "SPIEL VORBEI",
+            restart: "Neustart",
+            finalScore: "Endpunktzahl",
+            stageReached: "Erreichte Stufe",
+            level: "Level"
+        },
+        leaderboard: {
+            title: "BESTENLISTE",
+            submitMyScore: "Meine Punktzahl einreichen",
+            refresh: "Aktualisieren",
+            globalStatus: "Globale Bestenliste (on-chain)",
+            personalBest: "Persönliche Bestleistung (lokal)",
+            loading: "Lädt...",
+            playToSetBest: "Spielen Sie, um einen Rekord aufzustellen.",
+            submitNewHighTitle: "Neuer Rekord!",
+            submitNewHighMessage: "Zur globalen Bestenliste einreichen? Wallet-Transaktion erforderlich.",
+            submit: "Einreichen",
+            cancel: "Abbrechen",
+            submitting: "Wird eingereicht...",
+            submitted: "Eingereicht!",
+            openInWarpcast: "In Warpcast öffnen zum Einreichen.",
+            playFirst: "Spielen Sie zuerst das Spiel."
+        },
+        lang: {
+            english: "🇺🇸 English",
+            hindi: "🇮🇳 हिंदी",
+            russian: "🇷🇺 Русский",
+            ukrainian: "🇺🇦 Українська",
+            tagalog: "🇵🇭 Tagalog",
+            indonesian: "🇮🇩 Indonesian",
+            vietnamese: "🇻🇳 Tiếng Việt",
+            portuguese: "🇧🇷 Português",
+            french: "🇫🇷 Français",
+            german: "🇩🇪 Deutsch"
         }
     };
 
