@@ -50,7 +50,7 @@
      * @returns {Promise<void>}
      */
     function setLang(lang) {
-        if (lang !== 'en' && lang !== 'hi' && lang !== 'ru' && lang !== 'uk' && lang !== 'tg' && lang !== 'id') lang = DEFAULT_LANG;
+        if (lang !== 'en' && lang !== 'hi' && lang !== 'ru' && lang !== 'uk' && lang !== 'tg' && lang !== 'id' && lang !== 'vi') lang = DEFAULT_LANG;
         currentLang = lang;
         localStorage.setItem(STORAGE_KEY, lang);
         loadLocale(lang);
@@ -126,6 +126,16 @@
         if (lang === 'id') {
             try {
                 strings = JSON.parse(JSON.stringify(idFallback));
+                if (typeof global !== 'undefined') global.__i18nStrings = strings;
+            } catch (e) {
+                strings = JSON.parse(JSON.stringify(enFallback));
+                if (typeof global !== 'undefined') global.__i18nStrings = strings;
+            }
+            return;
+        }
+        if (lang === 'vi') {
+            try {
+                strings = JSON.parse(JSON.stringify(viFallback));
                 if (typeof global !== 'undefined') global.__i18nStrings = strings;
             } catch (e) {
                 strings = JSON.parse(JSON.stringify(enFallback));
@@ -261,7 +271,8 @@
             "russian": "🇷🇺 Русский",
             "ukrainian": "🇺🇦 Українська",
             "tagalog": "🇵🇭 Tagalog",
-            "indonesian": "🇮🇩 Indonesian"
+            "indonesian": "🇮🇩 Indonesian",
+            "vietnamese": "🇻🇳 Tiếng Việt"
         }
     };
 
@@ -380,7 +391,8 @@
             russian: "🇷🇺 Русский",
             ukrainian: "🇺🇦 Українська",
             tagalog: "🇵🇭 Tagalog",
-            indonesian: "🇮🇩 Indonesian"
+            indonesian: "🇮🇩 Indonesian",
+            vietnamese: "🇻🇳 Tiếng Việt"
         }
     };
 
@@ -499,7 +511,8 @@
             russian: "🇷🇺 Русский",
             ukrainian: "🇺🇦 Українська",
             tagalog: "🇵🇭 Tagalog",
-            indonesian: "🇮🇩 Indonesian"
+            indonesian: "🇮🇩 Indonesian",
+            vietnamese: "🇻🇳 Tiếng Việt"
         }
     };
 
@@ -618,7 +631,8 @@
             russian: "🇷🇺 Русский",
             ukrainian: "🇺🇦 Українська",
             tagalog: "🇵🇭 Tagalog",
-            indonesian: "🇮🇩 Indonesian"
+            indonesian: "🇮🇩 Indonesian",
+            vietnamese: "🇻🇳 Tiếng Việt"
         }
     };
 
@@ -738,7 +752,8 @@
             russian: "🇷🇺 Русский",
             ukrainian: "🇺🇦 Українська",
             tagalog: "🇵🇭 Tagalog",
-            indonesian: "🇮🇩 Indonesian"
+            indonesian: "🇮🇩 Indonesian",
+            vietnamese: "🇻🇳 Tiếng Việt"
         }
     };
 
@@ -858,7 +873,129 @@
             russian: "🇷🇺 Русский",
             ukrainian: "🇺🇦 Українська",
             tagalog: "🇵🇭 Tagalog",
-            indonesian: "🇮🇩 Indonesian"
+            indonesian: "🇮🇩 Indonesian",
+            vietnamese: "🇻🇳 Tiếng Việt"
+        }
+    };
+
+    var viFallback = {
+        menu: {
+            title: "KẺ PHÁ HỦY CĂN CỨ",
+            welcome: "Chào mừng, Chỉ huy! Bảo vệ căn cứ khỏi quân xâm lược ngoài hành tinh. Thu thập kim cương và nâng cấp tàu vũ trụ của bạn.",
+            goodLuck: "Chúc may mắn! 🌟",
+            start: "BẮT ĐẦU",
+            howToPlay: "Cách Chơi",
+            language: "Ngôn ngữ 🌐",
+            resetProgress: "Đặt lại Tiến trình",
+            leaderboard: "Bảng Xếp hạng"
+        },
+        instructions: {
+            title: "CÁCH CHƠI",
+            body: "ĐIỀU KHIỂN:\n← hoặc A/D - Trái/phải\n↑ hoặc W/S - Lên/xuống\nBắn tự động\n⏸ - Tạm dừng\n\nMỤC TIÊU:\n- Tiêu diệt kẻ địch và căn cứ\n- Thu thập kim cương 💎\n- Nhặt power-up\n- Nâng cấp tàu trong cửa hàng\n- Đánh bại các boss\n\nChúc may mắn, Chỉ huy! 🚀"
+        },
+        ui: {
+            stage: "GIAI ĐOẠN",
+            mission: "Nhiệm vụ",
+            wave: "Làn sóng",
+            boss: "TRÙM",
+            score: "Điểm",
+            level: "Cấp độ",
+            shop: "CỬA HÀNG",
+            checkIn: "CHECK-IN",
+            checkedIn: "Đã check-in",
+            dayStreak: "Ngày {next} (đến {milestone})",
+            dayMilestone: "Ngày {next} ({next7}/7)",
+            signing: "ĐANG KÝ...",
+            confirmedBase: "Đã xác nhận trên Base!",
+            transactionFailed: "Giao dịch thất bại",
+            transactionCancelled: "Đã hủy",
+            insufficientFunds: "Không đủ tiền",
+            walletNotReady: "Ví chưa sẵn sàng",
+            tryAgain: "Thử lại",
+            alreadyCheckedIn: "Đã check-in hôm nay",
+            sdkNotLoaded: "SDK chưa tải"
+        },
+        shop: {
+            title: "CỬA HÀNG",
+            tabSpaceships: "Tàu Vũ trụ",
+            tabWeapons: "Vũ khí",
+            tabPowerups: "Cường hóa",
+            tabUpgrades: "Nâng cấp"
+        },
+        shopItems: {
+            starterShip: { name: "Tàu Khởi đầu", stats: "HP: 100 | Tốc độ: 300 | Cân bằng" },
+            speedDemon: { name: "Ác Quỷ Tốc độ", stats: "HP: 90 | Tốc độ: 390 | +30% tốc độ" },
+            baseDefender: { name: "Người Bảo vệ Căn cứ", stats: "HP: 150 | Tốc độ: 300 | +50% HP" },
+            tank: { name: "Xe Tăng", stats: "HP: 200 | Tốc độ: 240 | Chậm nhưng mạnh" },
+            lightningStrike: { name: "Tấn Công Sét", stats: "HP: 120 | Tốc độ: 450 | Rất nhanh" },
+            legendary: { name: "Huyền Thoại", stats: "HP: 250 | Tốc độ: 400 | Chỉ số tốt nhất" },
+            fireRate: { name: "Tốc độ Bắn", stats: "Cấp {level}/10 | Hiện tại: {rate}ms" },
+            damage: { name: "Sát thương", stats: "Cấp {level}/10 | Hiện tại: {damage}" },
+            multiShot2: { name: "Bắn Nhiều x2", stats: "Bắn 2 viên đạn cùng lúc" },
+            multiShot3: { name: "Bắn Nhiều x3", stats: "Bắn 3 viên đạn cùng lúc" },
+            multiShot5: { name: "Bắn Nhiều x5", stats: "Bắn 5 viên đạn cùng lúc" },
+            laserBeam: { name: "Tia Laser", stats: "Tấn công liên tục" },
+            shieldGen: { name: "Máy Phát Khiên", stats: "Hấp thụ 5 đòn" },
+            smartBomb: { name: "Bom Thông minh", stats: "Xóa sạch tất cả kẻ địch" },
+            coinMagnet: { name: "Nam Châm Tiền xu", stats: "Tự động thu thập tiền" },
+            score2x: { name: "Nhân Điểm 2x", stats: "2x điểm trong 60 giây" },
+            extraLife: { name: "Mạng Thêm", stats: "+1 tiếp tục" },
+            maxHP: { name: "HP Tối đa +10", stats: "Tăng máu lên 10" },
+            hpRegen: { name: "Hồi Phục HP", stats: "Hồi 1 HP/giây" },
+            fasterMovement: { name: "Di Chuyển Nhanh hơn", stats: "+20% tốc độ" },
+            owned: "ĐÃ SỞ HỮU",
+            buy: "MUA",
+            vibrationToggle: "Rung Xúc giác",
+            vibrationSupported: "Bật",
+            vibrationNotSupported: "Không hỗ trợ trên thiết bị này",
+            enabled: "Bật",
+            disabled: "Tắt"
+        },
+        pause: {
+            title: "TẠM DỪNG",
+            resume: "Tiếp tục",
+            mainMenu: "Menu Chính",
+            resetGame: "Đặt lại Trò chơi",
+            exitGame: "Thoát"
+        },
+        resetConfirm: {
+            title: "Đặt lại tiến trình?",
+            message: "Điều này sẽ xóa tiền tệ, mua sắm, điểm số và tất cả dữ liệu đã lưu. Không thể hoàn tác.",
+            cancel: "Hủy",
+            reset: "Đặt lại"
+        },
+        gameover: {
+            title: "KẾT THÚC TRÒ CHƠI",
+            restart: "Chơi lại",
+            finalScore: "Điểm Cuối cùng",
+            stageReached: "Giai đoạn Đạt được",
+            level: "Cấp độ"
+        },
+        leaderboard: {
+            title: "BẢNG XẾP HẠNG",
+            submitMyScore: "Gửi điểm của tôi",
+            refresh: "Làm mới",
+            globalStatus: "Bảng xếp hạng toàn cầu (on-chain)",
+            personalBest: "Kỷ lục cá nhân (cục bộ)",
+            loading: "Đang tải...",
+            playToSetBest: "Chơi để lập kỷ lục.",
+            submitNewHighTitle: "Kỷ lục mới!",
+            submitNewHighMessage: "Gửi lên bảng xếp hạng toàn cầu? Cần giao dịch ví.",
+            submit: "Gửi",
+            cancel: "Hủy",
+            submitting: "Đang gửi...",
+            submitted: "Đã gửi!",
+            openInWarpcast: "Mở trong Warpcast để gửi.",
+            playFirst: "Chơi trò chơi trước."
+        },
+        lang: {
+            english: "🇺🇸 English",
+            hindi: "🇮🇳 हिंदी",
+            russian: "🇷🇺 Русский",
+            ukrainian: "🇺🇦 Українська",
+            tagalog: "🇵🇭 Tagalog",
+            indonesian: "🇮🇩 Indonesian",
+            vietnamese: "🇻🇳 Tiếng Việt"
         }
     };
 

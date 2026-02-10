@@ -714,10 +714,11 @@ class MenuScene extends Phaser.Scene {
         const ukStr = g('lang.ukrainian');
         const tgStr = g('lang.tagalog');
         const idStr = g('lang.indonesian');
-        const rowH = 40;
+        const viStr = g('lang.vietnamese');
+        const rowH = 38;
         const centerY = height / 2;
-        var textStyle = { fontSize: '20px', fontFamily: 'Arial, sans-serif', color: '#ffffff', align: 'center' };
-        this.langEn = this.add.text(width / 2, centerY - rowH * 2.5, enStr, textStyle);
+        var textStyle = { fontSize: '19px', fontFamily: 'Arial, sans-serif', color: '#ffffff', align: 'center' };
+        this.langEn = this.add.text(width / 2, centerY - rowH * 3, enStr, textStyle);
         this.langEn.setOrigin(0.5);
         this.langEn.setDepth(depthLang + 2);
         this.langEn.setInteractive({ useHandCursor: true });
@@ -725,7 +726,7 @@ class MenuScene extends Phaser.Scene {
             console.log('🇺🇸 EN CLICKED');
             this._applyLang('en');
         });
-        this.langHi = this.add.text(width / 2, centerY - rowH * 1.5, hiStr, textStyle);
+        this.langHi = this.add.text(width / 2, centerY - rowH * 2, hiStr, textStyle);
         this.langHi.setOrigin(0.5);
         this.langHi.setDepth(depthLang + 2);
         this.langHi.setInteractive({ useHandCursor: true });
@@ -733,7 +734,7 @@ class MenuScene extends Phaser.Scene {
             console.log('🇮🇳 HI CLICKED');
             this._applyLang('hi');
         });
-        this.langRu = this.add.text(width / 2, centerY - rowH * 0.5, ruStr, textStyle);
+        this.langRu = this.add.text(width / 2, centerY - rowH, ruStr, textStyle);
         this.langRu.setOrigin(0.5);
         this.langRu.setDepth(depthLang + 2);
         this.langRu.setInteractive({ useHandCursor: true });
@@ -741,7 +742,7 @@ class MenuScene extends Phaser.Scene {
             console.log('🇷🇺 RU CLICKED');
             this._applyLang('ru');
         });
-        this.langUk = this.add.text(width / 2, centerY + rowH * 0.5, ukStr, textStyle);
+        this.langUk = this.add.text(width / 2, centerY, ukStr, textStyle);
         this.langUk.setOrigin(0.5);
         this.langUk.setDepth(depthLang + 2);
         this.langUk.setInteractive({ useHandCursor: true });
@@ -749,7 +750,7 @@ class MenuScene extends Phaser.Scene {
             console.log('🇺🇦 UK CLICKED');
             this._applyLang('uk');
         });
-        this.langTg = this.add.text(width / 2, centerY + rowH * 1.5, tgStr, textStyle);
+        this.langTg = this.add.text(width / 2, centerY + rowH, tgStr, textStyle);
         this.langTg.setOrigin(0.5);
         this.langTg.setDepth(depthLang + 2);
         this.langTg.setInteractive({ useHandCursor: true });
@@ -757,13 +758,21 @@ class MenuScene extends Phaser.Scene {
             console.log('🇵🇭 TG CLICKED');
             this._applyLang('tg');
         });
-        this.langId = this.add.text(width / 2, centerY + rowH * 2.5, idStr, textStyle);
+        this.langId = this.add.text(width / 2, centerY + rowH * 2, idStr, textStyle);
         this.langId.setOrigin(0.5);
         this.langId.setDepth(depthLang + 2);
         this.langId.setInteractive({ useHandCursor: true });
         this.langId.on('pointerdown', () => {
             console.log('🇮🇩 ID CLICKED');
             this._applyLang('id');
+        });
+        this.langVi = this.add.text(width / 2, centerY + rowH * 3, viStr, textStyle);
+        this.langVi.setOrigin(0.5);
+        this.langVi.setDepth(depthLang + 2);
+        this.langVi.setInteractive({ useHandCursor: true });
+        this.langVi.on('pointerdown', () => {
+            console.log('🇻🇳 VI CLICKED');
+            this._applyLang('vi');
         });
     }
 
@@ -778,9 +787,9 @@ class MenuScene extends Phaser.Scene {
     }
 
     closeLanguageOverlay() {
-        const el = [this.langOverlay, this.langPanel, this.langPanelBorder, this.langTitle, this.langEn, this.langHi, this.langRu, this.langUk, this.langTg, this.langId];
+        const el = [this.langOverlay, this.langPanel, this.langPanelBorder, this.langTitle, this.langEn, this.langHi, this.langRu, this.langUk, this.langTg, this.langId, this.langVi];
         el.forEach(o => { if (o && o.destroy) o.destroy(); });
-        this.langOverlay = this.langPanel = this.langPanelBorder = this.langTitle = this.langEn = this.langHi = this.langRu = this.langUk = this.langTg = this.langId = null;
+        this.langOverlay = this.langPanel = this.langPanelBorder = this.langTitle = this.langEn = this.langHi = this.langRu = this.langUk = this.langTg = this.langId = this.langVi = null;
     }
 }
 
