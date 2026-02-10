@@ -50,7 +50,7 @@
      * @returns {Promise<void>}
      */
     function setLang(lang) {
-        if (lang !== 'en' && lang !== 'hi' && lang !== 'ru' && lang !== 'uk' && lang !== 'tg' && lang !== 'id' && lang !== 'vi' && lang !== 'pt' && lang !== 'fr' && lang !== 'de') lang = DEFAULT_LANG;
+        if (lang !== 'en' && lang !== 'hi' && lang !== 'ru' && lang !== 'uk' && lang !== 'tg' && lang !== 'id' && lang !== 'vi' && lang !== 'pt' && lang !== 'fr' && lang !== 'de' && lang !== 'zh') lang = DEFAULT_LANG;
         currentLang = lang;
         localStorage.setItem(STORAGE_KEY, lang);
         loadLocale(lang);
@@ -166,6 +166,16 @@
         if (lang === 'de') {
             try {
                 strings = JSON.parse(JSON.stringify(deFallback));
+                if (typeof global !== 'undefined') global.__i18nStrings = strings;
+            } catch (e) {
+                strings = JSON.parse(JSON.stringify(enFallback));
+                if (typeof global !== 'undefined') global.__i18nStrings = strings;
+            }
+            return;
+        }
+        if (lang === 'zh') {
+            try {
+                strings = JSON.parse(JSON.stringify(zhFallback));
                 if (typeof global !== 'undefined') global.__i18nStrings = strings;
             } catch (e) {
                 strings = JSON.parse(JSON.stringify(enFallback));
@@ -305,7 +315,8 @@
             "vietnamese": "🇻🇳 Tiếng Việt",
             "portuguese": "🇧🇷 Português",
             "french": "🇫🇷 Français",
-            "german": "🇩🇪 Deutsch"
+            "german": "🇩🇪 Deutsch",
+            "chinese": "🇨🇳 简体中文"
         }
     };
 
@@ -428,7 +439,8 @@
             vietnamese: "🇻🇳 Tiếng Việt",
             portuguese: "🇧🇷 Português",
             french: "🇫🇷 Français",
-            german: "🇩🇪 Deutsch"
+            german: "🇩🇪 Deutsch",
+            chinese: "🇨🇳 简体中文"
         }
     };
 
@@ -551,7 +563,8 @@
             vietnamese: "🇻🇳 Tiếng Việt",
             portuguese: "🇧🇷 Português",
             french: "🇫🇷 Français",
-            german: "🇩🇪 Deutsch"
+            german: "🇩🇪 Deutsch",
+            chinese: "🇨🇳 简体中文"
         }
     };
 
@@ -674,7 +687,8 @@
             vietnamese: "🇻🇳 Tiếng Việt",
             portuguese: "🇧🇷 Português",
             french: "🇫🇷 Français",
-            german: "🇩🇪 Deutsch"
+            german: "🇩🇪 Deutsch",
+            chinese: "🇨🇳 简体中文"
         }
     };
 
@@ -798,7 +812,8 @@
             vietnamese: "🇻🇳 Tiếng Việt",
             portuguese: "🇧🇷 Português",
             french: "🇫🇷 Français",
-            german: "🇩🇪 Deutsch"
+            german: "🇩🇪 Deutsch",
+            chinese: "🇨🇳 简体中文"
         }
     };
 
@@ -922,7 +937,8 @@
             vietnamese: "🇻🇳 Tiếng Việt",
             portuguese: "🇧🇷 Português",
             french: "🇫🇷 Français",
-            german: "🇩🇪 Deutsch"
+            german: "🇩🇪 Deutsch",
+            chinese: "🇨🇳 简体中文"
         }
     };
 
@@ -1046,7 +1062,8 @@
             vietnamese: "🇻🇳 Tiếng Việt",
             portuguese: "🇧🇷 Português",
             french: "🇫🇷 Français",
-            german: "🇩🇪 Deutsch"
+            german: "🇩🇪 Deutsch",
+            chinese: "🇨🇳 简体中文"
         }
     };
 
@@ -1170,7 +1187,8 @@
             vietnamese: "🇻🇳 Tiếng Việt",
             portuguese: "🇧🇷 Português",
             french: "🇫🇷 Français",
-            german: "🇩🇪 Deutsch"
+            german: "🇩🇪 Deutsch",
+            chinese: "🇨🇳 简体中文"
         }
     };
 
@@ -1294,7 +1312,8 @@
             vietnamese: "🇻🇳 Tiếng Việt",
             portuguese: "🇧🇷 Português",
             french: "🇫🇷 Français",
-            german: "🇩🇪 Deutsch"
+            german: "🇩🇪 Deutsch",
+            chinese: "🇨🇳 简体中文"
         }
     };
 
@@ -1418,7 +1437,133 @@
             vietnamese: "🇻🇳 Tiếng Việt",
             portuguese: "🇧🇷 Português",
             french: "🇫🇷 Français",
-            german: "🇩🇪 Deutsch"
+            german: "🇩🇪 Deutsch",
+            chinese: "🇨🇳 简体中文"
+        }
+    };
+
+    var zhFallback = {
+        menu: {
+            title: "基地毁灭者",
+            welcome: "欢迎，指挥官！保护基地免受外星入侵者的侵害。收集钻石并升级你的飞船。",
+            goodLuck: "祝你好运！🌟",
+            start: "开始",
+            howToPlay: "如何游玩",
+            language: "语言 🌐",
+            resetProgress: "重置进度",
+            leaderboard: "排行榜"
+        },
+        instructions: {
+            title: "如何游玩",
+            body: "控制：\n← 或 A/D - 左/右\n↑ 或 W/S - 上/下\n自动射击\n⏸ - 暂停\n\n目标：\n- 摧毁敌人和基地\n- 收集钻石 💎\n- 拾取能量提升\n- 在商店升级飞船\n- 击败首领\n\n祝你好运，指挥官！🚀"
+        },
+        ui: {
+            stage: "关卡",
+            mission: "任务",
+            wave: "波次",
+            boss: "首领",
+            score: "分数",
+            level: "等级",
+            shop: "商店",
+            checkIn: "签到",
+            checkedIn: "已签到",
+            dayStreak: "第{next}天（至{milestone}）",
+            dayMilestone: "第{next}天（{next7}/7）",
+            signing: "签名中...",
+            confirmedBase: "已在Base确认！",
+            transactionFailed: "交易失败",
+            transactionCancelled: "已取消",
+            insufficientFunds: "资金不足",
+            walletNotReady: "钱包未准备好",
+            tryAgain: "重试",
+            alreadyCheckedIn: "今天已签到",
+            sdkNotLoaded: "SDK未加载"
+        },
+        shop: {
+            title: "商店",
+            tabSpaceships: "飞船",
+            tabWeapons: "武器",
+            tabPowerups: "能量提升",
+            tabUpgrades: "升级"
+        },
+        shopItems: {
+            starterShip: { name: "初始飞船", stats: "HP：100 | 速度：300 | 平衡型" },
+            speedDemon: { name: "速度恶魔", stats: "HP：90 | 速度：390 | +30%速度" },
+            baseDefender: { name: "基地守卫者", stats: "HP：150 | 速度：300 | +50% HP" },
+            tank: { name: "坦克", stats: "HP：200 | 速度：240 | 缓慢但强大" },
+            lightningStrike: { name: "闪电突袭", stats: "HP：120 | 速度：450 | 非常快" },
+            legendary: { name: "传奇", stats: "HP：250 | 速度：400 | 最佳属性" },
+            fireRate: { name: "射速", stats: "等级{level}/10 | 当前：{rate}毫秒" },
+            damage: { name: "伤害", stats: "等级{level}/10 | 当前：{damage}" },
+            multiShot2: { name: "多重射击 x2", stats: "同时发射2发子弹" },
+            multiShot3: { name: "多重射击 x3", stats: "同时发射3发子弹" },
+            multiShot5: { name: "多重射击 x5", stats: "同时发射5发子弹" },
+            laserBeam: { name: "激光束", stats: "持续攻击" },
+            shieldGen: { name: "护盾生成器", stats: "吸收5次攻击" },
+            smartBomb: { name: "智能炸弹", stats: "清除所有敌人" },
+            coinMagnet: { name: "金币磁铁", stats: "自动收集金币" },
+            score2x: { name: "2倍分数", stats: "60秒内2倍分数" },
+            extraLife: { name: "额外生命", stats: "+1次继续" },
+            maxHP: { name: "最大HP +10", stats: "增加10点生命值" },
+            hpRegen: { name: "HP再生", stats: "每秒恢复1 HP" },
+            fasterMovement: { name: "更快移动", stats: "+20%速度" },
+            owned: "已拥有",
+            buy: "购买",
+            vibrationToggle: "触觉震动",
+            vibrationSupported: "已启用",
+            vibrationNotSupported: "此设备不支持",
+            enabled: "已启用",
+            disabled: "已禁用"
+        },
+        pause: {
+            title: "已暂停",
+            resume: "继续",
+            mainMenu: "主菜单",
+            resetGame: "重置游戏",
+            exitGame: "退出"
+        },
+        resetConfirm: {
+            title: "重置进度？",
+            message: "这将清除货币、购买、分数和所有保存的数据。无法撤销。",
+            cancel: "取消",
+            reset: "重置"
+        },
+        gameover: {
+            title: "游戏结束",
+            restart: "重新开始",
+            finalScore: "最终分数",
+            stageReached: "达到关卡",
+            level: "等级"
+        },
+        leaderboard: {
+            title: "排行榜",
+            submitMyScore: "提交我的分数",
+            refresh: "刷新",
+            globalStatus: "全球排行榜（链上）",
+            personalBest: "个人最佳（本地）",
+            loading: "加载中...",
+            playToSetBest: "开始游戏以创建记录。",
+            submitNewHighTitle: "新纪录！",
+            submitNewHighMessage: "提交到全球排行榜？需要钱包交易。",
+            submit: "提交",
+            cancel: "取消",
+            submitting: "提交中...",
+            submitted: "已提交！",
+            openInWarpcast: "在Warpcast中打开以提交。",
+            playFirst: "请先开始游戏。"
+        },
+        lang: {
+            english: "🇺🇸 English",
+            hindi: "🇮🇳 हिंदी",
+            russian: "🇷🇺 Русский",
+            ukrainian: "🇺🇦 Українська",
+            tagalog: "🇵🇭 Tagalog",
+            indonesian: "🇮🇩 Indonesian",
+            vietnamese: "🇻🇳 Tiếng Việt",
+            portuguese: "🇧🇷 Português",
+            french: "🇫🇷 Français",
+            german: "🇩🇪 Deutsch",
+            chinese: "🇨🇳 简体中文"
         }
     };
 
