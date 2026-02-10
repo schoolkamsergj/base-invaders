@@ -42,7 +42,7 @@ class MenuScene extends Phaser.Scene {
 
         // Welcome message - i18n (Defend the Base, alien invaders, Good luck)
         const welcomeText = typeof getText === 'function' ? getText('menu.welcome') : 'Welcome, Commander! 🚀\n\nDefend the Base from alien invaders.\nCollect diamonds and upgrade your ship.';
-        this.welcomeText = this.add.text(width / 2, height * 0.18, welcomeText, {
+        this.welcomeText = this.add.text(width / 2, height * 0.14, welcomeText, {
             fontSize: '18px',
             fontFamily: 'Arial, sans-serif',
             color: '#ffffff',
@@ -452,7 +452,7 @@ class MenuScene extends Phaser.Scene {
         this.titleText.setFontSize(`${titleSize}px`);
 
         if (this.welcomeText) {
-            this.welcomeText.setPosition(width / 2, height * 0.18);
+            this.welcomeText.setPosition(width / 2, height * 0.14);
             this.welcomeText.setFontSize(`${textSize}px`);
             this.welcomeText.setWordWrapWidth(Math.min(450, width * 0.85), true);
         }
