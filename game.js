@@ -2635,63 +2635,72 @@ class GameScene extends Phaser.Scene {
     }
 
     async gameOver() {
-        const waveLevel = this.gameState.missionSystem?.currentWave || this.gameState.stage;
-        const streak = window.baseInvadersLeaderboard?.getCurrentStreak?.() || 0;
-        const localHigh = window.baseInvadersLeaderboard?.getLocalHighScore?.() || null;
-        const score = this.gameState.score;
-        const prevHighScore = localHigh?.score || 0;
-        const isNewHigh = score > prevHighScore;
+        const waveLevel = this.gameState.missionSystem
+            ? this.gameState.missionSystem.currentWave
+            : this.gameState.stage;
+        const streak = window.baseInvadersLeaderboard?.getCurrentStreak
+            ? window.baseInvadersLeaderboard.getCurrentStreak()
+            : 0;
+        const localEntry = {
+            score: this.gameState.score,
+            wave: waveLevel,
+            date: new Date().toISOString(),
+            streak
+        };
+        const localHigh = window.baseInvadersLeaderboard?.getLocalHighScore
+            ? window.baseInvadersLeaderboard.getLocalHighScore()
+            : null;
+        const isNewHigh = !localHigh || this.gameState.score > (localHigh.score || 0);
+        console.log('[leaderboard] Game over — score:', this.gameState.score, 'localHigh:', localHigh?.score ?? 'none', 'isNewHigh:', isNewHigh);
 
-        // Блокувати корабель
-        if (this.player?.sprite) {
-            this.player.sprite.setActive(false).setVisible(false);
-        }
-
-        // Submit тільки при +30% рекорді
-        const canSubmit = isNewHigh && (score > prevHighScore * 1.3);
-
-        if (!canSubmit) {
-            this.showGameOverScreen(score, waveLevel);
+        if (!isNewHigh) {
+            this.gameState.gameOver = true;
+            this.scene.pause();
+            document.getElementById('pause-overlay').classList.remove('hidden');
             return;
         }
 
-        // Авто-submit
+        const wasAlreadyPaused = this.gameState.paused;
+        if (!wasAlreadyPaused && this.togglePause) {
+            this.togglePause();
+        }
         this.leaderboardPending = true;
+
         try {
-            await window.baseInvadersOnchainSubmitScore?.({ score, wave: waveLevel, streak });
-            this.player.hp = this.player.maxHP;
-            if (this.player.sprite) {
-                this.player.sprite.setActive(true).setVisible(true);
+            const submitFn = window.baseInvadersOnchainSubmitScore || (async (opts) => {
+                const s = opts?.score ?? 0;
+                const w = opts?.wave ?? 1;
+                const st = opts?.streak ?? 0;
+                let name = '';
+                if (typeof window.baseInvadersGetUserName === 'function') name = await window.baseInvadersGetUserName();
+                name = (name && String(name).trim()) || 'Player';
+                return window.baseInvadersSubmitScore?.(s, w, st, name);
+            });
+            await submitFn({ score: this.gameState.score, wave: waveLevel, streak });
+            if (window.baseInvadersLeaderboard?.saveLocalHighScore) {
+                window.baseInvadersLeaderboard.saveLocalHighScore(localEntry);
+            }
+            const notifyX = this.scale?.width ? this.scale.width / 2 : 200;
+            const notifyY = this.scale?.height ? this.scale.height / 2 - 50 : 200;
+            if (this.ui?.showNotification) {
+                this.ui.showNotification(typeof getText === 'function' ? getText('leaderboard.recordSubmitted') || 'Рекорд відправлено!' : 'Рекорд відправлено!', notifyX, notifyY);
+            }
+            if (this.player) {
+                this.player.hp = this.player.maxHP;
+            }
+        } catch (err) {
+            console.error('[leaderboard] Submit tx failed:', err);
+            const notifyX = this.scale?.width ? this.scale.width / 2 : 200;
+            const notifyY = this.scale?.height ? this.scale.height / 2 - 50 : 200;
+            if (this.ui?.showNotification) {
+                this.ui.showNotification(typeof getText === 'function' ? getText('leaderboard.txError') || 'Помилка tx' : 'Помилка tx', notifyX, notifyY);
+            }
+        } finally {
+            if (!wasAlreadyPaused && this.togglePause) {
+                this.togglePause();
             }
             this.leaderboardPending = false;
-            console.log('✅ Рекорд +30%, відправлено');
-        } catch (error) {
-            console.error('❌ Submit failed:', error);
-            this.leaderboardPending = false;
-            this.showGameOverScreen(score, waveLevel);
         }
-    }
-
-    showGameOverScreen(score, waveLevel) {
-        this.gameState.gameOver = true;
-        this.scene.pause();
-        this.saveGameData();
-
-        const localEntry = {
-            score,
-            wave: waveLevel,
-            date: new Date().toISOString(),
-            streak: window.baseInvadersLeaderboard?.getCurrentStreak?.() || 0
-        };
-        window.baseInvadersLeaderboard?.saveLocalHighScore?.(localEntry);
-
-        document.getElementById('gameover-overlay').classList.remove('hidden');
-        const fs = typeof getText === 'function' ? getText : (k) => k;
-        document.getElementById('final-stats').innerHTML = `
-    <p>${fs('gameover.finalScore')}: ${score.toLocaleString()}</p>
-    <p>${fs('gameover.stageReached')}: ${this.gameState.stage}</p>
-    <p>${fs('gameover.level')}: ${this.gameState.playerLevel}</p>
-  `;
     }
 
     saveGameData() {
