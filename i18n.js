@@ -50,7 +50,7 @@
      * @returns {Promise<void>}
      */
     function setLang(lang) {
-        if (lang !== 'en' && lang !== 'hi' && lang !== 'ru' && lang !== 'uk') lang = DEFAULT_LANG;
+        if (lang !== 'en' && lang !== 'hi' && lang !== 'ru' && lang !== 'uk' && lang !== 'tg') lang = DEFAULT_LANG;
         currentLang = lang;
         localStorage.setItem(STORAGE_KEY, lang);
         loadLocale(lang);
@@ -106,6 +106,16 @@
                 strings = typeof ukFallback !== 'undefined' && ukFallback !== null
                     ? JSON.parse(JSON.stringify(ukFallback))
                     : JSON.parse(JSON.stringify(enFallback));
+                if (typeof global !== 'undefined') global.__i18nStrings = strings;
+            } catch (e) {
+                strings = JSON.parse(JSON.stringify(enFallback));
+                if (typeof global !== 'undefined') global.__i18nStrings = strings;
+            }
+            return;
+        }
+        if (lang === 'tg') {
+            try {
+                strings = JSON.parse(JSON.stringify(tgFallback));
                 if (typeof global !== 'undefined') global.__i18nStrings = strings;
             } catch (e) {
                 strings = JSON.parse(JSON.stringify(enFallback));
@@ -239,7 +249,8 @@
             "english": "🇺🇸 English",
             "hindi": "🇮🇳 हिंदी",
             "russian": "🇷🇺 Русский",
-            "ukrainian": "🇺🇦 Українська"
+            "ukrainian": "🇺🇦 Українська",
+            "tagalog": "🇵🇭 Tagalog"
         }
     };
 
@@ -356,7 +367,8 @@
             english: "🇺🇸 English",
             hindi: "🇮🇳 हिंदी",
             russian: "🇷🇺 Русский",
-            ukrainian: "🇺🇦 Українська"
+            ukrainian: "🇺🇦 Українська",
+            tagalog: "🇵🇭 Tagalog"
         }
     };
 
@@ -473,7 +485,8 @@
             english: "🇺🇸 English",
             hindi: "🇮🇳 हिंदी",
             russian: "🇷🇺 Русский",
-            ukrainian: "🇺🇦 Українська"
+            ukrainian: "🇺🇦 Українська",
+            tagalog: "🇵🇭 Tagalog"
         }
     };
 
@@ -590,7 +603,127 @@
             english: "🇺🇸 English",
             hindi: "🇮🇳 हिंदी",
             russian: "🇷🇺 Русский",
-            ukrainian: "🇺🇦 Українська"
+            ukrainian: "🇺🇦 Українська",
+            tagalog: "🇵🇭 Tagalog"
+        }
+    };
+
+    var tgFallback = {
+        menu: {
+            title: "TAGAPAGSIRA NG BASE",
+            welcome: "Maligayang pagdating, Commander! Protektahan ang base mula sa mga alien invaders. Mangolekta ng mga brilyante at i-upgrade ang iyong spaceship.",
+            goodLuck: "Good luck! 🌟",
+            start: "SIMULAN",
+            howToPlay: "Paano Laruin",
+            language: "Wika 🌐",
+            resetProgress: "I-reset ang Progress",
+            leaderboard: "Leaderboard"
+        },
+        instructions: {
+            title: "PAANO LARUIN",
+            body: "CONTROLS:\n← o A/D - Kaliwa/kanan\n↑ o W/S - Taas/baba\nAuto-shoot\n⏸ - Pause\n\nLAYUNIN:\n- Sirain ang mga kalaban at base\n- Kolektahin ang mga brilyante 💎\n- Kunin ang power-ups\n- I-upgrade ang spaceship sa tindahan\n- Talunin ang mga boss\n\nGood luck, Commander! 🚀"
+        },
+        ui: {
+            stage: "YUGTO",
+            mission: "Misyon",
+            wave: "Alon",
+            boss: "BOSS",
+            score: "Puntos",
+            level: "Antas",
+            shop: "TINDAHAN",
+            checkIn: "CHECK-IN",
+            checkedIn: "Nai-check in",
+            dayStreak: "Araw {next} (hanggang {milestone})",
+            dayMilestone: "Araw {next} ({next7}/7)",
+            signing: "PUMIPIRMA...",
+            confirmedBase: "Nakumpirma sa Base!",
+            transactionFailed: "Nabigo ang transaksyon",
+            transactionCancelled: "Kinansela",
+            insufficientFunds: "Kulang ang pondo",
+            walletNotReady: "Hindi handa ang wallet",
+            tryAgain: "Subukan muli",
+            alreadyCheckedIn: "Nai-check in na ngayong araw",
+            sdkNotLoaded: "Hindi na-load ang SDK"
+        },
+        shop: {
+            title: "TINDAHAN",
+            tabSpaceships: "Mga Spaceship",
+            tabWeapons: "Mga Sandata",
+            tabPowerups: "Mga Power-up",
+            tabUpgrades: "Mga Upgrade"
+        },
+        shopItems: {
+            starterShip: { name: "Starter Ship", stats: "HP: 100 | Bilis: 300 | Balanse" },
+            speedDemon: { name: "Speed Demon", stats: "HP: 90 | Bilis: 390 | +30% bilis" },
+            baseDefender: { name: "Tagapagtanggol ng Base", stats: "HP: 150 | Bilis: 300 | +50% HP" },
+            tank: { name: "Tank", stats: "HP: 200 | Bilis: 240 | Mabagal pero malakas" },
+            lightningStrike: { name: "Kidlat na Atake", stats: "HP: 120 | Bilis: 450 | Napakabilis" },
+            legendary: { name: "Legendary", stats: "HP: 250 | Bilis: 400 | Pinakamahusay" },
+            fireRate: { name: "Bilis ng Putok", stats: "Antas {level}/10 | Kasalukuyan: {rate}ms" },
+            damage: { name: "Pinsala", stats: "Antas {level}/10 | Kasalukuyan: {damage}" },
+            multiShot2: { name: "Multi-Shot x2", stats: "2 bala nang sabay" },
+            multiShot3: { name: "Multi-Shot x3", stats: "3 bala nang sabay" },
+            multiShot5: { name: "Multi-Shot x5", stats: "5 bala nang sabay" },
+            laserBeam: { name: "Laser Beam", stats: "Tuloy-tuloy na atake" },
+            shieldGen: { name: "Shield Generator", stats: "Sumasipsip ng 5 tama" },
+            smartBomb: { name: "Smart Bomb", stats: "Lilinisin ang lahat ng kalaban" },
+            coinMagnet: { name: "Bakal ng Barya", stats: "Auto-kolekta ng barya" },
+            score2x: { name: "2x Score Multiplier", stats: "2x puntos sa loob ng 60 segundo" },
+            extraLife: { name: "Dagdag Buhay", stats: "+1 pagpapatuloy" },
+            maxHP: { name: "Max HP +10", stats: "Dagdagan ang kalusugan ng 10" },
+            hpRegen: { name: "HP Regeneration", stats: "Gumaling ng 1 HP/segundo" },
+            fasterMovement: { name: "Mas Mabilis na Galaw", stats: "+20% sa bilis" },
+            owned: "PAGMAMAY-ARI",
+            buy: "BUMILI",
+            vibrationToggle: "Haptic Vibration",
+            vibrationSupported: "Naka-enable",
+            vibrationNotSupported: "Hindi suportado sa device na ito",
+            enabled: "Naka-enable",
+            disabled: "Naka-disable"
+        },
+        pause: {
+            title: "NAKA-PAUSE",
+            resume: "Magpatuloy",
+            mainMenu: "Pangunahing Menu",
+            resetGame: "I-reset ang Laro",
+            exitGame: "Lumabas"
+        },
+        resetConfirm: {
+            title: "I-reset ang progress?",
+            message: "Lilinisin nito ang pera, mga binili, puntos at lahat ng naka-save na data. Hindi maaaring bawiin.",
+            cancel: "Kanselahin",
+            reset: "I-reset"
+        },
+        gameover: {
+            title: "TAPOS NA ANG LARO",
+            restart: "I-restart",
+            finalScore: "Huling Puntos",
+            stageReached: "Naabot na Yugto",
+            level: "Antas"
+        },
+        leaderboard: {
+            title: "LEADERBOARD",
+            submitMyScore: "Isumite ang puntos",
+            refresh: "I-refresh",
+            globalStatus: "Global leaderboard (on-chain)",
+            personalBest: "Personal best (lokal)",
+            loading: "Naglo-load...",
+            playToSetBest: "Maglaro para magtakda ng record.",
+            submitNewHighTitle: "Bagong record!",
+            submitNewHighMessage: "Isumite sa global leaderboard? Kailangan ng wallet transaction.",
+            submit: "Isumite",
+            cancel: "Kanselahin",
+            submitting: "Isinusumite...",
+            submitted: "Naisumite na!",
+            openInWarpcast: "Buksan sa Warpcast para magsumite.",
+            playFirst: "Maglaro muna ng laro."
+        },
+        lang: {
+            english: "🇺🇸 English",
+            hindi: "🇮🇳 हिंदी",
+            russian: "🇷🇺 Русский",
+            ukrainian: "🇺🇦 Українська",
+            tagalog: "🇵🇭 Tagalog"
         }
     };
 
