@@ -937,6 +937,12 @@ class GameScene extends Phaser.Scene {
             };
             this.gameState.missionSystem = this.missionSystem;
 
+            // Leaderboard: high score at run start (for "new record during play" dialog, like check-in)
+            this._highScoreAtRunStart = (window.baseInvadersLeaderboard && typeof window.baseInvadersLeaderboard.getLocalHighScore === 'function')
+                ? (window.baseInvadersLeaderboard.getLocalHighScore()?.score ?? 0)
+                : 0;
+            this._leaderboardSubmitShownThisRun = false;
+
             // Player stats (from shop) - load before creating player
             this.playerStats = {
                 fireRate: 300,
@@ -2018,6 +2024,21 @@ class GameScene extends Phaser.Scene {
             const baseScore = enemy.rewards.score || 0;
             this.gameState.score += Math.floor(baseScore * (this.gameState.scoreMultiplier || 1));
             this.gameState.xp += enemy.rewards.xp || 0;
+            // New record during play (like check-in): pause, show submit overlay, after sign → resume
+            if (this.gameState.score > this._highScoreAtRunStart && !this._leaderboardSubmitShownThisRun) {
+                this._leaderboardSubmitShownThisRun = true;
+                const waveLevel = this.missionSystem ? this.missionSystem.currentWave : this.gameState.stage;
+                const streak = window.baseInvadersLeaderboard?.getCurrentStreak ? window.baseInvadersLeaderboard.getCurrentStreak() : 0;
+                window.__baseInvadersLeaderboardSubmitDuringPlay = true;
+                window.__baseInvadersPendingLeaderboardSubmit = { score: this.gameState.score, wave: waveLevel, streak };
+                this.scene.pause();
+                this.gameState.paused = true;
+                const overlay = document.getElementById('leaderboard-submit-overlay');
+                const statusEl = document.getElementById('leaderboard-submit-status');
+                if (statusEl) statusEl.textContent = '';
+                if (overlay) overlay.classList.remove('hidden');
+                console.log('[leaderboard] New record during play — pause, show submit overlay');
+            }
         }
 
         // Create explosion
@@ -2668,24 +2689,7 @@ class GameScene extends Phaser.Scene {
             <p>${fs('gameover.stageReached')}: ${this.gameState.stage}</p>
             <p>${fs('gameover.level')}: ${this.gameState.playerLevel}</p>
         `;
-
-        // Show in-game submit dialog (no confirm() so it works in Farcaster iframe/desktop)
-        if (isNewHigh) {
-            console.log('[leaderboard] New high score — will show submit overlay in 200ms');
-            setTimeout(() => {
-                window.__baseInvadersPendingLeaderboardSubmit = {
-                    score: this.gameState.score,
-                    wave: waveLevel,
-                    streak
-                };
-                const overlay = document.getElementById('leaderboard-submit-overlay');
-                const statusEl = document.getElementById('leaderboard-submit-status');
-                if (statusEl) statusEl.textContent = '';
-                if (overlay) overlay.classList.remove('hidden');
-            }, 200);
-        } else {
-            console.log('[leaderboard] Not a new high score — submit dialog not shown');
-        }
+        // Leaderboard submit is shown during play when they first beat record; no repeat here
     }
 
     saveGameData() {
@@ -2991,7 +2995,13 @@ document.addEventListener('DOMContentLoaded', () => {
         e.stopPropagation();
         document.getElementById('leaderboard-submit-overlay')?.classList.add('hidden');
         window.__baseInvadersPendingLeaderboardSubmit = null;
-        if (window.game?.scene) {
+        if (window.__baseInvadersLeaderboardSubmitDuringPlay && window.game?.scene) {
+            window.__baseInvadersLeaderboardSubmitDuringPlay = false;
+            if (window.game.scene.isPaused('GameScene')) window.game.scene.resume('GameScene');
+            const g = window.game.scene.getScene('GameScene');
+            if (g?.gameState) g.gameState.paused = false;
+            if (g?.playSound) g.playSound('click');
+        } else if (window.game?.scene) {
             const g = window.game.scene.getScene('GameScene');
             if (g?.playSound) g.playSound('click');
         }
@@ -3035,7 +3045,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (statusEl) { statusEl.textContent = gt('leaderboard.submitted'); statusEl.style.color = '#00ff88'; }
             console.log('[leaderboard] Submit completed successfully');
             window.__baseInvadersPendingLeaderboardSubmit = null;
-            setTimeout(() => { if (overlay) overlay.classList.add('hidden'); if (btn) { btn.disabled = false; btn.textContent = gt('leaderboard.submit'); } }, 1500);
+            const wasDuringPlay = window.__baseInvadersLeaderboardSubmitDuringPlay;
+            if (wasDuringPlay) window.__baseInvadersLeaderboardSubmitDuringPlay = false;
+            setTimeout(() => {
+                if (overlay) overlay.classList.add('hidden');
+                if (btn) { btn.disabled = false; btn.textContent = gt('leaderboard.submit'); }
+                if (wasDuringPlay && window.game?.scene) {
+                    if (window.game.scene.isPaused('GameScene')) window.game.scene.resume('GameScene');
+                    const g = window.game.scene.getScene('GameScene');
+                    if (g?.gameState) g.gameState.paused = false;
+                }
+            }, 1500);
         } catch (err) {
             const msg = (err && err.message) ? String(err.message) : 'Submit failed';
             if (statusEl) { statusEl.textContent = msg; statusEl.style.color = '#ff6666'; }
