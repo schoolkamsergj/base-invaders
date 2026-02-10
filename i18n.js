@@ -50,7 +50,7 @@
      * @returns {Promise<void>}
      */
     function setLang(lang) {
-        if (lang !== 'en' && lang !== 'hi' && lang !== 'ru') lang = DEFAULT_LANG;
+        if (lang !== 'en' && lang !== 'hi' && lang !== 'ru' && lang !== 'uk') lang = DEFAULT_LANG;
         currentLang = lang;
         localStorage.setItem(STORAGE_KEY, lang);
         loadLocale(lang);
@@ -93,6 +93,18 @@
             try {
                 strings = typeof ruFallback !== 'undefined' && ruFallback !== null
                     ? JSON.parse(JSON.stringify(ruFallback))
+                    : JSON.parse(JSON.stringify(enFallback));
+                if (typeof global !== 'undefined') global.__i18nStrings = strings;
+            } catch (e) {
+                strings = JSON.parse(JSON.stringify(enFallback));
+                if (typeof global !== 'undefined') global.__i18nStrings = strings;
+            }
+            return;
+        }
+        if (lang === 'uk') {
+            try {
+                strings = typeof ukFallback !== 'undefined' && ukFallback !== null
+                    ? JSON.parse(JSON.stringify(ukFallback))
                     : JSON.parse(JSON.stringify(enFallback));
                 if (typeof global !== 'undefined') global.__i18nStrings = strings;
             } catch (e) {
@@ -226,7 +238,8 @@
         "lang": {
             "english": "🇺🇸 English",
             "hindi": "🇮🇳 हिंदी",
-            "russian": "🇷🇺 Русский"
+            "russian": "🇷🇺 Русский",
+            "ukrainian": "🇺🇦 Українська"
         }
     };
 
@@ -342,7 +355,8 @@
         lang: {
             english: "🇺🇸 English",
             hindi: "🇮🇳 हिंदी",
-            russian: "🇷🇺 Русский"
+            russian: "🇷🇺 Русский",
+            ukrainian: "🇺🇦 Українська"
         }
     };
 
@@ -458,7 +472,125 @@
         lang: {
             english: "🇺🇸 English",
             hindi: "🇮🇳 हिंदी",
-            russian: "🇷🇺 Русский"
+            russian: "🇷🇺 Русский",
+            ukrainian: "🇺🇦 Українська"
+        }
+    };
+
+    var ukFallback = {
+        menu: {
+            title: "ЗНИЩУВАЧ БАЗ",
+            welcome: "Ласкаво просимо, Командире! 🚀\n\nЗахисти базу від інопланетних загарбників.\nЗбирай діаманти та покращуй корабель.",
+            goodLuck: "Удачі! 🌟",
+            start: "СТАРТ",
+            howToPlay: "Як грати",
+            language: "Мова 🌐",
+            resetProgress: "Скинути прогрес",
+            leaderboard: "Таблиця лідерів"
+        },
+        instructions: {
+            title: "📖 ЯК ГРАТИ",
+            body: "🎮 КЕРУВАННЯ:\n← або A/D - Вліво/вправо\n↑ або W/S - Вгору/вниз\nSPACE - Авто-стрільба\nESC - Пауза\n\n🎯 МЕТА:\n- Знищуй ворогів та бази\n- Збирай діаманти 💎\n- Підбирай посилення ⚡\n- Покращуй корабель у магазині\n- Перемагай босів\n\n👾 ВОРОГИ\n🔴 Червоні сфери - Слабкі (швидкі)\n🔷 Гексагони - Середні (показує HP)\n🟦 Сині куби - БАЗИ (знищуй їх!)\n\n🛒 МАГАЗИН\n- Купуй кораблі, зброю, покращення\n\nУдачі, Командире! 🚀"
+        },
+        ui: {
+            stage: "ЕТАП",
+            mission: "Місія",
+            wave: "Хвиля",
+            boss: "БОС ⚔️",
+            score: "Очки",
+            level: "Рівень",
+            shop: "🛒 МАГАЗИН",
+            checkIn: "📅 ЧЕК-ІН",
+            checkedIn: "Отримано",
+            dayStreak: "День {next} →{milestone}",
+            dayMilestone: "День {next} →{next7} 🎉",
+            signing: "⛓️ ПІДПИС...",
+            confirmedBase: "⛓️ Підтверджено на Base!",
+            transactionFailed: "Помилка транзакції",
+            transactionCancelled: "Скасовано",
+            insufficientFunds: "Недостатньо коштів",
+            walletNotReady: "Гаманець не готовий, спробуйте ще раз",
+            alreadyCheckedIn: "Вже відзначено сьогодні",
+            sdkNotLoaded: "SDK не завантажено"
+        },
+        shop: {
+            title: "🛒 МАГАЗИН",
+            tabSpaceships: "🚀 Кораблі",
+            tabWeapons: "🔫 Зброя",
+            tabPowerups: "⚡ Посилення",
+            tabUpgrades: "⬆️ Покращення"
+        },
+        shopItems: {
+            starterShip: { name: "Стартовий корабель", stats: "HP: 100 | Швидкість: 300 | Збалансований" },
+            speedDemon: { name: "Демон швидкості", stats: "HP: 90 | Швидкість: 390 | +30% швидкості" },
+            baseDefender: { name: "Захисник бази", stats: "HP: 150 | Швидкість: 300 | +50% HP" },
+            tank: { name: "Танк", stats: "HP: 200 | Швидкість: 240 | Повільний але міцний" },
+            lightningStrike: { name: "Блискавичний удар", stats: "HP: 120 | Швидкість: 450 | Дуже швидкий" },
+            legendary: { name: "Легендарний", stats: "HP: 250 | Швидкість: 400 | Найкращі стати" },
+            fireRate: { name: "Швидкострільність", stats: "Рівень {level}/10 | Поточна: {rate}мс" },
+            damage: { name: "Урон", stats: "Рівень {level}/10 | Поточний: {damage}" },
+            multiShot2: { name: "Мульти-постріл x2", stats: "2 кулі одночасно" },
+            multiShot3: { name: "Мульти-постріл x3", stats: "3 кулі одночасно" },
+            multiShot5: { name: "Мульти-постріл x5", stats: "5 куль одночасно" },
+            laserBeam: { name: "Лазерний промінь", stats: "Безперервна атака" },
+            shieldGen: { name: "Генератор щита", stats: "Поглинає 5 ударів" },
+            smartBomb: { name: "Розумна бомба", stats: "Знищує всіх ворогів" },
+            coinMagnet: { name: "Магніт монет", stats: "Авто-збір монет" },
+            score2x: { name: "2x множник очок", stats: "2x очок протягом 60 сек" },
+            extraLife: { name: "Додаткове життя", stats: "+1 продовження" },
+            maxHP: { name: "Макс HP +10", stats: "Збільшити здоров'я на 10" },
+            hpRegen: { name: "Регенерація HP", stats: "Лікування 1 HP/сек" },
+            fasterMovement: { name: "Швидший рух", stats: "+20% до швидкості" },
+            owned: "КУПЛЕНО",
+            buy: "КУПИТИ",
+            vibrationToggle: "Тактильна вібрація",
+            vibrationSupported: "Увімкнено",
+            vibrationNotSupported: "Не підтримується на цьому пристрої",
+            enabled: "Увімкнено",
+            disabled: "Вимкнено"
+        },
+        pause: {
+            title: "⏸️ ПАУЗА",
+            resume: "Продовжити",
+            mainMenu: "Головне меню",
+            resetGame: "Скинути гру",
+            exitGame: "Вихід"
+        },
+        resetConfirm: {
+            title: "Скинути прогрес?",
+            message: "Це очистить валюту, покупки, рахунок та всі збережені дані. Неможливо скасувати.",
+            cancel: "Скасувати",
+            reset: "Скинути"
+        },
+        gameover: {
+            title: "💥 ГРА ЗАКІНЧЕНА",
+            restart: "Рестарт",
+            finalScore: "Фінальний рахунок",
+            stageReached: "Досягнутий етап",
+            level: "Рівень"
+        },
+        leaderboard: {
+            title: "🏆 ТАБЛИЦЯ ЛІДЕРІВ",
+            submitMyScore: "Надіслати результат",
+            refresh: "Оновити",
+            globalStatus: "Глобальна таблиця (он-чейн)",
+            personalBest: "Особистий рекорд (локально)",
+            loading: "Завантаження...",
+            playToSetBest: "Зіграйте, щоб встановити рекорд.",
+            submitNewHighTitle: "🏆 Новий рекорд!",
+            submitNewHighMessage: "Надіслати до глобальної таблиці? Потрібна транзакція гаманця.",
+            submit: "Надіслати",
+            cancel: "Скасувати",
+            submitting: "Надсилання...",
+            submitted: "Надіслано!",
+            openInWarpcast: "Відкрийте у Warpcast для надсилання.",
+            playFirst: "Спочатку зіграйте гру."
+        },
+        lang: {
+            english: "🇺🇸 English",
+            hindi: "🇮🇳 हिंदी",
+            russian: "🇷🇺 Русский",
+            ukrainian: "🇺🇦 Українська"
         }
     };
 
