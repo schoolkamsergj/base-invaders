@@ -690,7 +690,7 @@ class MenuScene extends Phaser.Scene {
         this.langOverlay.setInteractive();
         this.langOverlay.on('pointerdown', () => this.closeLanguageOverlay());
         const panelW = Math.min(340, width * 0.85);
-        const panelH = Math.min(460, height * 0.85);
+        const panelH = Math.min(500, height * 0.85);
         const panelX = width / 2 - panelW / 2;
         const panelY = height / 2 - panelH / 2;
         const textOffset = 40;
@@ -714,6 +714,7 @@ class MenuScene extends Phaser.Scene {
         this.langTitle.setDepth(depthLang + 2);
         const g = typeof window !== 'undefined' && typeof window.getText === 'function' ? window.getText : (typeof getText === 'function' ? getText : function (k) { return k; });
         const zhStr = g('lang.chinese');
+        const beStr = g('lang.belarusian');
         const deStr = g('lang.german');
         const enStr = g('lang.english');
         const frStr = g('lang.french');
@@ -724,7 +725,7 @@ class MenuScene extends Phaser.Scene {
         const tgStr = g('lang.tagalog');
         const viStr = g('lang.vietnamese');
         const ukStr = g('lang.ukrainian');
-        const rowH = 32;
+        const rowH = 30;
         const firstRowY = panelY + 66;
         var textStyle = { fontSize: '18px', fontFamily: 'Arial, sans-serif', color: '#ffffff', align: 'left', resolution: 2 };
         function addLangButton(y, str, langCode, logEmoji) {
@@ -736,16 +737,17 @@ class MenuScene extends Phaser.Scene {
             return t;
         }
         this.langZh = addLangButton.call(this, firstRowY + rowH * 0, zhStr, 'zh', '🇨🇳 ZH CLICKED');
-        this.langDe = addLangButton.call(this, firstRowY + rowH * 1, deStr, 'de', '🇩🇪 DE CLICKED');
-        this.langEn = addLangButton.call(this, firstRowY + rowH * 2, enStr, 'en', '🇺🇸 EN CLICKED');
-        this.langFr = addLangButton.call(this, firstRowY + rowH * 3, frStr, 'fr', '🇫🇷 FR CLICKED');
-        this.langHi = addLangButton.call(this, firstRowY + rowH * 4, hiStr, 'hi', '🇮🇳 HI CLICKED');
-        this.langId = addLangButton.call(this, firstRowY + rowH * 5, idStr, 'id', '🇮🇩 ID CLICKED');
-        this.langPt = addLangButton.call(this, firstRowY + rowH * 6, ptStr, 'pt', '🇧🇷 PT CLICKED');
-        this.langRu = addLangButton.call(this, firstRowY + rowH * 7, ruStr, 'ru', '🇷🇺 RU CLICKED');
-        this.langTg = addLangButton.call(this, firstRowY + rowH * 8, tgStr, 'tg', '🇵🇭 TG CLICKED');
-        this.langVi = addLangButton.call(this, firstRowY + rowH * 9, viStr, 'vi', '🇻🇳 VI CLICKED');
-        this.langUk = addLangButton.call(this, firstRowY + rowH * 10, ukStr, 'uk', '🇺🇦 UK CLICKED');
+        this.langBe = addLangButton.call(this, firstRowY + rowH * 1, beStr, 'be', '🇧🇾 BE CLICKED');
+        this.langDe = addLangButton.call(this, firstRowY + rowH * 2, deStr, 'de', '🇩🇪 DE CLICKED');
+        this.langEn = addLangButton.call(this, firstRowY + rowH * 3, enStr, 'en', '🇺🇸 EN CLICKED');
+        this.langFr = addLangButton.call(this, firstRowY + rowH * 4, frStr, 'fr', '🇫🇷 FR CLICKED');
+        this.langHi = addLangButton.call(this, firstRowY + rowH * 5, hiStr, 'hi', '🇮🇳 HI CLICKED');
+        this.langId = addLangButton.call(this, firstRowY + rowH * 6, idStr, 'id', '🇮🇩 ID CLICKED');
+        this.langPt = addLangButton.call(this, firstRowY + rowH * 7, ptStr, 'pt', '🇧🇷 PT CLICKED');
+        this.langRu = addLangButton.call(this, firstRowY + rowH * 8, ruStr, 'ru', '🇷🇺 RU CLICKED');
+        this.langTg = addLangButton.call(this, firstRowY + rowH * 9, tgStr, 'tg', '🇵🇭 TG CLICKED');
+        this.langVi = addLangButton.call(this, firstRowY + rowH * 10, viStr, 'vi', '🇻🇳 VI CLICKED');
+        this.langUk = addLangButton.call(this, firstRowY + rowH * 11, ukStr, 'uk', '🇺🇦 UK CLICKED');
     }
 
     /** Calls setLang(lang) then closes overlay and refreshMenuTexts. E.g. _applyLang('hi') -> setLang('hi'). */
@@ -759,9 +761,9 @@ class MenuScene extends Phaser.Scene {
     }
 
     closeLanguageOverlay() {
-        const el = [this.langOverlay, this.langPanel, this.langPanelBorder, this.langTitle, this.langEn, this.langHi, this.langRu, this.langUk, this.langTg, this.langId, this.langVi, this.langPt, this.langFr, this.langDe, this.langZh];
+        const el = [this.langOverlay, this.langPanel, this.langPanelBorder, this.langTitle, this.langEn, this.langHi, this.langRu, this.langUk, this.langTg, this.langId, this.langVi, this.langPt, this.langFr, this.langDe, this.langZh, this.langBe];
         el.forEach(o => { if (o && o.destroy) o.destroy(); });
-        this.langOverlay = this.langPanel = this.langPanelBorder = this.langTitle = this.langEn = this.langHi = this.langRu = this.langUk = this.langTg = this.langId = this.langVi = this.langPt = this.langFr = this.langDe = this.langZh = null;
+        this.langOverlay = this.langPanel = this.langPanelBorder = this.langTitle = this.langEn = this.langHi = this.langRu = this.langUk = this.langTg = this.langId = this.langVi = this.langPt = this.langFr = this.langDe = this.langZh = this.langBe = null;
     }
 }
 

@@ -50,7 +50,7 @@
      * @returns {Promise<void>}
      */
     function setLang(lang) {
-        if (lang !== 'en' && lang !== 'hi' && lang !== 'ru' && lang !== 'uk' && lang !== 'tg' && lang !== 'id' && lang !== 'vi' && lang !== 'pt' && lang !== 'fr' && lang !== 'de' && lang !== 'zh') lang = DEFAULT_LANG;
+        if (lang !== 'en' && lang !== 'hi' && lang !== 'ru' && lang !== 'uk' && lang !== 'tg' && lang !== 'id' && lang !== 'vi' && lang !== 'pt' && lang !== 'fr' && lang !== 'de' && lang !== 'zh' && lang !== 'be') lang = DEFAULT_LANG;
         currentLang = lang;
         localStorage.setItem(STORAGE_KEY, lang);
         loadLocale(lang);
@@ -176,6 +176,16 @@
         if (lang === 'zh') {
             try {
                 strings = JSON.parse(JSON.stringify(zhFallback));
+                if (typeof global !== 'undefined') global.__i18nStrings = strings;
+            } catch (e) {
+                strings = JSON.parse(JSON.stringify(enFallback));
+                if (typeof global !== 'undefined') global.__i18nStrings = strings;
+            }
+            return;
+        }
+        if (lang === 'be') {
+            try {
+                strings = JSON.parse(JSON.stringify(beFallback));
                 if (typeof global !== 'undefined') global.__i18nStrings = strings;
             } catch (e) {
                 strings = JSON.parse(JSON.stringify(enFallback));
@@ -316,7 +326,8 @@
             "portuguese": "🇧🇷 Português",
             "french": "🇫🇷 Français",
             "german": "🇩🇪 Deutsch",
-            "chinese": "🇨🇳 简体中文"
+            "chinese": "🇨🇳 简体中文",
+            "belarusian": "🇧🇾 Беларуская"
         }
     };
 
@@ -440,7 +451,8 @@
             portuguese: "🇧🇷 Português",
             french: "🇫🇷 Français",
             german: "🇩🇪 Deutsch",
-            chinese: "🇨🇳 简体中文"
+            chinese: "🇨🇳 简体中文",
+            belarusian: "🇧🇾 Беларуская"
         }
     };
 
@@ -564,7 +576,8 @@
             portuguese: "🇧🇷 Português",
             french: "🇫🇷 Français",
             german: "🇩🇪 Deutsch",
-            chinese: "🇨🇳 简体中文"
+            chinese: "🇨🇳 简体中文",
+            belarusian: "🇧🇾 Беларуская"
         }
     };
 
@@ -688,7 +701,8 @@
             portuguese: "🇧🇷 Português",
             french: "🇫🇷 Français",
             german: "🇩🇪 Deutsch",
-            chinese: "🇨🇳 简体中文"
+            chinese: "🇨🇳 简体中文",
+            belarusian: "🇧🇾 Беларуская"
         }
     };
 
@@ -813,7 +827,8 @@
             portuguese: "🇧🇷 Português",
             french: "🇫🇷 Français",
             german: "🇩🇪 Deutsch",
-            chinese: "🇨🇳 简体中文"
+            chinese: "🇨🇳 简体中文",
+            belarusian: "🇧🇾 Беларуская"
         }
     };
 
@@ -938,7 +953,8 @@
             portuguese: "🇧🇷 Português",
             french: "🇫🇷 Français",
             german: "🇩🇪 Deutsch",
-            chinese: "🇨🇳 简体中文"
+            chinese: "🇨🇳 简体中文",
+            belarusian: "🇧🇾 Беларуская"
         }
     };
 
@@ -1063,7 +1079,8 @@
             portuguese: "🇧🇷 Português",
             french: "🇫🇷 Français",
             german: "🇩🇪 Deutsch",
-            chinese: "🇨🇳 简体中文"
+            chinese: "🇨🇳 简体中文",
+            belarusian: "🇧🇾 Беларуская"
         }
     };
 
@@ -1188,7 +1205,8 @@
             portuguese: "🇧🇷 Português",
             french: "🇫🇷 Français",
             german: "🇩🇪 Deutsch",
-            chinese: "🇨🇳 简体中文"
+            chinese: "🇨🇳 简体中文",
+            belarusian: "🇧🇾 Беларуская"
         }
     };
 
@@ -1313,7 +1331,8 @@
             portuguese: "🇧🇷 Português",
             french: "🇫🇷 Français",
             german: "🇩🇪 Deutsch",
-            chinese: "🇨🇳 简体中文"
+            chinese: "🇨🇳 简体中文",
+            belarusian: "🇧🇾 Беларуская"
         }
     };
 
@@ -1438,7 +1457,8 @@
             portuguese: "🇧🇷 Português",
             french: "🇫🇷 Français",
             german: "🇩🇪 Deutsch",
-            chinese: "🇨🇳 简体中文"
+            chinese: "🇨🇳 简体中文",
+            belarusian: "🇧🇾 Беларуская"
         }
     };
 
@@ -1563,7 +1583,134 @@
             portuguese: "🇧🇷 Português",
             french: "🇫🇷 Français",
             german: "🇩🇪 Deutsch",
-            chinese: "🇨🇳 简体中文"
+            chinese: "🇨🇳 简体中文",
+            belarusian: "🇧🇾 Беларуская"
+        }
+    };
+
+    var beFallback = {
+        menu: {
+            title: "РАЗБУРАЛЬНІК БАЗ",
+            welcome: "Вітаем, Камандзір! Абараніце базу ад іншапланетных захопнікаў. Збірайце дыяменты і паляпшайце карабель.",
+            goodLuck: "Поспехаў! 🌟",
+            start: "ПАЧАЦЬ",
+            howToPlay: "Як гуляць",
+            language: "Мова 🌐",
+            resetProgress: "Скінуць прагрэс",
+            leaderboard: "Табліца лідараў"
+        },
+        instructions: {
+            title: "ЯК ГУЛЯЦЬ",
+            body: "КІРАВАННЕ:\n← або A/D - Налева/направа\n↑ або W/S - Уверх/уніз\nАўта-стральба\n⏸ - Паўза\n\nМЭТА:\n- Знішчайце ворагаў і базы\n- Збірайце дыяменты 💎\n- Падбірайце паляпшэнні\n- Паляпшайце карабель у краме\n- Перамагайце босаў\n\nПоспехаў, Камандзір! 🚀"
+        },
+        ui: {
+            stage: "ЭТАП",
+            mission: "Місія",
+            wave: "Хваля",
+            boss: "БОС",
+            score: "Ачкі",
+            level: "Узровень",
+            shop: "КРАМА",
+            checkIn: "ЧЭК-ІН",
+            checkedIn: "Атрымана",
+            dayStreak: "Дзень {next} (да {milestone})",
+            dayMilestone: "Дзень {next} ({next7}/7)",
+            signing: "ПОДПІС...",
+            confirmedBase: "Пацверджана на Base!",
+            transactionFailed: "Памылка транзакцыі",
+            transactionCancelled: "Скасавана",
+            insufficientFunds: "Недастаткова сродкаў",
+            walletNotReady: "Кашалёк не гатовы",
+            tryAgain: "Паспрабуйце зноў",
+            alreadyCheckedIn: "Ужо адзначана сёння",
+            sdkNotLoaded: "SDK не загружаны"
+        },
+        shop: {
+            title: "КРАМА",
+            tabSpaceships: "Караблі",
+            tabWeapons: "Зброя",
+            tabPowerups: "Паляпшэнні",
+            tabUpgrades: "Апгрэйды"
+        },
+        shopItems: {
+            starterShip: { name: "Стартавы карабель", stats: "HP: 100 | Хуткасць: 300 | Збалансаваны" },
+            speedDemon: { name: "Дэман хуткасці", stats: "HP: 90 | Хуткасць: 390 | +30% хуткасці" },
+            baseDefender: { name: "Абаронца базы", stats: "HP: 150 | Хуткасць: 300 | +50% HP" },
+            tank: { name: "Танк", stats: "HP: 200 | Хуткасць: 240 | Павольны але моцны" },
+            lightningStrike: { name: "Маланкавы ўдар", stats: "HP: 120 | Хуткасць: 450 | Вельмі хуткі" },
+            legendary: { name: "Легендарны", stats: "HP: 250 | Хуткасць: 400 | Лепшыя статы" },
+            fireRate: { name: "Хуткастральнасць", stats: "Узровень {level}/10 | Бягучая: {rate}мс" },
+            damage: { name: "Урон", stats: "Узровень {level}/10 | Бягучы: {damage}" },
+            multiShot2: { name: "Мульці-стрэл x2", stats: "2 кулі адначасова" },
+            multiShot3: { name: "Мульці-стрэл x3", stats: "3 кулі адначасова" },
+            multiShot5: { name: "Мульці-стрэл x5", stats: "5 куль адначасова" },
+            laserBeam: { name: "Лазерны прамень", stats: "Бесперапынная атака" },
+            shieldGen: { name: "Генератар шчыта", stats: "Паглынае 5 удараў" },
+            smartBomb: { name: "Разумная бомба", stats: "Знішчае ўсіх ворагаў" },
+            coinMagnet: { name: "Магніт манет", stats: "Аўта-збор манет" },
+            score2x: { name: "2x множнік ачкоў", stats: "2x ачкоў на 60 сек" },
+            extraLife: { name: "Дадатковае жыццё", stats: "+1 працяг" },
+            maxHP: { name: "Макс HP +10", stats: "Павялічыць здароўе на 10" },
+            hpRegen: { name: "Рэгенерацыя HP", stats: "Лячэнне 1 HP/сек" },
+            fasterMovement: { name: "Хутчэйшы рух", stats: "+20% да хуткасці" },
+            owned: "КУПЛЕНА",
+            buy: "КУПІЦЬ",
+            vibrationToggle: "Тактыльная вібрацыя",
+            vibrationSupported: "Уключана",
+            vibrationNotSupported: "Не падтрымліваецца на гэтай прыладзе",
+            enabled: "Уключана",
+            disabled: "Адключана"
+        },
+        pause: {
+            title: "ПАЎЗА",
+            resume: "Працягнуць",
+            mainMenu: "Галоўнае меню",
+            resetGame: "Скінуць гульню",
+            exitGame: "Выхад"
+        },
+        resetConfirm: {
+            title: "Скінуць прагрэс?",
+            message: "Гэта ачысціць валюту, пакупкі, лік і ўсе захаваныя дадзеныя. Немагчыма адмяніць.",
+            cancel: "Скасаваць",
+            reset: "Скінуць"
+        },
+        gameover: {
+            title: "ГУЛЬНЯ СКОНЧАНА",
+            restart: "Рэстарт",
+            finalScore: "Фінальны лік",
+            stageReached: "Дасягнуты этап",
+            level: "Узровень"
+        },
+        leaderboard: {
+            title: "ТАБЛІЦА ЛІДАРАЎ",
+            submitMyScore: "Адправіць вынік",
+            refresh: "Абнавіць",
+            globalStatus: "Глабальная табліца (он-чэйн)",
+            personalBest: "Асабісты рэкорд (лакальна)",
+            loading: "Загрузка...",
+            playToSetBest: "Згуляйце, каб усталяваць рэкорд.",
+            submitNewHighTitle: "Новы рэкорд!",
+            submitNewHighMessage: "Адправіць у глабальную табліцу? Патрэбна транзакцыя кашалька.",
+            submit: "Адправіць",
+            cancel: "Скасаваць",
+            submitting: "Адпраўка...",
+            submitted: "Адпраўлена!",
+            openInWarpcast: "Адкрыйце ў Warpcast для адпраўкі.",
+            playFirst: "Спачатку згуляйце ў гульню."
+        },
+        lang: {
+            english: "🇺🇸 English",
+            hindi: "🇮🇳 हिंदी",
+            russian: "🇷🇺 Русский",
+            ukrainian: "🇺🇦 Українська",
+            tagalog: "🇵🇭 Tagalog",
+            indonesian: "🇮🇩 Indonesian",
+            vietnamese: "🇻🇳 Tiếng Việt",
+            portuguese: "🇧🇷 Português",
+            french: "🇫🇷 Français",
+            german: "🇩🇪 Deutsch",
+            chinese: "🇨🇳 简体中文",
+            belarusian: "🇧🇾 Беларуская"
         }
     };
 
