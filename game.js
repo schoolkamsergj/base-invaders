@@ -914,7 +914,6 @@ class GameScene extends Phaser.Scene {
                 scoreMultiplier: 1,
                 inMenuPause: false
             };
-            this.leaderboardPending = false;
 
             // Create background
             try {
@@ -2634,7 +2633,11 @@ class GameScene extends Phaser.Scene {
         console.log('✅ Cleanup done');
     }
 
-    async gameOver() {
+    gameOver() {
+        this.gameState.gameOver = true;
+        this.scene.pause();
+        this.saveGameData();
+        
         const waveLevel = this.gameState.missionSystem
             ? this.gameState.missionSystem.currentWave
             : this.gameState.stage;
@@ -2647,59 +2650,41 @@ class GameScene extends Phaser.Scene {
             date: new Date().toISOString(),
             streak
         };
+        
         const localHigh = window.baseInvadersLeaderboard?.getLocalHighScore
             ? window.baseInvadersLeaderboard.getLocalHighScore()
             : null;
         const isNewHigh = !localHigh || this.gameState.score > (localHigh.score || 0);
         console.log('[leaderboard] Game over — score:', this.gameState.score, 'localHigh:', localHigh?.score ?? 'none', 'isNewHigh:', isNewHigh);
 
-        if (!isNewHigh) {
-            this.gameState.gameOver = true;
-            this.scene.pause();
-            document.getElementById('pause-overlay').classList.remove('hidden');
-            return;
+        if (isNewHigh && window.baseInvadersLeaderboard?.saveLocalHighScore) {
+            window.baseInvadersLeaderboard.saveLocalHighScore(localEntry);
         }
 
-        const wasAlreadyPaused = this.gameState.paused;
-        if (!wasAlreadyPaused && this.togglePause) {
-            this.togglePause();
-        }
-        this.leaderboardPending = true;
+        document.getElementById('gameover-overlay').classList.remove('hidden');
+        const fs = typeof getText === 'function' ? getText : function (k) { return k; };
+        document.getElementById('final-stats').innerHTML = `
+            <p>${fs('gameover.finalScore')}: ${this.gameState.score.toLocaleString()}</p>
+            <p>${fs('gameover.stageReached')}: ${this.gameState.stage}</p>
+            <p>${fs('gameover.level')}: ${this.gameState.playerLevel}</p>
+        `;
 
-        try {
-            const submitFn = window.baseInvadersOnchainSubmitScore || (async (opts) => {
-                const s = opts?.score ?? 0;
-                const w = opts?.wave ?? 1;
-                const st = opts?.streak ?? 0;
-                let name = '';
-                if (typeof window.baseInvadersGetUserName === 'function') name = await window.baseInvadersGetUserName();
-                name = (name && String(name).trim()) || 'Player';
-                return window.baseInvadersSubmitScore?.(s, w, st, name);
-            });
-            await submitFn({ score: this.gameState.score, wave: waveLevel, streak });
-            if (window.baseInvadersLeaderboard?.saveLocalHighScore) {
-                window.baseInvadersLeaderboard.saveLocalHighScore(localEntry);
-            }
-            const notifyX = this.scale?.width ? this.scale.width / 2 : 200;
-            const notifyY = this.scale?.height ? this.scale.height / 2 - 50 : 200;
-            if (this.ui?.showNotification) {
-                this.ui.showNotification(typeof getText === 'function' ? getText('leaderboard.recordSubmitted') || 'Рекорд відправлено!' : 'Рекорд відправлено!', notifyX, notifyY);
-            }
-            if (this.player) {
-                this.player.hp = this.player.maxHP;
-            }
-        } catch (err) {
-            console.error('[leaderboard] Submit tx failed:', err);
-            const notifyX = this.scale?.width ? this.scale.width / 2 : 200;
-            const notifyY = this.scale?.height ? this.scale.height / 2 - 50 : 200;
-            if (this.ui?.showNotification) {
-                this.ui.showNotification(typeof getText === 'function' ? getText('leaderboard.txError') || 'Помилка tx' : 'Помилка tx', notifyX, notifyY);
-            }
-        } finally {
-            if (!wasAlreadyPaused && this.togglePause) {
-                this.togglePause();
-            }
-            this.leaderboardPending = false;
+        // Show in-game submit dialog (no confirm() so it works in Farcaster iframe/desktop)
+        if (isNewHigh) {
+            console.log('[leaderboard] New high score — will show submit overlay in 200ms');
+            setTimeout(() => {
+                window.__baseInvadersPendingLeaderboardSubmit = {
+                    score: this.gameState.score,
+                    wave: waveLevel,
+                    streak
+                };
+                const overlay = document.getElementById('leaderboard-submit-overlay');
+                const statusEl = document.getElementById('leaderboard-submit-status');
+                if (statusEl) statusEl.textContent = '';
+                if (overlay) overlay.classList.remove('hidden');
+            }, 200);
+        } else {
+            console.log('[leaderboard] Not a new high score — submit dialog not shown');
         }
     }
 
@@ -2990,12 +2975,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('restart-btn')?.addEventListener('click', () => {
-        if (window.game?.scene) {
+        // Play click sound
+        if (window.game && window.game.scene) {
             const gameScene = window.game.scene.getScene('GameScene');
-            if (gameScene?.playSound) gameScene.playSound('click');
-            window.game.scene.stop('GameScene');
-            window.game.scene.start('GameScene');
+            if (gameScene && gameScene.playSound) {
+                gameScene.playSound('click');
+            }
         }
+        location.reload();
     });
 
     // Leaderboard submit overlay (replaces confirm() so it works in Farcaster/desktop)
@@ -3060,11 +3047,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('submit-my-score-btn')?.addEventListener('click', async (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const g = window.game?.scene?.getScene('GameScene');
-        if (g?.leaderboardPending) return;
         if (window.game && window.game.scene) {
-            const scene = window.game.scene.getScene('GameScene');
-            if (scene?.scene?.isActive && scene.scene.isActive() && scene?.gameState && !scene.gameState.paused && scene.togglePause) scene.togglePause();
+            const g = window.game.scene.getScene('GameScene');
+            if (g?.scene?.isActive && g.scene.isActive() && g?.gameState && !g.gameState.paused && g.togglePause) g.togglePause();
         }
         const statusEl = document.getElementById('leaderboard-submit-my-status');
         const btn = e.target;
