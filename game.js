@@ -16,8 +16,8 @@ class MenuScene extends Phaser.Scene {
         // Create starry background
         this.createBackground();
 
-        // Title - i18n
-        this.titleText = this.add.text(width / 2, height * 0.15, typeof getText === 'function' ? getText('menu.title') : 'BASE DESTROYER', {
+        // Title - i18n (підсунуто до верху)
+        this.titleText = this.add.text(width / 2, height * 0.08, typeof getText === 'function' ? getText('menu.title') : 'BASE DESTROYER', {
             fontSize: '64px',
             fontFamily: 'Arial, sans-serif',
             fontWeight: 'bold',
@@ -40,14 +40,14 @@ class MenuScene extends Phaser.Scene {
             ease: 'Sine.easeInOut'
         });
 
-        // Welcome message - i18n
-        const welcomeText = typeof getText === 'function' ? getText('menu.welcome') : 'Welcome, Commander! 🚀\n\nDefend the base from alien invaders.\nCollect diamonds and upgrade your ship.';
-        this.welcomeText = this.add.text(width / 2, height * 0.25, welcomeText, {
-            fontSize: '20px',
+        // Welcome message - i18n (Defend the Base, alien invaders, Good luck)
+        const welcomeText = typeof getText === 'function' ? getText('menu.welcome') : 'Welcome, Commander! 🚀\n\nDefend the Base from alien invaders.\nCollect diamonds and upgrade your ship.';
+        this.welcomeText = this.add.text(width / 2, height * 0.18, welcomeText, {
+            fontSize: '18px',
             fontFamily: 'Arial, sans-serif',
             color: '#ffffff',
             align: 'center',
-            lineSpacing: 10,
+            lineSpacing: 8,
             resolution: 2,
             wordWrap: { width: Math.min(450, width * 0.85) }
         });
@@ -56,7 +56,7 @@ class MenuScene extends Phaser.Scene {
         this.welcomeText.setShadow(2, 2, '#000000', 3, true);
 
         // Good luck - i18n
-        this.goodLuckText = this.add.text(width / 2, height * 0.40, typeof getText === 'function' ? getText('menu.goodLuck') : 'Good luck! ⭐', {
+        this.goodLuckText = this.add.text(width / 2, height * 0.30, typeof getText === 'function' ? getText('menu.goodLuck') : 'Good luck! ⭐', {
             fontSize: '22px',
             fontFamily: 'Arial, sans-serif',
             fontWeight: 'bold',
@@ -79,16 +79,18 @@ class MenuScene extends Phaser.Scene {
             ease: 'Sine.easeInOut'
         });
 
-        // START button
+        // START button (менші кнопки, рівномірні відстані)
+        const menuStartY = height * 0.40;
+        const menuGap = 0.105;
         this.startBtnBg = this.add.graphics();
         this.startBtnBg.setDepth(1);
 
-        this.startBtn = this.add.rectangle(width / 2, height * 0.38, 260, 85, 0x0052FF, 0);
+        this.startBtn = this.add.rectangle(width / 2, menuStartY, 220, 68, 0x0052FF, 0);
         this.startBtn.setInteractive({ useHandCursor: true });
         this.startBtn.setDepth(2);
         
-        this.startText = this.add.text(width / 2, height * 0.38, typeof getText === 'function' ? getText('menu.start') : 'START', {
-            fontSize: '36px',
+        this.startText = this.add.text(width / 2, menuStartY, typeof getText === 'function' ? getText('menu.start') : 'START', {
+            fontSize: '30px',
             fontFamily: 'Arial, sans-serif',
             fontWeight: 'bold',
             color: '#00ff00',
@@ -141,14 +143,14 @@ class MenuScene extends Phaser.Scene {
             this.scene.start('GameScene');
         });
         
-        const languageBtnY = height * (0.38 + 0.09);
+        const languageBtnY = height * (menuStartY / height + menuGap);
         this.languageBtnBg = this.add.graphics();
         this.languageBtnBg.setDepth(1);
-        this.languageBtn = this.add.rectangle(width / 2, languageBtnY, 260, 55, 0x2196F3, 0);
+        this.languageBtn = this.add.rectangle(width / 2, languageBtnY, 200, 48, 0x2196F3, 0);
         this.languageBtn.setInteractive({ useHandCursor: true });
         this.languageBtn.setDepth(2);
         this.languageText = this.add.text(width / 2, languageBtnY, typeof getText === 'function' ? getText('menu.language') : 'Language 🌐', {
-            fontSize: '22px',
+            fontSize: '18px',
             fontFamily: 'Arial, sans-serif',
             fontWeight: 'bold',
             color: '#ffffff',
@@ -177,7 +179,7 @@ class MenuScene extends Phaser.Scene {
             });
         });
         
-        const instructionsBtnY = height * (0.38 + 0.18);
+        const instructionsBtnY = height * (menuStartY / height + menuGap * 2);
 
         this.instructionsBtnBg = this.add.graphics();
         this.instructionsBtnBg.setDepth(1);
@@ -185,9 +187,9 @@ class MenuScene extends Phaser.Scene {
         this.instructionsBtn = this.add.rectangle(
             width / 2,
             instructionsBtnY,
-            260,
-            65,
-            0x2196F3, // Blue color
+            200,
+            48,
+            0x2196F3,
             0
         );
         this.instructionsBtn.setInteractive({ useHandCursor: true });
@@ -198,7 +200,7 @@ class MenuScene extends Phaser.Scene {
             instructionsBtnY,
             typeof getText === 'function' ? getText('menu.howToPlay') : 'How to Play',
             {
-                fontSize: '26px',
+                fontSize: '18px',
                 fontFamily: 'Arial, sans-serif',
                 fontWeight: 'bold',
                 color: '#ffffff',
@@ -243,16 +245,16 @@ class MenuScene extends Phaser.Scene {
             });
         });
         
-        const resetBtnY = height * (0.38 + 0.27);
+        const resetBtnY = height * (menuStartY / height + menuGap * 3);
         this.resetBtnBg = this.add.graphics();
         this.resetBtnBg.setDepth(1);
         
-        this.resetBtn = this.add.rectangle(width / 2, resetBtnY, 230, 55, 0xcc0000, 0);
+        this.resetBtn = this.add.rectangle(width / 2, resetBtnY, 200, 48, 0xcc0000, 0);
         this.resetBtn.setInteractive({ useHandCursor: true });
         this.resetBtn.setDepth(2);
         
         this.resetText = this.add.text(width / 2, resetBtnY, typeof getText === 'function' ? getText('menu.resetProgress') : 'Reset Progress', {
-            fontSize: '20px',
+            fontSize: '17px',
             fontFamily: 'Arial, sans-serif',
             fontWeight: 'bold',
             color: '#ffffff',
@@ -291,17 +293,17 @@ class MenuScene extends Phaser.Scene {
             location.reload();
         });
 
-        // LEADERBOARD button (below Reset Progress)
-        const leaderboardBtnY = height * (0.38 + 0.36);
+        // LEADERBOARD button (рівномірна відстань від інших)
+        const leaderboardBtnY = height * (menuStartY / height + menuGap * 4);
         this.leaderboardBtnBg = this.add.graphics();
         this.leaderboardBtnBg.setDepth(1);
         
-        this.leaderboardBtn = this.add.rectangle(width / 2, leaderboardBtnY, 230, 55, 0x0052FF, 0);
+        this.leaderboardBtn = this.add.rectangle(width / 2, leaderboardBtnY, 200, 48, 0x0052FF, 0);
         this.leaderboardBtn.setInteractive({ useHandCursor: true });
         this.leaderboardBtn.setDepth(2);
         
         this.leaderboardText = this.add.text(width / 2, leaderboardBtnY, typeof getText === 'function' ? getText('menu.leaderboard') : 'Leaderboard', {
-            fontSize: '20px',
+            fontSize: '17px',
             fontFamily: 'Arial, sans-serif',
             fontWeight: 'bold',
             color: '#ffffff',
@@ -436,66 +438,67 @@ class MenuScene extends Phaser.Scene {
     }
 
     updateMenuLayout(width, height) {
-        const titleSize = Math.max(28, Math.min(width * 0.08, 64));
-        const textSize = Math.max(14, Math.min(width * 0.025, 20));
+        const titleSize = Math.max(28, Math.min(width * 0.07, 56));
+        const textSize = Math.max(14, Math.min(width * 0.022, 18));
         const buttonX = width * 0.5;
-        const gap = 0.09;
-        const startY = height * 0.38;
-        const languageY = height * (0.38 + gap);
-        const instructionsY = height * (0.38 + gap * 2);
-        const resetY = height * (0.38 + gap * 3);
-        const leaderboardY = height * (0.38 + gap * 4);
+        const gap = 0.105;
+        const startY = height * 0.40;
+        const languageY = height * (0.40 + gap);
+        const instructionsY = height * (0.40 + gap * 2);
+        const resetY = height * (0.40 + gap * 3);
+        const leaderboardY = height * (0.40 + gap * 4);
 
-        this.titleText.setPosition(width / 2, height * 0.10);
+        this.titleText.setPosition(width / 2, height * 0.08);
         this.titleText.setFontSize(`${titleSize}px`);
 
         if (this.welcomeText) {
-            this.welcomeText.setPosition(width / 2, height * 0.19);
+            this.welcomeText.setPosition(width / 2, height * 0.18);
             this.welcomeText.setFontSize(`${textSize}px`);
             this.welcomeText.setWordWrapWidth(Math.min(450, width * 0.85), true);
         }
 
         if (this.goodLuckText) {
-            this.goodLuckText.setPosition(width / 2, height * 0.28);
+            this.goodLuckText.setPosition(width / 2, height * 0.30);
+            this.goodLuckText.setFontSize(`${Math.max(16, Math.min(width * 0.035, 22))}px`);
         }
 
-        // START button
+        // START button (менші, рівномірні відстані)
         this.startBtn.setPosition(buttonX, startY);
-        this.startBtn.setSize(260, 85);
+        this.startBtn.setSize(220, 68);
         this.startText.setPosition(buttonX, startY);
-        this.startText.setFontSize('36px');
+        this.startText.setFontSize('30px');
         this.updateMenuButtonStyle(this.startBtnBg, this.startBtn, false);
 
         // Language button
         if (this.languageBtn) {
             this.languageBtn.setPosition(buttonX, languageY);
-            this.languageBtn.setSize(260, 55);
+            this.languageBtn.setSize(200, 48);
             this.languageText.setPosition(buttonX, languageY);
-            this.languageText.setFontSize('22px');
+            this.languageText.setFontSize('18px');
             this.updateLanguageButtonStyle(false);
         }
 
         // Instructions button
         if (this.instructionsBtn) {
             this.instructionsBtn.setPosition(buttonX, instructionsY);
-            this.instructionsBtn.setSize(260, 65);
+            this.instructionsBtn.setSize(200, 48);
             this.instructionsBtnText.setPosition(buttonX, instructionsY);
-            this.instructionsBtnText.setFontSize('26px');
+            this.instructionsBtnText.setFontSize('18px');
             this.updateInstructionsButtonStyle(false);
         }
 
         // Reset button
         this.resetBtn.setPosition(buttonX, resetY);
-        this.resetBtn.setSize(230, 55);
+        this.resetBtn.setSize(200, 48);
         this.resetText.setPosition(buttonX, resetY);
-        this.resetText.setFontSize('20px');
+        this.resetText.setFontSize('17px');
         this.updateResetButtonStyle(false);
 
         // Leaderboard button
         this.leaderboardBtn.setPosition(buttonX, leaderboardY);
-        this.leaderboardBtn.setSize(230, 55);
+        this.leaderboardBtn.setSize(200, 48);
         this.leaderboardText.setPosition(buttonX, leaderboardY);
-        this.leaderboardText.setFontSize('20px');
+        this.leaderboardText.setFontSize('17px');
         this.updateLeaderboardButtonStyle(false);
     }
 
@@ -2816,6 +2819,31 @@ if (typeof Phaser === 'undefined') {
 
 // UI Event Handlers (wait for DOM to be ready)
 document.addEventListener('DOMContentLoaded', () => {
+    // Fallback: when returning from wallet (focus/visibility), if leaderboard submit overlay still visible — close and resume
+    let leaderboardSubmitFocusTimer = null;
+    function onVisibilityOrFocus() {
+        if (document.visibilityState !== 'visible') return;
+        const overlay = document.getElementById('leaderboard-submit-overlay');
+        const submitBtn = document.querySelector('#leaderboard-submit-overlay button#leaderboard-submit-do');
+        if (!overlay || overlay.classList.contains('hidden')) return;
+        if (!window.__baseInvadersLeaderboardSubmitDuringPlay || !window.game?.scene) return;
+        if (submitBtn && !submitBtn.disabled) return;
+        if (leaderboardSubmitFocusTimer) clearTimeout(leaderboardSubmitFocusTimer);
+        leaderboardSubmitFocusTimer = setTimeout(() => {
+            leaderboardSubmitFocusTimer = null;
+            overlay.classList.add('hidden');
+            window.__baseInvadersPendingLeaderboardSubmit = null;
+            window.__baseInvadersLeaderboardSubmitDuringPlay = false;
+            if (window.game.scene.isPaused('GameScene')) window.game.scene.resume('GameScene');
+            const g = window.game.scene.getScene('GameScene');
+            if (g?.gameState) g.gameState.paused = false;
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = (typeof getText === 'function' ? getText('leaderboard.submit') : 'Submit'); }
+            console.log('[leaderboard] Focus fallback: closed overlay and resumed');
+        }, 2000);
+    }
+    document.addEventListener('visibilitychange', onVisibilityOrFocus);
+    window.addEventListener('focus', onVisibilityOrFocus);
+
     document.getElementById('close-shop')?.addEventListener('click', () => {
         document.getElementById('shop-overlay').classList.add('hidden');
         if (window.game && window.game.scene) {
@@ -3042,25 +3070,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.baseInvadersLeaderboard.setSavedName(name);
             }
             await window.baseInvadersSubmitScore(pending.score, pending.wave, pending.streak, name);
-            if (statusEl) { statusEl.textContent = gt('leaderboard.submitted'); statusEl.style.color = '#00ff88'; }
             console.log('[leaderboard] Submit completed successfully');
             window.__baseInvadersPendingLeaderboardSubmit = null;
             const wasDuringPlay = window.__baseInvadersLeaderboardSubmitDuringPlay;
             if (wasDuringPlay) window.__baseInvadersLeaderboardSubmitDuringPlay = false;
-            setTimeout(() => {
-                if (overlay) overlay.classList.add('hidden');
-                if (btn) { btn.disabled = false; btn.textContent = gt('leaderboard.submit'); }
-                if (wasDuringPlay && window.game?.scene) {
-                    if (window.game.scene.isPaused('GameScene')) window.game.scene.resume('GameScene');
-                    const g = window.game.scene.getScene('GameScene');
-                    if (g?.gameState) g.gameState.paused = false;
-                }
-            }, 1500);
+            if (statusEl) { statusEl.textContent = gt('leaderboard.submitted'); statusEl.style.color = '#00ff88'; }
+            if (overlay) overlay.classList.add('hidden');
+            if (btn) { btn.disabled = false; btn.textContent = gt('leaderboard.submit'); }
+            if (wasDuringPlay && window.game?.scene) {
+                if (window.game.scene.isPaused('GameScene')) window.game.scene.resume('GameScene');
+                const g = window.game.scene.getScene('GameScene');
+                if (g?.gameState) g.gameState.paused = false;
+            }
         } catch (err) {
             const msg = (err && err.message) ? String(err.message) : 'Submit failed';
             if (statusEl) { statusEl.textContent = msg; statusEl.style.color = '#ff6666'; }
             console.error('Leaderboard submission failed:', err);
             if (btn) { btn.disabled = false; btn.textContent = gt('leaderboard.submit'); }
+            if (window.__baseInvadersLeaderboardSubmitDuringPlay && window.game?.scene) {
+                window.__baseInvadersLeaderboardSubmitDuringPlay = false;
+                if (window.game.scene.isPaused('GameScene')) window.game.scene.resume('GameScene');
+                const g = window.game.scene.getScene('GameScene');
+                if (g?.gameState) g.gameState.paused = false;
+            }
         }
     });
 
