@@ -689,127 +689,63 @@ class MenuScene extends Phaser.Scene {
         this.langOverlay.setDepth(depthLang);
         this.langOverlay.setInteractive();
         this.langOverlay.on('pointerdown', () => this.closeLanguageOverlay());
-        const panelW = Math.min(280, width * 0.8);
-        const panelH = Math.min(260, height * 0.5);
+        const panelW = Math.min(340, width * 0.85);
+        const panelH = Math.min(460, height * 0.85);
+        const panelX = width / 2 - panelW / 2;
+        const panelY = height / 2 - panelH / 2;
+        const textOffset = 40;
+        const textX = panelX + textOffset;
         this.langPanel = this.add.rectangle(width / 2, height / 2, panelW, panelH, 0x1a1a2e, 0.98);
         this.langPanel.setDepth(depthLang + 1);
         this.langPanelBorder = this.add.graphics();
         this.langPanelBorder.lineStyle(3, 0x0052FF, 1);
-        this.langPanelBorder.strokeRoundedRect(width / 2 - panelW / 2, height / 2 - panelH / 2, panelW, panelH, 10);
+        this.langPanelBorder.strokeRoundedRect(panelX, panelY, panelW, panelH, 10);
         this.langPanelBorder.setDepth(depthLang + 1);
         const titleStr = typeof getText === 'function' ? getText('menu.language') : 'Language 🌐';
-        this.langTitle = this.add.text(width / 2, height / 2 - panelH / 2 + 28, titleStr, {
-            fontSize: '22px',
+        this.langTitle = this.add.text(textX, panelY + 26, titleStr, {
+            fontSize: '20px',
             fontFamily: 'Arial, sans-serif',
             fontWeight: 'bold',
             color: '#00ffff',
-            align: 'center'
+            align: 'left',
+            resolution: 2
         });
-        this.langTitle.setOrigin(0.5);
+        this.langTitle.setOrigin(0, 0.5);
         this.langTitle.setDepth(depthLang + 2);
         const g = typeof window !== 'undefined' && typeof window.getText === 'function' ? window.getText : (typeof getText === 'function' ? getText : function (k) { return k; });
-        const enStr = g('lang.english');
-        const hiStr = g('lang.hindi');
-        const ruStr = g('lang.russian');
-        const ukStr = g('lang.ukrainian');
-        const tgStr = g('lang.tagalog');
-        const idStr = g('lang.indonesian');
-        const viStr = g('lang.vietnamese');
-        const ptStr = g('lang.portuguese');
-        const frStr = g('lang.french');
-        const deStr = g('lang.german');
         const zhStr = g('lang.chinese');
-        const rowH = 30;
-        const centerY = height / 2;
-        var textStyle = { fontSize: '15px', fontFamily: 'Arial, sans-serif', color: '#ffffff', align: 'center' };
-        this.langEn = this.add.text(width / 2, centerY - rowH * 5, enStr, textStyle);
-        this.langEn.setOrigin(0.5);
-        this.langEn.setDepth(depthLang + 2);
-        this.langEn.setInteractive({ useHandCursor: true });
-        this.langEn.on('pointerdown', () => {
-            console.log('🇺🇸 EN CLICKED');
-            this._applyLang('en');
-        });
-        this.langHi = this.add.text(width / 2, centerY - rowH * 4, hiStr, textStyle);
-        this.langHi.setOrigin(0.5);
-        this.langHi.setDepth(depthLang + 2);
-        this.langHi.setInteractive({ useHandCursor: true });
-        this.langHi.on('pointerdown', () => {
-            console.log('🇮🇳 HI CLICKED');
-            this._applyLang('hi');
-        });
-        this.langRu = this.add.text(width / 2, centerY - rowH * 3, ruStr, textStyle);
-        this.langRu.setOrigin(0.5);
-        this.langRu.setDepth(depthLang + 2);
-        this.langRu.setInteractive({ useHandCursor: true });
-        this.langRu.on('pointerdown', () => {
-            console.log('🇷🇺 RU CLICKED');
-            this._applyLang('ru');
-        });
-        this.langUk = this.add.text(width / 2, centerY - rowH * 2, ukStr, textStyle);
-        this.langUk.setOrigin(0.5);
-        this.langUk.setDepth(depthLang + 2);
-        this.langUk.setInteractive({ useHandCursor: true });
-        this.langUk.on('pointerdown', () => {
-            console.log('🇺🇦 UK CLICKED');
-            this._applyLang('uk');
-        });
-        this.langTg = this.add.text(width / 2, centerY - rowH, tgStr, textStyle);
-        this.langTg.setOrigin(0.5);
-        this.langTg.setDepth(depthLang + 2);
-        this.langTg.setInteractive({ useHandCursor: true });
-        this.langTg.on('pointerdown', () => {
-            console.log('🇵🇭 TG CLICKED');
-            this._applyLang('tg');
-        });
-        this.langId = this.add.text(width / 2, centerY, idStr, textStyle);
-        this.langId.setOrigin(0.5);
-        this.langId.setDepth(depthLang + 2);
-        this.langId.setInteractive({ useHandCursor: true });
-        this.langId.on('pointerdown', () => {
-            console.log('🇮🇩 ID CLICKED');
-            this._applyLang('id');
-        });
-        this.langVi = this.add.text(width / 2, centerY + rowH, viStr, textStyle);
-        this.langVi.setOrigin(0.5);
-        this.langVi.setDepth(depthLang + 2);
-        this.langVi.setInteractive({ useHandCursor: true });
-        this.langVi.on('pointerdown', () => {
-            console.log('🇻🇳 VI CLICKED');
-            this._applyLang('vi');
-        });
-        this.langPt = this.add.text(width / 2, centerY + rowH * 2, ptStr, textStyle);
-        this.langPt.setOrigin(0.5);
-        this.langPt.setDepth(depthLang + 2);
-        this.langPt.setInteractive({ useHandCursor: true });
-        this.langPt.on('pointerdown', () => {
-            console.log('🇧🇷 PT CLICKED');
-            this._applyLang('pt');
-        });
-        this.langFr = this.add.text(width / 2, centerY + rowH * 3, frStr, textStyle);
-        this.langFr.setOrigin(0.5);
-        this.langFr.setDepth(depthLang + 2);
-        this.langFr.setInteractive({ useHandCursor: true });
-        this.langFr.on('pointerdown', () => {
-            console.log('🇫🇷 FR CLICKED');
-            this._applyLang('fr');
-        });
-        this.langDe = this.add.text(width / 2, centerY + rowH * 4, deStr, textStyle);
-        this.langDe.setOrigin(0.5);
-        this.langDe.setDepth(depthLang + 2);
-        this.langDe.setInteractive({ useHandCursor: true });
-        this.langDe.on('pointerdown', () => {
-            console.log('🇩🇪 DE CLICKED');
-            this._applyLang('de');
-        });
-        this.langZh = this.add.text(width / 2, centerY + rowH * 5, zhStr, textStyle);
-        this.langZh.setOrigin(0.5);
-        this.langZh.setDepth(depthLang + 2);
-        this.langZh.setInteractive({ useHandCursor: true });
-        this.langZh.on('pointerdown', () => {
-            console.log('🇨🇳 ZH CLICKED');
-            this._applyLang('zh');
-        });
+        const deStr = g('lang.german');
+        const enStr = g('lang.english');
+        const frStr = g('lang.french');
+        const hiStr = g('lang.hindi');
+        const idStr = g('lang.indonesian');
+        const ptStr = g('lang.portuguese');
+        const ruStr = g('lang.russian');
+        const tgStr = g('lang.tagalog');
+        const viStr = g('lang.vietnamese');
+        const ukStr = g('lang.ukrainian');
+        const rowH = 32;
+        const firstRowY = panelY + 66;
+        var textStyle = { fontSize: '18px', fontFamily: 'Arial, sans-serif', color: '#ffffff', align: 'left', resolution: 2 };
+        function addLangButton(y, str, langCode, logEmoji) {
+            const t = this.add.text(textX, y, str, textStyle);
+            t.setOrigin(0, 0.5);
+            t.setDepth(depthLang + 2);
+            t.setInteractive({ useHandCursor: true });
+            t.on('pointerdown', () => { console.log(logEmoji); this._applyLang(langCode); });
+            return t;
+        }
+        this.langZh = addLangButton.call(this, firstRowY + rowH * 0, zhStr, 'zh', '🇨🇳 ZH CLICKED');
+        this.langDe = addLangButton.call(this, firstRowY + rowH * 1, deStr, 'de', '🇩🇪 DE CLICKED');
+        this.langEn = addLangButton.call(this, firstRowY + rowH * 2, enStr, 'en', '🇺🇸 EN CLICKED');
+        this.langFr = addLangButton.call(this, firstRowY + rowH * 3, frStr, 'fr', '🇫🇷 FR CLICKED');
+        this.langHi = addLangButton.call(this, firstRowY + rowH * 4, hiStr, 'hi', '🇮🇳 HI CLICKED');
+        this.langId = addLangButton.call(this, firstRowY + rowH * 5, idStr, 'id', '🇮🇩 ID CLICKED');
+        this.langPt = addLangButton.call(this, firstRowY + rowH * 6, ptStr, 'pt', '🇧🇷 PT CLICKED');
+        this.langRu = addLangButton.call(this, firstRowY + rowH * 7, ruStr, 'ru', '🇷🇺 RU CLICKED');
+        this.langTg = addLangButton.call(this, firstRowY + rowH * 8, tgStr, 'tg', '🇵🇭 TG CLICKED');
+        this.langVi = addLangButton.call(this, firstRowY + rowH * 9, viStr, 'vi', '🇻🇳 VI CLICKED');
+        this.langUk = addLangButton.call(this, firstRowY + rowH * 10, ukStr, 'uk', '🇺🇦 UK CLICKED');
     }
 
     /** Calls setLang(lang) then closes overlay and refreshMenuTexts. E.g. _applyLang('hi') -> setLang('hi'). */
