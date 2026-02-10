@@ -713,10 +713,11 @@ class MenuScene extends Phaser.Scene {
         const ruStr = g('lang.russian');
         const ukStr = g('lang.ukrainian');
         const tgStr = g('lang.tagalog');
-        const rowH = 42;
+        const idStr = g('lang.indonesian');
+        const rowH = 40;
         const centerY = height / 2;
-        var textStyle = { fontSize: '21px', fontFamily: 'Arial, sans-serif', color: '#ffffff', align: 'center' };
-        this.langEn = this.add.text(width / 2, centerY - rowH * 2, enStr, textStyle);
+        var textStyle = { fontSize: '20px', fontFamily: 'Arial, sans-serif', color: '#ffffff', align: 'center' };
+        this.langEn = this.add.text(width / 2, centerY - rowH * 2.5, enStr, textStyle);
         this.langEn.setOrigin(0.5);
         this.langEn.setDepth(depthLang + 2);
         this.langEn.setInteractive({ useHandCursor: true });
@@ -724,7 +725,7 @@ class MenuScene extends Phaser.Scene {
             console.log('🇺🇸 EN CLICKED');
             this._applyLang('en');
         });
-        this.langHi = this.add.text(width / 2, centerY - rowH, hiStr, textStyle);
+        this.langHi = this.add.text(width / 2, centerY - rowH * 1.5, hiStr, textStyle);
         this.langHi.setOrigin(0.5);
         this.langHi.setDepth(depthLang + 2);
         this.langHi.setInteractive({ useHandCursor: true });
@@ -732,7 +733,7 @@ class MenuScene extends Phaser.Scene {
             console.log('🇮🇳 HI CLICKED');
             this._applyLang('hi');
         });
-        this.langRu = this.add.text(width / 2, centerY, ruStr, textStyle);
+        this.langRu = this.add.text(width / 2, centerY - rowH * 0.5, ruStr, textStyle);
         this.langRu.setOrigin(0.5);
         this.langRu.setDepth(depthLang + 2);
         this.langRu.setInteractive({ useHandCursor: true });
@@ -740,7 +741,7 @@ class MenuScene extends Phaser.Scene {
             console.log('🇷🇺 RU CLICKED');
             this._applyLang('ru');
         });
-        this.langUk = this.add.text(width / 2, centerY + rowH, ukStr, textStyle);
+        this.langUk = this.add.text(width / 2, centerY + rowH * 0.5, ukStr, textStyle);
         this.langUk.setOrigin(0.5);
         this.langUk.setDepth(depthLang + 2);
         this.langUk.setInteractive({ useHandCursor: true });
@@ -748,13 +749,21 @@ class MenuScene extends Phaser.Scene {
             console.log('🇺🇦 UK CLICKED');
             this._applyLang('uk');
         });
-        this.langTg = this.add.text(width / 2, centerY + rowH * 2, tgStr, textStyle);
+        this.langTg = this.add.text(width / 2, centerY + rowH * 1.5, tgStr, textStyle);
         this.langTg.setOrigin(0.5);
         this.langTg.setDepth(depthLang + 2);
         this.langTg.setInteractive({ useHandCursor: true });
         this.langTg.on('pointerdown', () => {
             console.log('🇵🇭 TG CLICKED');
             this._applyLang('tg');
+        });
+        this.langId = this.add.text(width / 2, centerY + rowH * 2.5, idStr, textStyle);
+        this.langId.setOrigin(0.5);
+        this.langId.setDepth(depthLang + 2);
+        this.langId.setInteractive({ useHandCursor: true });
+        this.langId.on('pointerdown', () => {
+            console.log('🇮🇩 ID CLICKED');
+            this._applyLang('id');
         });
     }
 
@@ -769,9 +778,9 @@ class MenuScene extends Phaser.Scene {
     }
 
     closeLanguageOverlay() {
-        const el = [this.langOverlay, this.langPanel, this.langPanelBorder, this.langTitle, this.langEn, this.langHi, this.langRu, this.langUk, this.langTg];
+        const el = [this.langOverlay, this.langPanel, this.langPanelBorder, this.langTitle, this.langEn, this.langHi, this.langRu, this.langUk, this.langTg, this.langId];
         el.forEach(o => { if (o && o.destroy) o.destroy(); });
-        this.langOverlay = this.langPanel = this.langPanelBorder = this.langTitle = this.langEn = this.langHi = this.langRu = this.langUk = this.langTg = null;
+        this.langOverlay = this.langPanel = this.langPanelBorder = this.langTitle = this.langEn = this.langHi = this.langRu = this.langUk = this.langTg = this.langId = null;
     }
 }
 

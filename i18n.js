@@ -50,7 +50,7 @@
      * @returns {Promise<void>}
      */
     function setLang(lang) {
-        if (lang !== 'en' && lang !== 'hi' && lang !== 'ru' && lang !== 'uk' && lang !== 'tg') lang = DEFAULT_LANG;
+        if (lang !== 'en' && lang !== 'hi' && lang !== 'ru' && lang !== 'uk' && lang !== 'tg' && lang !== 'id') lang = DEFAULT_LANG;
         currentLang = lang;
         localStorage.setItem(STORAGE_KEY, lang);
         loadLocale(lang);
@@ -116,6 +116,16 @@
         if (lang === 'tg') {
             try {
                 strings = JSON.parse(JSON.stringify(tgFallback));
+                if (typeof global !== 'undefined') global.__i18nStrings = strings;
+            } catch (e) {
+                strings = JSON.parse(JSON.stringify(enFallback));
+                if (typeof global !== 'undefined') global.__i18nStrings = strings;
+            }
+            return;
+        }
+        if (lang === 'id') {
+            try {
+                strings = JSON.parse(JSON.stringify(idFallback));
                 if (typeof global !== 'undefined') global.__i18nStrings = strings;
             } catch (e) {
                 strings = JSON.parse(JSON.stringify(enFallback));
@@ -250,7 +260,8 @@
             "hindi": "🇮🇳 हिंदी",
             "russian": "🇷🇺 Русский",
             "ukrainian": "🇺🇦 Українська",
-            "tagalog": "🇵🇭 Tagalog"
+            "tagalog": "🇵🇭 Tagalog",
+            "indonesian": "🇮🇩 Indonesian"
         }
     };
 
@@ -368,7 +379,8 @@
             hindi: "🇮🇳 हिंदी",
             russian: "🇷🇺 Русский",
             ukrainian: "🇺🇦 Українська",
-            tagalog: "🇵🇭 Tagalog"
+            tagalog: "🇵🇭 Tagalog",
+            indonesian: "🇮🇩 Indonesian"
         }
     };
 
@@ -486,7 +498,8 @@
             hindi: "🇮🇳 हिंदी",
             russian: "🇷🇺 Русский",
             ukrainian: "🇺🇦 Українська",
-            tagalog: "🇵🇭 Tagalog"
+            tagalog: "🇵🇭 Tagalog",
+            indonesian: "🇮🇩 Indonesian"
         }
     };
 
@@ -604,7 +617,8 @@
             hindi: "🇮🇳 हिंदी",
             russian: "🇷🇺 Русский",
             ukrainian: "🇺🇦 Українська",
-            tagalog: "🇵🇭 Tagalog"
+            tagalog: "🇵🇭 Tagalog",
+            indonesian: "🇮🇩 Indonesian"
         }
     };
 
@@ -723,7 +737,128 @@
             hindi: "🇮🇳 हिंदी",
             russian: "🇷🇺 Русский",
             ukrainian: "🇺🇦 Українська",
-            tagalog: "🇵🇭 Tagalog"
+            tagalog: "🇵🇭 Tagalog",
+            indonesian: "🇮🇩 Indonesian"
+        }
+    };
+
+    var idFallback = {
+        menu: {
+            title: "PENGHANCUR BASIS",
+            welcome: "Selamat datang, Komandan! Lindungi basis dari penyerang alien. Kumpulkan berlian dan tingkatkan pesawat Anda.",
+            goodLuck: "Semoga beruntung! 🌟",
+            start: "MULAI",
+            howToPlay: "Cara Bermain",
+            language: "Bahasa 🌐",
+            resetProgress: "Reset Progres",
+            leaderboard: "Papan Peringkat"
+        },
+        instructions: {
+            title: "CARA BERMAIN",
+            body: "KONTROL:\n← atau A/D - Kiri/kanan\n↑ atau W/S - Atas/bawah\nTembak otomatis\n⏸ - Jeda\n\nTUJUAN:\n- Hancurkan musuh dan basis\n- Kumpulkan berlian 💎\n- Ambil power-up\n- Tingkatkan pesawat di toko\n- Kalahkan boss\n\nSemoga beruntung, Komandan! 🚀"
+        },
+        ui: {
+            stage: "TAHAP",
+            mission: "Misi",
+            wave: "Gelombang",
+            boss: "BOS",
+            score: "Skor",
+            level: "Level",
+            shop: "TOKO",
+            checkIn: "CHECK-IN",
+            checkedIn: "Sudah check-in",
+            dayStreak: "Hari {next} (ke {milestone})",
+            dayMilestone: "Hari {next} ({next7}/7)",
+            signing: "MENANDATANGANI...",
+            confirmedBase: "Dikonfirmasi di Base!",
+            transactionFailed: "Transaksi gagal",
+            transactionCancelled: "Dibatalkan",
+            insufficientFunds: "Dana tidak cukup",
+            walletNotReady: "Dompet belum siap",
+            tryAgain: "Coba lagi",
+            alreadyCheckedIn: "Sudah check-in hari ini",
+            sdkNotLoaded: "SDK tidak dimuat"
+        },
+        shop: {
+            title: "TOKO",
+            tabSpaceships: "Pesawat Luar Angkasa",
+            tabWeapons: "Senjata",
+            tabPowerups: "Power-up",
+            tabUpgrades: "Peningkatan"
+        },
+        shopItems: {
+            starterShip: { name: "Pesawat Pemula", stats: "HP: 100 | Kecepatan: 300 | Seimbang" },
+            speedDemon: { name: "Iblis Kecepatan", stats: "HP: 90 | Kecepatan: 390 | +30% kecepatan" },
+            baseDefender: { name: "Pembela Basis", stats: "HP: 150 | Kecepatan: 300 | +50% HP" },
+            tank: { name: "Tank", stats: "HP: 200 | Kecepatan: 240 | Lambat tapi kuat" },
+            lightningStrike: { name: "Serangan Petir", stats: "HP: 120 | Kecepatan: 450 | Sangat cepat" },
+            legendary: { name: "Legendaris", stats: "HP: 250 | Kecepatan: 400 | Stat terbaik" },
+            fireRate: { name: "Kecepatan Tembak", stats: "Level {level}/10 | Saat ini: {rate}ms" },
+            damage: { name: "Kerusakan", stats: "Level {level}/10 | Saat ini: {damage}" },
+            multiShot2: { name: "Multi-Shot x2", stats: "Tembak 2 peluru sekaligus" },
+            multiShot3: { name: "Multi-Shot x3", stats: "Tembak 3 peluru sekaligus" },
+            multiShot5: { name: "Multi-Shot x5", stats: "Tembak 5 peluru sekaligus" },
+            laserBeam: { name: "Sinar Laser", stats: "Serangan berkelanjutan" },
+            shieldGen: { name: "Generator Perisai", stats: "Serap 5 pukulan" },
+            smartBomb: { name: "Bom Pintar", stats: "Bersihkan semua musuh" },
+            coinMagnet: { name: "Magnet Koin", stats: "Kumpulkan koin otomatis" },
+            score2x: { name: "Pengganda Skor 2x", stats: "2x skor selama 60 detik" },
+            extraLife: { name: "Nyawa Ekstra", stats: "+1 lanjutan" },
+            maxHP: { name: "HP Maks +10", stats: "Tambah kesehatan sebanyak 10" },
+            hpRegen: { name: "Regenerasi HP", stats: "Pulih 1 HP/detik" },
+            fasterMovement: { name: "Gerakan Lebih Cepat", stats: "+20% kecepatan" },
+            owned: "DIMILIKI",
+            buy: "BELI",
+            vibrationToggle: "Getaran Haptik",
+            vibrationSupported: "Aktif",
+            vibrationNotSupported: "Tidak didukung di perangkat ini",
+            enabled: "Aktif",
+            disabled: "Nonaktif"
+        },
+        pause: {
+            title: "JEDA",
+            resume: "Lanjutkan",
+            mainMenu: "Menu Utama",
+            resetGame: "Reset Permainan",
+            exitGame: "Keluar"
+        },
+        resetConfirm: {
+            title: "Reset progres?",
+            message: "Ini akan menghapus mata uang, pembelian, skor, dan semua data tersimpan. Tidak dapat dibatalkan.",
+            cancel: "Batal",
+            reset: "Reset"
+        },
+        gameover: {
+            title: "PERMAINAN BERAKHIR",
+            restart: "Mulai Ulang",
+            finalScore: "Skor Akhir",
+            stageReached: "Tahap Tercapai",
+            level: "Level"
+        },
+        leaderboard: {
+            title: "PAPAN PERINGKAT",
+            submitMyScore: "Kirim skor saya",
+            refresh: "Segarkan",
+            globalStatus: "Papan peringkat global (on-chain)",
+            personalBest: "Rekor pribadi (lokal)",
+            loading: "Memuat...",
+            playToSetBest: "Mainkan untuk mencetak rekor.",
+            submitNewHighTitle: "Rekor baru!",
+            submitNewHighMessage: "Kirim ke papan peringkat global? Memerlukan transaksi dompet.",
+            submit: "Kirim",
+            cancel: "Batal",
+            submitting: "Mengirim...",
+            submitted: "Terkirim!",
+            openInWarpcast: "Buka di Warpcast untuk mengirim.",
+            playFirst: "Mainkan game terlebih dahulu."
+        },
+        lang: {
+            english: "🇺🇸 English",
+            hindi: "🇮🇳 हिंदी",
+            russian: "🇷🇺 Русский",
+            ukrainian: "🇺🇦 Українська",
+            tagalog: "🇵🇭 Tagalog",
+            indonesian: "🇮🇩 Indonesian"
         }
     };
 
