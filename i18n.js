@@ -50,7 +50,7 @@
      * @returns {Promise<void>}
      */
     function setLang(lang) {
-        if (lang !== 'en' && lang !== 'hi' && lang !== 'ru' && lang !== 'uk' && lang !== 'tg' && lang !== 'id' && lang !== 'vi' && lang !== 'pt') lang = DEFAULT_LANG;
+        if (lang !== 'en' && lang !== 'hi' && lang !== 'ru' && lang !== 'uk' && lang !== 'tg' && lang !== 'id' && lang !== 'vi' && lang !== 'pt' && lang !== 'fr') lang = DEFAULT_LANG;
         currentLang = lang;
         localStorage.setItem(STORAGE_KEY, lang);
         loadLocale(lang);
@@ -146,6 +146,16 @@
         if (lang === 'pt') {
             try {
                 strings = JSON.parse(JSON.stringify(ptFallback));
+                if (typeof global !== 'undefined') global.__i18nStrings = strings;
+            } catch (e) {
+                strings = JSON.parse(JSON.stringify(enFallback));
+                if (typeof global !== 'undefined') global.__i18nStrings = strings;
+            }
+            return;
+        }
+        if (lang === 'fr') {
+            try {
+                strings = JSON.parse(JSON.stringify(frFallback));
                 if (typeof global !== 'undefined') global.__i18nStrings = strings;
             } catch (e) {
                 strings = JSON.parse(JSON.stringify(enFallback));
@@ -283,7 +293,8 @@
             "tagalog": "🇵🇭 Tagalog",
             "indonesian": "🇮🇩 Indonesian",
             "vietnamese": "🇻🇳 Tiếng Việt",
-            "portuguese": "🇧🇷 Português"
+            "portuguese": "🇧🇷 Português",
+            "french": "🇫🇷 Français"
         }
     };
 
@@ -404,7 +415,8 @@
             tagalog: "🇵🇭 Tagalog",
             indonesian: "🇮🇩 Indonesian",
             vietnamese: "🇻🇳 Tiếng Việt",
-            portuguese: "🇧🇷 Português"
+            portuguese: "🇧🇷 Português",
+            french: "🇫🇷 Français"
         }
     };
 
@@ -525,7 +537,8 @@
             tagalog: "🇵🇭 Tagalog",
             indonesian: "🇮🇩 Indonesian",
             vietnamese: "🇻🇳 Tiếng Việt",
-            portuguese: "🇧🇷 Português"
+            portuguese: "🇧🇷 Português",
+            french: "🇫🇷 Français"
         }
     };
 
@@ -646,7 +659,8 @@
             tagalog: "🇵🇭 Tagalog",
             indonesian: "🇮🇩 Indonesian",
             vietnamese: "🇻🇳 Tiếng Việt",
-            portuguese: "🇧🇷 Português"
+            portuguese: "🇧🇷 Português",
+            french: "🇫🇷 Français"
         }
     };
 
@@ -768,7 +782,8 @@
             tagalog: "🇵🇭 Tagalog",
             indonesian: "🇮🇩 Indonesian",
             vietnamese: "🇻🇳 Tiếng Việt",
-            portuguese: "🇧🇷 Português"
+            portuguese: "🇧🇷 Português",
+            french: "🇫🇷 Français"
         }
     };
 
@@ -890,7 +905,8 @@
             tagalog: "🇵🇭 Tagalog",
             indonesian: "🇮🇩 Indonesian",
             vietnamese: "🇻🇳 Tiếng Việt",
-            portuguese: "🇧🇷 Português"
+            portuguese: "🇧🇷 Português",
+            french: "🇫🇷 Français"
         }
     };
 
@@ -1012,7 +1028,8 @@
             tagalog: "🇵🇭 Tagalog",
             indonesian: "🇮🇩 Indonesian",
             vietnamese: "🇻🇳 Tiếng Việt",
-            portuguese: "🇧🇷 Português"
+            portuguese: "🇧🇷 Português",
+            french: "🇫🇷 Français"
         }
     };
 
@@ -1134,7 +1151,131 @@
             tagalog: "🇵🇭 Tagalog",
             indonesian: "🇮🇩 Indonesian",
             vietnamese: "🇻🇳 Tiếng Việt",
-            portuguese: "🇧🇷 Português"
+            portuguese: "🇧🇷 Português",
+            french: "🇫🇷 Français"
+        }
+    };
+
+    var frFallback = {
+        menu: {
+            title: "DESTRUCTEUR DE BASE",
+            welcome: "Bienvenue, Commandant ! Protégez la base contre les envahisseurs extraterrestres. Collectez des diamants et améliorez votre vaisseau.",
+            goodLuck: "Bonne chance ! 🌟",
+            start: "COMMENCER",
+            howToPlay: "Comment Jouer",
+            language: "Langue 🌐",
+            resetProgress: "Réinitialiser la Progression",
+            leaderboard: "Classement"
+        },
+        instructions: {
+            title: "COMMENT JOUER",
+            body: "CONTRÔLES :\n← ou A/D - Gauche/droite\n↑ ou W/S - Haut/bas\nTir automatique\n⏸ - Pause\n\nOBJECTIF :\n- Détruisez les ennemis et les bases\n- Collectez des diamants 💎\n- Ramassez les power-ups\n- Améliorez votre vaisseau dans la boutique\n- Battez les boss\n\nBonne chance, Commandant ! 🚀"
+        },
+        ui: {
+            stage: "ÉTAPE",
+            mission: "Mission",
+            wave: "Vague",
+            boss: "BOSS",
+            score: "Score",
+            level: "Niveau",
+            shop: "BOUTIQUE",
+            checkIn: "CHECK-IN",
+            checkedIn: "Enregistré",
+            dayStreak: "Jour {next} (jusqu'à {milestone})",
+            dayMilestone: "Jour {next} ({next7}/7)",
+            signing: "SIGNATURE...",
+            confirmedBase: "Confirmé sur Base !",
+            transactionFailed: "Échec de la transaction",
+            transactionCancelled: "Annulé",
+            insufficientFunds: "Fonds insuffisants",
+            walletNotReady: "Portefeuille pas prêt",
+            tryAgain: "Réessayez",
+            alreadyCheckedIn: "Déjà enregistré aujourd'hui",
+            sdkNotLoaded: "SDK non chargé"
+        },
+        shop: {
+            title: "BOUTIQUE",
+            tabSpaceships: "Vaisseaux",
+            tabWeapons: "Armes",
+            tabPowerups: "Power-ups",
+            tabUpgrades: "Améliorations"
+        },
+        shopItems: {
+            starterShip: { name: "Vaisseau de Départ", stats: "HP : 100 | Vitesse : 300 | Équilibré" },
+            speedDemon: { name: "Démon de Vitesse", stats: "HP : 90 | Vitesse : 390 | +30% vitesse" },
+            baseDefender: { name: "Défenseur de Base", stats: "HP : 150 | Vitesse : 300 | +50% HP" },
+            tank: { name: "Tank", stats: "HP : 200 | Vitesse : 240 | Lent mais fort" },
+            lightningStrike: { name: "Frappe Éclair", stats: "HP : 120 | Vitesse : 450 | Très rapide" },
+            legendary: { name: "Légendaire", stats: "HP : 250 | Vitesse : 400 | Meilleures stats" },
+            fireRate: { name: "Cadence de Tir", stats: "Niveau {level}/10 | Actuel : {rate}ms" },
+            damage: { name: "Dégâts", stats: "Niveau {level}/10 | Actuel : {damage}" },
+            multiShot2: { name: "Tir Multiple x2", stats: "Tirez 2 balles à la fois" },
+            multiShot3: { name: "Tir Multiple x3", stats: "Tirez 3 balles à la fois" },
+            multiShot5: { name: "Tir Multiple x5", stats: "Tirez 5 balles à la fois" },
+            laserBeam: { name: "Rayon Laser", stats: "Attaque continue" },
+            shieldGen: { name: "Générateur de Bouclier", stats: "Absorbe 5 coups" },
+            smartBomb: { name: "Bombe Intelligente", stats: "Élimine tous les ennemis" },
+            coinMagnet: { name: "Aimant à Pièces", stats: "Collecte automatique des pièces" },
+            score2x: { name: "Multiplicateur de Score x2", stats: "2x score pendant 60 secondes" },
+            extraLife: { name: "Vie Supplémentaire", stats: "+1 continuation" },
+            maxHP: { name: "HP Max +10", stats: "Augmente la santé de 10" },
+            hpRegen: { name: "Régénération HP", stats: "Soigne 1 HP/seconde" },
+            fasterMovement: { name: "Mouvement Plus Rapide", stats: "+20% vitesse" },
+            owned: "POSSÉDÉ",
+            buy: "ACHETER",
+            vibrationToggle: "Vibration Tactile",
+            vibrationSupported: "Activé",
+            vibrationNotSupported: "Non supporté sur cet appareil",
+            enabled: "Activé",
+            disabled: "Désactivé"
+        },
+        pause: {
+            title: "PAUSE",
+            resume: "Reprendre",
+            mainMenu: "Menu Principal",
+            resetGame: "Réinitialiser le Jeu",
+            exitGame: "Quitter"
+        },
+        resetConfirm: {
+            title: "Réinitialiser la progression ?",
+            message: "Cela effacera la monnaie, les achats, le score et toutes les données sauvegardées. Impossible d'annuler.",
+            cancel: "Annuler",
+            reset: "Réinitialiser"
+        },
+        gameover: {
+            title: "FIN DU JEU",
+            restart: "Redémarrer",
+            finalScore: "Score Final",
+            stageReached: "Étape Atteinte",
+            level: "Niveau"
+        },
+        leaderboard: {
+            title: "CLASSEMENT",
+            submitMyScore: "Soumettre mon score",
+            refresh: "Actualiser",
+            globalStatus: "Classement global (on-chain)",
+            personalBest: "Meilleur personnel (local)",
+            loading: "Chargement...",
+            playToSetBest: "Jouez pour établir un record.",
+            submitNewHighTitle: "Nouveau record !",
+            submitNewHighMessage: "Soumettre au classement global ? Transaction du portefeuille requise.",
+            submit: "Soumettre",
+            cancel: "Annuler",
+            submitting: "Soumission...",
+            submitted: "Soumis !",
+            openInWarpcast: "Ouvrez dans Warpcast pour soumettre.",
+            playFirst: "Jouez d'abord au jeu."
+        },
+        lang: {
+            english: "🇺🇸 English",
+            hindi: "🇮🇳 हिंदी",
+            russian: "🇷🇺 Русский",
+            ukrainian: "🇺🇦 Українська",
+            tagalog: "🇵🇭 Tagalog",
+            indonesian: "🇮🇩 Indonesian",
+            vietnamese: "🇻🇳 Tiếng Việt",
+            portuguese: "🇧🇷 Português",
+            french: "🇫🇷 Français"
         }
     };
 
