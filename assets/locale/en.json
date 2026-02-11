@@ -75,6 +75,7 @@
     "cancel": "Cancel",
     "submitting": "Submitting...",
     "submitted": "Submitted!",
+    "submittedNotInTop": "Submitted! If you don't see your score, the leaderboard may only show top 100.",
     "openInWarpcast": "Open in Warpcast to submit.",
     "playFirst": "Play a game first to have a score."
   },

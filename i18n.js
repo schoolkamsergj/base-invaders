@@ -312,6 +312,7 @@
             "cancel": "Cancel",
             "submitting": "Submitting...",
             "submitted": "Submitted!",
+            "submittedNotInTop": "Submitted! If you don't see your score, the leaderboard may only show top 100.",
             "openInWarpcast": "Open in Warpcast to submit.",
             "playFirst": "Play a game first to have a score."
         },
@@ -687,6 +688,7 @@
             cancel: "Скасувати",
             submitting: "Надсилання...",
             submitted: "Надіслано!",
+            submittedNotInTop: "Надіслано! Якщо результату немає в таблиці — таблиця показує лише топ 100.",
             openInWarpcast: "Відкрийте у Warpcast для надсилання.",
             playFirst: "Спочатку зіграйте гру."
         },

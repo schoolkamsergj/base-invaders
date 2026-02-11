@@ -3095,7 +3095,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.__baseInvadersPendingLeaderboardSubmit = null;
             const wasDuringPlay = window.__baseInvadersLeaderboardSubmitDuringPlay;
             if (wasDuringPlay) window.__baseInvadersLeaderboardSubmitDuringPlay = false;
-            if (statusEl) { statusEl.textContent = gt('leaderboard.submitted'); statusEl.style.color = '#00ff88'; }
+            if (statusEl) { statusEl.textContent = gt('leaderboard.submittedNotInTop') || gt('leaderboard.submitted'); statusEl.style.color = '#00ff88'; }
             if (overlay) overlay.classList.add('hidden');
             if (btn) { btn.disabled = false; btn.textContent = gt('leaderboard.submit'); }
             if (wasDuringPlay && window.game?.scene) {
@@ -3148,7 +3148,7 @@ document.addEventListener('DOMContentLoaded', () => {
             name = (name && String(name).trim()) || 'Player';
             if (window.baseInvadersLeaderboard?.setSavedName) window.baseInvadersLeaderboard.setSavedName(name);
             await window.baseInvadersSubmitScore(score, wave, streak, name);
-            if (statusEl) { statusEl.textContent = gt2('leaderboard.submitted'); statusEl.style.color = '#00ff88'; }
+            if (statusEl) { statusEl.textContent = gt2('leaderboard.submittedNotInTop') || gt2('leaderboard.submitted'); statusEl.style.color = '#00ff88'; }
         } catch (err) {
             const msg = (err && err.message) ? String(err.message) : 'Submit failed';
             if (statusEl) { statusEl.textContent = msg; statusEl.style.color = '#ff6666'; }

@@ -4,6 +4,7 @@
  * Must be loaded as <script type="module"> for dynamic import(viem).
  */
 const CHECKIN_ADDR = '0x709Ef1bc52a302206E1244Df92Ae0329a9d3C736';
+// On-chain leaderboard (Base). Contract may keep only top N entries (e.g. 100); new scores below the minimum may not appear.
 const LEADERBOARD_ADDR = '0xAC89DA9d8508d0865c55083552da91894537aC89'; // V2 contract with clear function
 
 // viem: use esm.sh only (Skypack pulls "ox/tempo" which fails in browser)
@@ -273,7 +274,7 @@ window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
         });
         const receipt = await waitForTransactionReceipt(publicClient, { hash, confirmations: 1 });
         if (receipt && receipt.status === 'reverted') {
-            throw new Error('Transaction reverted — score was not saved');
+            throw new Error('Transaction reverted. Leaderboard may be full (top 100 only) or score too low.');
         }
         console.log('[miniapp] submitScore SUCCESS — confirmed, block:', receipt?.blockNumber);
         window.dispatchEvent(new CustomEvent('base-invaders:wallet-connected', { detail: { address: account } }));
