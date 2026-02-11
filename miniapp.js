@@ -240,14 +240,14 @@ window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
 
         const viem = await getViem();
         const baseChain = viem.base || (await import('https://esm.sh/viem/chains').then((m) => m.base));
-        const { createWalletClient, custom, parseAbi, getAddress } = viem;
+        const { createWalletClient, createPublicClient, custom, parseAbi, getAddress, http, waitForTransactionReceipt } = viem;
         const LEADERBOARD_ABI = parseAbi(['function submitScore(uint256,uint256,uint256,string) external']);
 
-        const client = createWalletClient({ chain: baseChain, transport: custom(provider) });
+        const walletClient = createWalletClient({ chain: baseChain, transport: custom(provider) });
         const accountObj = { address: getAddress(account), type: 'json-rpc' };
         const args = [BigInt(score), BigInt(wave), BigInt(streak), displayName];
         console.log('[miniapp] submitScore — sending tx to', LEADERBOARD_ADDR, 'args:', args);
-        const hash = await client.writeContract({
+        const hash = await walletClient.writeContract({
             address: LEADERBOARD_ADDR,
             abi: LEADERBOARD_ABI,
             functionName: 'submitScore',
@@ -255,7 +255,27 @@ window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
             account: accountObj,
             value: 0n
         });
-        console.log('[miniapp] submitScore SUCCESS — hash:', hash);
+        console.log('[miniapp] submitScore tx sent — hash:', hash, ', waiting for confirmation...');
+        // Wait for inclusion so we only report success when the score is actually on-chain (catches reverts)
+        const publicClient = createPublicClient({
+            chain: baseChain,
+            transport: typeof http === 'function' ? http(BASE_RPC_URLS[0]) : custom(async ({ method, params }) => {
+                const res = await fetch(BASE_RPC_URLS[0], {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
+                });
+                if (!res.ok) throw new Error('RPC ' + res.status);
+                const json = await res.json();
+                if (json.error) throw new Error(json.error.message || JSON.stringify(json.error));
+                return json.result;
+            })
+        });
+        const receipt = await waitForTransactionReceipt(publicClient, { hash, confirmations: 1 });
+        if (receipt && receipt.status === 'reverted') {
+            throw new Error('Transaction reverted — score was not saved');
+        }
+        console.log('[miniapp] submitScore SUCCESS — confirmed, block:', receipt?.blockNumber);
         window.dispatchEvent(new CustomEvent('base-invaders:wallet-connected', { detail: { address: account } }));
         return { success: true, hash };
     } catch (e) {

@@ -2702,7 +2702,18 @@ class GameScene extends Phaser.Scene {
             <p>${fs('gameover.stageReached')}: ${this.gameState.stage}</p>
             <p>${fs('gameover.level')}: ${this.gameState.playerLevel}</p>
         `;
-        // Leaderboard submit is shown during play when they first beat record; no repeat here
+        // If new high and user didn't submit during play, show submit overlay after game over so they can submit
+        if (isNewHigh && !window.__baseInvadersPendingLeaderboardSubmit && typeof window.baseInvadersSubmitScore === 'function') {
+            const waveLevel = this.missionSystem ? this.missionSystem.currentWave : this.gameState.stage;
+            const streak = window.baseInvadersLeaderboard?.getCurrentStreak ? window.baseInvadersLeaderboard.getCurrentStreak() : 0;
+            window.__baseInvadersPendingLeaderboardSubmit = { score: this.gameState.score, wave: waveLevel, streak };
+            window.__baseInvadersLeaderboardSubmitDuringPlay = false;
+            const statusEl = document.getElementById('leaderboard-submit-status');
+            const overlay = document.getElementById('leaderboard-submit-overlay');
+            if (statusEl) statusEl.textContent = '';
+            if (overlay) overlay.classList.remove('hidden');
+            console.log('[leaderboard] Game over — new high, showing submit overlay');
+        }
     }
 
     saveGameData() {
