@@ -385,7 +385,10 @@ window.baseInvadersGetLeaderboard = async function () {
     const { createPublicClient, parseAbi, custom } = viem;
     const http = viem.http;
     // Unnamed tuple (abitype rejects named tuple in parseAbi); order: player, name, score, wave, streak, timestamp
-    const LEADERBOARD_ABI = parseAbi(['function getTopPlayers() view returns ((address,string,uint256,uint256,uint256,uint256)[])']);
+    const LEADERBOARD_ABI = parseAbi([
+        'function getTopPlayers() view returns ((address,string,uint256,uint256,uint256,uint256)[])',
+        'function lastCheckIn(address) view returns (uint256)'
+    ]);
 
     let lastError = null;
     for (const rpcUrl of BASE_RPC_URLS) {
@@ -407,7 +410,16 @@ window.baseInvadersGetLeaderboard = async function () {
             const data = await client.readContract({ address: LEADERBOARD_ADDR, abi: LEADERBOARD_ABI, functionName: 'getTopPlayers' });
             const arr = Array.isArray(data) ? data : [];
             console.log('[miniapp] getTopPlayers OK via', rpcUrl, 'entries:', arr.length);
-            return arr;
+            // Fetch lastCheckIn for each player (parallel)
+            const withCheckIn = await Promise.all(arr.map(async (row) => {
+                const player = row[0];
+                let checkInTs = 0n;
+                try {
+                    checkInTs = await client.readContract({ address: LEADERBOARD_ADDR, abi: LEADERBOARD_ABI, functionName: 'lastCheckIn', args: [player] });
+                } catch (e) { /* no check-in or old contract */ }
+                return [...row, checkInTs];
+            }));
+            return withCheckIn;
         } catch (e) {
             lastError = e;
             console.warn('[miniapp] getLeaderboard failed for', rpcUrl, e?.message || e);
