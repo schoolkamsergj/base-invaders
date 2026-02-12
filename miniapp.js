@@ -415,7 +415,7 @@ window.baseInvadersGetLeaderboard = async function () {
                 const player = row[0];
                 let checkInTs = 0n;
                 try {
-                    checkInTs = await client.readContract({ address: LEADERBOARD_ADDR, abi: LEADERBOARD_ABI, functionName: 'lastCheckIn', args: [player] });
+                    checkInTs = await client.readContract({ address: CHECKIN_ADDR, abi: LEADERBOARD_ABI, functionName: 'lastCheckIn', args: [player] });
                 } catch (e) { /* no check-in or old contract */ }
                 return [...row, checkInTs];
             }));
@@ -427,6 +427,63 @@ window.baseInvadersGetLeaderboard = async function () {
     }
     console.error('[miniapp] getLeaderboard failed for all RPCs', lastError);
     throw lastError || new Error('Failed to load leaderboard');
+};
+
+/** Get last check-in timestamp (seconds) from check-in contract for an address. Returns 0 on error (fallback to localStorage). */
+window.baseInvadersGetLastCheckIn = async function (address) {
+    if (!address) return 0;
+    try {
+        const viem = await getViem();
+        const baseChain = viem.base || (await import('https://esm.sh/viem/chains').then((m) => m.base));
+        const { createPublicClient, parseAbi, custom } = viem;
+        const http = viem.http;
+        const CHECKIN_ABI = parseAbi(['function lastCheckIn(address) view returns (uint256)']);
+        for (const rpcUrl of BASE_RPC_URLS) {
+            try {
+                const transport = typeof http === 'function'
+                    ? http(rpcUrl)
+                    : custom(async ({ method, params }) => {
+                        const res = await fetch(rpcUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
+                        });
+                        if (!res.ok) throw new Error('RPC ' + res.status);
+                        const json = await res.json();
+                        if (json.error) throw new Error(json.error.message || JSON.stringify(json.error));
+                        return json.result;
+                    });
+                const client = createPublicClient({ chain: baseChain, transport });
+                const timestamp = await client.readContract({
+                    address: CHECKIN_ADDR,
+                    abi: CHECKIN_ABI,
+                    functionName: 'lastCheckIn',
+                    args: [address]
+                });
+                return Number(timestamp);
+            } catch (e) {
+                console.warn('[miniapp] getLastCheckIn failed for', rpcUrl, e?.message || e);
+            }
+        }
+        return 0;
+    } catch (error) {
+        console.warn('[miniapp] getLastCheckIn failed:', error);
+        return 0;
+    }
+};
+
+/** Get current wallet address (for check-in sync). Returns null if not available. */
+window.baseInvadersGetWalletAddress = async function () {
+    try {
+        const sdk = getSdk();
+        if (!sdk) return null;
+        if (typeof sdk.ready === 'function') await sdk.ready();
+        else if (sdk.actions && typeof sdk.actions.ready === 'function') await sdk.actions.ready({ disableNativeGestures: false });
+        const { account } = await ensureWalletProvider(sdk);
+        return account || null;
+    } catch (e) {
+        return null;
+    }
 };
 
 window.baseInvadersMarkMiniAppReady = async function () {
