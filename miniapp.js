@@ -3,9 +3,9 @@
  * SDK from UMD (window.MiniAppSDK), viem loaded at runtime (no static import).
  * Must be loaded as <script type="module"> for dynamic import(viem).
  */
+const CHECKIN_ADDR = '0x709Ef1bc52a302206E1244Df92Ae0329a9d3C736';
 // On-chain leaderboard (Base). Contract may keep only top N entries (e.g. 100); new scores below the minimum may not appear.
-const LEADERBOARD_ADDR = '0xAC89DA9d8508d0865c55083552da91894537aC89'; // V2 contract with check-in + leaderboard
-const CHECKIN_ADDR = LEADERBOARD_ADDR; // Same contract: recordCheckIn/checkIn + lastCheckIn(address)
+const LEADERBOARD_ADDR = '0xAC89DA9d8508d0865c55083552da91894537aC89'; // V2 contract with clear function
 
 // viem: use esm.sh only (Skypack pulls "ox/tempo" which fails in browser)
 let viemPromise = null;
