@@ -5,6 +5,19 @@ The global leaderboard is stored on **Base** at:
 - **Address:** `0xAC89DA9d8508d0865c55083552da91894537aC89`
 - **Creator:** penzlik.base.eth (see [BaseScan](https://basescan.org/address/0xAC89DA9d8508d0865c55083552da91894537aC89))
 
+## Fix: existing player always updates (e.g. @penzlik)
+
+**Problem:** If a player is already in the table, the contract only updated their row when the new score was **higher** than the previous one. So when @penzlik (or anyone already on the list) submitted a new, lower score, nothing changed — it looked like "not recorded".
+
+**Change in `BaseInvadersLeaderboardV2.sol`:** For existing players we now **always** update the entry (score, wave, streak, name, timestamp) on every submit. No "only if higher" limit.
+
+**Important:** The contract already deployed at `0xAC89...` cannot be changed. To use this fix you must:
+1. Deploy the updated contract (from `contracts/BaseInvadersLeaderboardV2.sol`) to Base.
+2. In `miniapp.js` set `LEADERBOARD_ADDR` to the new contract address.
+3. (Optional) Verify the new contract on BaseScan.
+
+After that, every submission from any player (including those already in the table) will update their row.
+
 ## Why new entries may not appear after ~9 Feb
 
 The contract is **not verified** on BaseScan. From the bytecode:

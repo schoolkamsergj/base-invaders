@@ -46,15 +46,13 @@ contract BaseInvadersLeaderboardV2 {
         uint256 existingIndex = playerIndex[msg.sender];
 
         if (existingIndex > 0) {
-            // Update existing entry
+            // Update existing entry: always apply latest submission (no "only if higher" limit)
             Entry storage existing = entries[existingIndex - 1];
-            if (score > existing.score) {
-                existing.score = score;
-                existing.wave = wave;
-                existing.streak = streak;
-                existing.name = name;
-                existing.timestamp = block.timestamp;
-            }
+            existing.score = score;
+            existing.wave = wave;
+            existing.streak = streak;
+            existing.name = name;
+            existing.timestamp = block.timestamp;
         } else {
             // New entry
             if (entries.length < MAX_ENTRIES) {
