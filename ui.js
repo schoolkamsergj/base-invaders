@@ -25,17 +25,17 @@ class UI {
         });
 
         window.addEventListener('load', () => {
-            this.updateCheckInButtonState();
+            this._refreshLastCheckInFromChain();
         });
         window.addEventListener('focus', () => {
-            this.updateCheckInButtonState();
+            this._refreshLastCheckInFromChain();
         });
         window.addEventListener('base-invaders:game-ready', () => {
             this.attachCheckInHandlers();
-            this.updateCheckInButtonState();
+            this._refreshLastCheckInFromChain();
         });
         window.addEventListener('base-invaders:wallet-connected', () => {
-            this.updateCheckInButtonState();
+            this._refreshLastCheckInFromChain();
         });
     }
 
@@ -498,6 +498,7 @@ class UI {
 
     createDailyCheckInButton() {
         this._checkInFid = 'default';
+        this._onChainLastCheckInTs = null;
         (async () => {
             this._checkInFid = await this.getUserFid();
             window.__baseInvadersCheckInFid = this._checkInFid;
@@ -601,6 +602,7 @@ class UI {
                 const streakKey = this.getStreakKey();
                 this._lastCheckInKeyUsed = lastKey;
                 localStorage.setItem(lastKey, todayKey);
+                this._onChainLastCheckInTs = null;
                 this.showNotification(typeof getText === 'function' ? getText('ui.confirmedBase') : '⛓️ Confirmed on Base!', notifyX, notifyY - 40);
 
                 let totalDays = 0;
@@ -711,10 +713,39 @@ class UI {
     }
 
     /**
-     * Get effective last check-in date from any source (current FID, legacy, or any lastCheckIn_*).
-     * Sets _lastCheckInKeyUsed to the key that had the latest date so streak can be found.
+     * Fetch lastCheckIn from chain for connected wallet. Updates _onChainLastCheckInTs and button state.
+     * On-chain is source of truth across devices (phone/laptop).
+     */
+    async _refreshLastCheckInFromChain() {
+        try {
+            if (typeof window.baseInvadersGetWalletAddress !== 'function' || typeof window.baseInvadersGetLastCheckIn !== 'function') {
+                this._onChainLastCheckInTs = null;
+                this.updateCheckInButtonState();
+                return;
+            }
+            const addr = await window.baseInvadersGetWalletAddress();
+            if (!addr) {
+                this._onChainLastCheckInTs = null;
+                this.updateCheckInButtonState();
+                return;
+            }
+            const ts = await window.baseInvadersGetLastCheckIn(addr);
+            const n = typeof ts === 'bigint' ? Number(ts) : Number(ts ?? 0);
+            this._onChainLastCheckInTs = Number.isFinite(n) && n > 0 ? n : null;
+        } catch (e) {
+            this._onChainLastCheckInTs = null;
+        }
+        this.updateCheckInButtonState();
+    }
+
+    /**
+     * Get effective last check-in date from any source (on-chain first, then localStorage).
+     * On-chain syncs across devices; localStorage is fallback when no wallet or offline.
      */
     _getLastCheckInValue() {
+        if (this._onChainLastCheckInTs != null && this._onChainLastCheckInTs > 0) {
+            return this.getDayKeyUTC(new Date(this._onChainLastCheckInTs * 1000));
+        }
         const candidates = [];
         const currentKey = this.getLastCheckInKey();
         candidates.push([currentKey, localStorage.getItem(currentKey)]);
@@ -763,7 +794,7 @@ class UI {
         if (!lastCheckIn) {
             return true; // Never checked in, button is active
         }
-        const todayKey = this.getDayKey();
+        const todayKey = this._onChainLastCheckInTs != null ? this.getDayKeyUTC() : this.getDayKey();
         return lastCheckIn !== todayKey;
     }
 
@@ -772,13 +803,18 @@ class UI {
         if (!lastCheckIn) {
             return null; // No cooldown
         }
-        const todayKey = this.getDayKey();
+        const todayKey = this._onChainLastCheckInTs != null ? this.getDayKeyUTC() : this.getDayKey();
         if (lastCheckIn !== todayKey) {
             return null; // Cooldown expired (different day)
         }
         const now = new Date();
-        const nextLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
-        const msRemaining = nextLocal.getTime() - now.getTime();
+        let nextMidnight;
+        if (this._onChainLastCheckInTs != null) {
+            nextMidnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0, 0));
+        } else {
+            nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
+        }
+        const msRemaining = nextMidnight.getTime() - now.getTime();
         if (msRemaining <= 0) {
             return null;
         }

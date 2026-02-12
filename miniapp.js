@@ -369,6 +369,52 @@ window.baseInvadersClearLeaderboard = async function () {
     }
 };
 
+/** Get wallet address without prompting (eth_accounts). Returns null if not connected. */
+window.baseInvadersGetWalletAddress = async function () {
+    try {
+        const sdk = getSdk();
+        if (!sdk) return null;
+        if (typeof sdk.ready === 'function') await sdk.ready();
+        else if (sdk.actions?.ready) await sdk.actions.ready({ disableNativeGestures: false });
+        let provider = null;
+        if (sdk?.wallet?.getEthereumProvider) {
+            const p = sdk.wallet.getEthereumProvider();
+            provider = p && typeof p.then === 'function' ? await p : p;
+        }
+        if (!provider) provider = window.farcasterProvider || null;
+        if (!provider?.request) return null;
+        const accounts = await provider.request({ method: 'eth_accounts', params: [] });
+        return accounts?.[0] || null;
+    } catch (e) {
+        return null;
+    }
+};
+
+/** Read lastCheckIn timestamp from chain for given address. Returns 0n if none. */
+window.baseInvadersGetLastCheckIn = async function (address) {
+    if (!address) return 0n;
+    const viem = await getViem();
+    const baseChain = viem.base || (await import('https://esm.sh/viem/chains').then((m) => m.base));
+    const { createPublicClient, parseAbi, custom } = viem;
+    const http = viem.http;
+    const abi = parseAbi(['function lastCheckIn(address) view returns (uint256)']);
+    for (const rpcUrl of BASE_RPC_URLS) {
+        try {
+            const transport = typeof http === 'function' ? http(rpcUrl) : custom(async ({ method, params }) => {
+                const res = await fetch(rpcUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }) });
+                if (!res.ok) throw new Error('RPC ' + res.status);
+                const json = await res.json();
+                if (json.error) throw new Error(json.error.message || JSON.stringify(json.error));
+                return json.result;
+            });
+            const client = createPublicClient({ chain: baseChain, transport });
+            const ts = await client.readContract({ address: LEADERBOARD_ADDR, abi, functionName: 'lastCheckIn', args: [address] });
+            return ts ?? 0n;
+        } catch (e) { /* try next RPC */ }
+    }
+    return 0n;
+};
+
 // Base public RPCs (try in order; some may block CORS from browser)
 const BASE_RPC_URLS = [
     'https://mainnet.base.org',
