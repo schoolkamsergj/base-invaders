@@ -25,33 +25,17 @@ class UI {
         });
 
         window.addEventListener('load', () => {
-            if (this._refreshLastCheckInFromChain) {
-                this._refreshLastCheckInFromChain().then(() => this.updateCheckInButtonState());
-            } else {
-                this.updateCheckInButtonState();
-            }
+            this.updateCheckInButtonState();
         });
         window.addEventListener('focus', () => {
-            if (this._refreshLastCheckInFromChain) {
-                this._refreshLastCheckInFromChain().then(() => this.updateCheckInButtonState());
-            } else {
-                this.updateCheckInButtonState();
-            }
+            this.updateCheckInButtonState();
         });
         window.addEventListener('base-invaders:game-ready', () => {
             this.attachCheckInHandlers();
-            if (this._refreshLastCheckInFromChain) {
-                this._refreshLastCheckInFromChain().then(() => this.updateCheckInButtonState());
-            } else {
-                this.updateCheckInButtonState();
-            }
+            this.updateCheckInButtonState();
         });
         window.addEventListener('base-invaders:wallet-connected', () => {
-            if (this._refreshLastCheckInFromChain) {
-                this._refreshLastCheckInFromChain().then(() => this.updateCheckInButtonState());
-            } else {
-                this.updateCheckInButtonState();
-            }
+            this.updateCheckInButtonState();
         });
     }
 
@@ -517,9 +501,6 @@ class UI {
         (async () => {
             this._checkInFid = await this.getUserFid();
             window.__baseInvadersCheckInFid = this._checkInFid;
-            if (this._refreshLastCheckInFromChain) {
-                await this._refreshLastCheckInFromChain();
-            }
             if (this.updateCheckInButtonState) this.updateCheckInButtonState();
         })();
 
@@ -620,7 +601,6 @@ class UI {
                 const streakKey = this.getStreakKey();
                 this._lastCheckInKeyUsed = lastKey;
                 localStorage.setItem(lastKey, todayKey);
-                this._lastCheckInTsFromChain = Math.floor(Date.now() / 1000);
                 this.showNotification(typeof getText === 'function' ? getText('ui.confirmedBase') : '⛓️ Confirmed on Base!', notifyX, notifyY - 40);
 
                 let totalDays = 0;
@@ -674,7 +654,6 @@ class UI {
                     const key = this.getLastCheckInKey();
                     this._lastCheckInKeyUsed = key;
                     localStorage.setItem(key, todayKey);
-                    this._lastCheckInTsFromChain = Math.floor(Date.now() / 1000);
                     this.startCountdownInterval();
                     this.updateCheckInButtonState();
                     if (this.scene.syncProgress) this.scene.syncProgress();
@@ -732,26 +711,6 @@ class UI {
     }
 
     /**
-     * Refresh last check-in timestamp from chain (CHECKIN_ADDR) for current wallet.
-     * Sets _lastCheckInTsFromChain (0 or seconds). On error or no wallet, keeps existing; use localStorage as fallback.
-     */
-    async _refreshLastCheckInFromChain() {
-        try {
-            const userAddress = await (window.baseInvadersGetWalletAddress && window.baseInvadersGetWalletAddress());
-            if (!userAddress) return;
-            const lastCheckInTs = await (window.baseInvadersGetLastCheckIn && window.baseInvadersGetLastCheckIn(userAddress)) ?? 0;
-            this._lastCheckInTsFromChain = lastCheckInTs;
-            if (lastCheckInTs > 0) {
-                const utcDayKey = this.getDayKeyUTC(new Date(lastCheckInTs * 1000));
-                const key = this.getLastCheckInKey();
-                try { localStorage.setItem(key, utcDayKey); } catch (e) { /* ignore */ }
-            }
-        } catch (e) {
-            this._lastCheckInTsFromChain = null;
-        }
-    }
-
-    /**
      * Get effective last check-in date from any source (current FID, legacy, or any lastCheckIn_*).
      * Sets _lastCheckInKeyUsed to the key that had the latest date so streak can be found.
      */
@@ -800,13 +759,6 @@ class UI {
     }
 
     isCheckInActive() {
-        if (this._lastCheckInTsFromChain != null) {
-            const todayUTC = Math.floor(Date.now() / 86400000);
-            const lastCheckInDays = Math.floor(this._lastCheckInTsFromChain / 86400);
-            if (todayUTC === lastCheckInDays) return false;  // disabled + timer
-            if (todayUTC > lastCheckInDays) return true;    // active
-            return true;
-        }
         const lastCheckIn = this._getLastCheckInValue();
         if (!lastCheckIn) {
             return true; // Never checked in, button is active
@@ -816,19 +768,6 @@ class UI {
     }
 
     getCheckInTimeRemaining() {
-        if (this._lastCheckInTsFromChain != null) {
-            const todayUTC = Math.floor(Date.now() / 86400000);
-            const lastCheckInDays = Math.floor(this._lastCheckInTsFromChain / 86400);
-            if (todayUTC !== lastCheckInDays) return null; // different day → no cooldown
-            const nextUtcMidnight = (lastCheckInDays + 1) * 86400 * 1000;
-            const msRemaining = nextUtcMidnight - Date.now();
-            if (msRemaining <= 0) return null;
-            return {
-                hours: Math.floor(msRemaining / (1000 * 60 * 60)),
-                minutes: Math.floor((msRemaining % (1000 * 60 * 60)) / (1000 * 60)),
-                seconds: Math.floor((msRemaining % (1000 * 60)) / 1000)
-            };
-        }
         const lastCheckIn = this._getLastCheckInValue();
         if (!lastCheckIn) {
             return null; // No cooldown
