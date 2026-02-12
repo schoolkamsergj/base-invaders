@@ -118,6 +118,45 @@ function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/** Base mainnet chainId */
+const BASE_CHAIN_ID = 8453;
+const BASE_CHAIN_ID_HEX = '0x' + BASE_CHAIN_ID.toString(16);
+
+/** Ensure wallet is on Base; optionally request switch. */
+async function ensureBaseNetwork(provider) {
+    if (!provider || typeof provider.request !== 'function') return;
+    let chainIdHex = null;
+    try {
+        chainIdHex = await provider.request({ method: 'eth_chainId', params: [] });
+    } catch (e) {
+        console.warn('[miniapp] eth_chainId failed', e?.message);
+        return;
+    }
+    const chainId = typeof chainIdHex === 'string' ? parseInt(chainIdHex, 16) : Number(chainIdHex);
+    if (chainId === BASE_CHAIN_ID) return;
+    console.warn('[miniapp] Wallet not on Base. Current chainId:', chainId, 'Expected:', BASE_CHAIN_ID);
+    try {
+        await provider.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: BASE_CHAIN_ID_HEX }]
+        });
+    } catch (switchErr) {
+        const msg = (switchErr && switchErr.message) ? String(switchErr.message) : 'Switch failed';
+        throw new Error('Switch wallet to Base network. ' + msg);
+    }
+}
+
+/** Contract requires name length in bytes 1–32. Truncate to 32 bytes UTF-8. */
+function truncateNameTo32Bytes(name) {
+    if (!name || typeof name !== 'string') return 'Player';
+    const s = String(name).trim() || 'Player';
+    let enc = new TextEncoder().encode(s);
+    if (enc.length <= 32) return s;
+    enc = enc.slice(0, 32);
+    const decoded = new TextDecoder().decode(enc);
+    return decoded.replace(/\uFFFD/g, '').trim() || 'Player';
+}
+
 async function ensureWalletProvider(sdk) {
     // 1) Request wallet capability
     let capabilities = null;
@@ -234,10 +273,11 @@ window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
             }
         }
         displayName = displayName || 'Player';
-        if (displayName.length > 32) displayName = displayName.slice(0, 32);
+        displayName = truncateNameTo32Bytes(displayName);
         console.log('[miniapp] submitScore — displayName:', displayName);
         const { provider, account } = await ensureWalletProvider(sdk);
         if (!provider || !account) throw new Error('Wallet not connected');
+        await ensureBaseNetwork(provider);
 
         const viem = await getViem();
         const baseChain = viem.base || (await import('https://esm.sh/viem/chains').then((m) => m.base));
@@ -280,7 +320,11 @@ window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
         window.dispatchEvent(new CustomEvent('base-invaders:wallet-connected', { detail: { address: account } }));
         return { success: true, hash };
     } catch (e) {
-        console.error('[miniapp] SubmitScore tx FAILED:', e?.message ?? e);
+        const msg = (e && e.message) ? String(e.message) : '';
+        console.error('[miniapp] SubmitScore tx FAILED:', msg || e);
+        if (msg && (msg.includes('revert') || msg.includes('execution reverted')) && !msg.includes('Leaderboard')) {
+            throw new Error('Transaction reverted. Leaderboard may be full (top 100) or score too low.');
+        }
         throw e;
     }
 };
