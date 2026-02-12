@@ -789,32 +789,39 @@ class UI {
         return v;
     }
 
+    /** UTC days since epoch. Used for on-chain sync: lastCheckInDays === todayUtcDays → checked in today. */
+    _getTodayUtcDays() {
+        return Math.floor(Date.now() / 86400000);
+    }
+
     isCheckInActive() {
-        const lastCheckIn = this._getLastCheckInValue();
-        if (!lastCheckIn) {
-            return true; // Never checked in, button is active
+        if (this._onChainLastCheckInTs != null && this._onChainLastCheckInTs > 0) {
+            const todayUtcDays = this._getTodayUtcDays();
+            const lastCheckInDays = Math.floor(this._onChainLastCheckInTs / 86400);
+            return lastCheckInDays !== todayUtcDays; // Active if yesterday or earlier
         }
-        const todayKey = this._onChainLastCheckInTs != null ? this.getDayKeyUTC() : this.getDayKey();
-        return lastCheckIn !== todayKey;
+        const lastCheckIn = this._getLastCheckInValue();
+        if (!lastCheckIn) return true;
+        return lastCheckIn !== this.getDayKey();
     }
 
     getCheckInTimeRemaining() {
-        const lastCheckIn = this._getLastCheckInValue();
-        if (!lastCheckIn) {
-            return null; // No cooldown
-        }
-        const todayKey = this._onChainLastCheckInTs != null ? this.getDayKeyUTC() : this.getDayKey();
-        if (lastCheckIn !== todayKey) {
-            return null; // Cooldown expired (different day)
-        }
-        const now = new Date();
-        let nextMidnight;
-        if (this._onChainLastCheckInTs != null) {
-            nextMidnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0, 0));
+        let msRemaining = 0;
+        if (this._onChainLastCheckInTs != null && this._onChainLastCheckInTs > 0) {
+            const todayUtcDays = this._getTodayUtcDays();
+            const lastCheckInDays = Math.floor(this._onChainLastCheckInTs / 86400);
+            if (lastCheckInDays !== todayUtcDays) return null;
+            const nextUtcDayStart = (todayUtcDays + 1) * 86400000;
+            msRemaining = nextUtcDayStart - Date.now();
         } else {
-            nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
+            const lastCheckIn = this._getLastCheckInValue();
+            if (!lastCheckIn) return null;
+            if (lastCheckIn !== this.getDayKey()) return null;
+            const now = new Date();
+            const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
+            msRemaining = nextMidnight.getTime() - now.getTime();
         }
-        const msRemaining = nextMidnight.getTime() - now.getTime();
+        if (msRemaining <= 0) return null;
         if (msRemaining <= 0) {
             return null;
         }
