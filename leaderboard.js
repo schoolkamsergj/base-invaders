@@ -111,10 +111,15 @@
 
     function renderGlobalRows(entries, nameMap) {
         if (!Array.isArray(entries) || entries.length === 0) {
-            return '<tr><td colspan="5">No on-chain scores yet.</td></tr>';
+            return '<tr><td colspan="6">No on-chain scores yet.</td></tr>';
         }
+        var sorted = entries.slice().sort(function (a, b) {
+            var sa = typeof a[2] === 'bigint' ? Number(a[2]) : Number(a[2] ?? 0);
+            var sb = typeof b[2] === 'bigint' ? Number(b[2]) : Number(b[2] ?? 0);
+            return sb - sa;
+        });
         const nameMapLower = nameMap && typeof nameMap === 'object' ? nameMap : {};
-        return entries.map(function (row, i) {
+        return sorted.map(function (row, i) {
             const address = row[0];
             let name = (row[1] && String(row[1]).trim()) || '';
             const score = row[2];
@@ -128,20 +133,21 @@
             const scoreNum = typeof score === 'bigint' ? Number(score) : Number(score);
             const waveNum = typeof wave === 'bigint' ? Number(wave) : Number(wave);
             const streakNum = typeof streak === 'bigint' ? Number(streak) : Number(streak);
-            return '<tr><td>' + (Number.isFinite(scoreNum) ? scoreNum.toLocaleString('en-US') : '—') + '</td><td>' + (name || '—') + '</td><td>' + (Number.isFinite(waveNum) ? waveNum : '—') + '</td><td>' + formatTimestamp(timestamp) + '</td><td>' + (Number.isFinite(streakNum) ? streakNum : '—') + '</td></tr>';
+            var rank = i + 1;
+            return '<tr><td>' + rank + '</td><td>' + (Number.isFinite(scoreNum) ? scoreNum.toLocaleString('en-US') : '—') + '</td><td>' + (name || '—') + '</td><td>' + (Number.isFinite(waveNum) ? waveNum : '—') + '</td><td>' + formatTimestamp(timestamp) + '</td><td>' + (Number.isFinite(streakNum) ? streakNum : '—') + '</td></tr>';
         }).join('');
     }
 
     function renderLocalRow(entry) {
         if (!entry || typeof entry !== 'object') {
-            return '<tr><td colspan="5">Play a run to set your personal best.</td></tr>';
+            return '<tr><td colspan="6">Play a run to set your personal best.</td></tr>';
         }
         const score = entry.score != null ? Number(entry.score).toLocaleString('en-US') : '—';
         const wave = entry.wave != null ? entry.wave : '—';
         const date = entry.date ? formatDateDDMMYYYY(new Date(entry.date)) : '—';
         const streak = entry.streak != null ? entry.streak : '—';
         const name = (entry.name && String(entry.name).trim()) || 'You';
-        return '<tr><td>' + score + '</td><td>' + name + '</td><td>' + wave + '</td><td>' + date + '</td><td>' + streak + '</td></tr>';
+        return '<tr><td>1</td><td>' + score + '</td><td>' + name + '</td><td>' + wave + '</td><td>' + date + '</td><td>' + streak + '</td></tr>';
     }
 
     function setGlobalStatus(text, isError) {
@@ -154,11 +160,11 @@
 
     function loadGlobal() {
         const tbody = document.getElementById(GLOBAL_BODY_ID);
-        if (tbody) tbody.innerHTML = '<tr><td colspan="5">Loading...</td></tr>';
+        if (tbody) tbody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
         setGlobalStatus('Loading...', false);
 
         if (typeof window.baseInvadersGetLeaderboard !== 'function') {
-            if (tbody) tbody.innerHTML = '<tr><td colspan="5">Leaderboard not available (open in Warpcast?).</td></tr>';
+            if (tbody) tbody.innerHTML = '<tr><td colspan="6">Leaderboard not available (open in Warpcast?).</td></tr>';
             setGlobalStatus('Global leaderboard (on-chain)', true);
             return;
         }
@@ -179,7 +185,7 @@
                 setGlobalStatus('Global leaderboard (on-chain)', false);
             })
             .catch(function (err) {
-                if (tbody) tbody.innerHTML = '<tr><td colspan="5">Failed to load: ' + (err?.message || String(err)) + '</td></tr>';
+                if (tbody) tbody.innerHTML = '<tr><td colspan="6">Failed to load: ' + (err?.message || String(err)) + '</td></tr>';
                 setGlobalStatus('Failed to load leaderboard', true);
             });
     }
