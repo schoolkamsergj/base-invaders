@@ -16,6 +16,9 @@ contract BaseInvadersLeaderboardV2 {
     uint256 public constant MAX_ENTRIES = 100;
     address public owner;
 
+    /// @dev Check-in date (timestamp) per player; independent of leaderboard/score/top-100.
+    mapping(address => uint256) public lastCheckIn;
+
     event ScoreSubmitted(
         address indexed player,
         uint256 score,
@@ -24,6 +27,7 @@ contract BaseInvadersLeaderboardV2 {
         string name
     );
     event LeaderboardCleared(address indexed clearedBy, uint256 timestamp);
+    event CheckInRecorded(address indexed player, uint256 timestamp);
 
     constructor() {
         owner = msg.sender;
@@ -98,6 +102,17 @@ contract BaseInvadersLeaderboardV2 {
         }
 
         emit ScoreSubmitted(msg.sender, score, wave, streak, name);
+    }
+
+    /// @notice Record daily check-in for msg.sender. Does not affect leaderboard.
+    function recordCheckIn() external {
+        lastCheckIn[msg.sender] = block.timestamp;
+        emit CheckInRecorded(msg.sender, block.timestamp);
+    }
+
+    /// @notice Alias for recordCheckIn() for frontend/miniapp compatibility.
+    function checkIn() external {
+        recordCheckIn();
     }
 
     function getTopPlayers() external view returns (Entry[] memory) {
