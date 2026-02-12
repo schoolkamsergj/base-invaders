@@ -241,7 +241,7 @@ window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
 
         const viem = await getViem();
         const baseChain = viem.base || (await import('https://esm.sh/viem/chains').then((m) => m.base));
-        const { createWalletClient, createPublicClient, custom, parseAbi, getAddress, http, waitForTransactionReceipt } = viem;
+        const { createWalletClient, createPublicClient, custom, parseAbi, getAddress, http } = viem;
         const LEADERBOARD_ABI = parseAbi(['function submitScore(uint256,uint256,uint256,string) external']);
 
         const walletClient = createWalletClient({ chain: baseChain, transport: custom(provider) });
@@ -272,7 +272,7 @@ window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
                 return json.result;
             })
         });
-        const receipt = await waitForTransactionReceipt(publicClient, { hash, confirmations: 1 });
+        const receipt = await publicClient.waitForTransactionReceipt({ hash, confirmations: 1 });
         if (receipt && receipt.status === 'reverted') {
             throw new Error('Transaction reverted. Leaderboard may be full (top 100 only) or score too low.');
         }
