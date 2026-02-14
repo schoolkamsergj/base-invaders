@@ -43,21 +43,6 @@
         return day + ',' + month + ',' + year;
     }
 
-    /** Format check-in date (Supabase YYYY-MM-DD string or unix timestamp). */
-    function formatCheckInDate(val) {
-        if (val == null) return '—';
-        if (typeof val === 'string') {
-            var datePart = val.slice(0, 10);
-            if (/^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
-                var parts = datePart.split('-');
-                return parts[2] + '.' + parts[1] + '.' + parts[0];
-            }
-        }
-        const n = typeof val === 'bigint' ? Number(val) : Number(val);
-        if (Number.isFinite(n) && n > 0) return formatDateDDMMYYYY(new Date(n * 1000)).replace(/,/g, '.');
-        return '—';
-    }
-
     function formatTimestamp(ts) {
         if (ts == null) return '—';
         const n = typeof ts === 'bigint' ? Number(ts) : Number(ts);
@@ -149,10 +134,9 @@
             const scoreNum = typeof score === 'bigint' ? Number(score) : Number(score);
             const waveNum = typeof wave === 'bigint' ? Number(wave) : Number(wave);
             const streakNum = typeof streak === 'bigint' ? Number(streak) : Number(streak);
-            const checkInFormatted = formatCheckInDate(lastCheckIn);
+            const checkInFormatted = (lastCheckIn != null && lastCheckIn !== 0n && Number(lastCheckIn) !== 0) ? formatTimestamp(lastCheckIn) : '—';
             var rank = i + 1;
-            var dateFormatted = formatTimestamp(timestamp).replace(/,/g, '.');
-            return '<tr><td>' + rank + '</td><td>' + (Number.isFinite(scoreNum) ? scoreNum.toLocaleString('en-US') : '—') + '</td><td>' + (name || '—') + '</td><td>' + (Number.isFinite(waveNum) ? waveNum : '—') + '</td><td>' + dateFormatted + '</td><td>' + (Number.isFinite(streakNum) ? streakNum : '—') + '</td><td>' + checkInFormatted + '</td></tr>';
+            return '<tr><td>' + rank + '</td><td>' + (Number.isFinite(scoreNum) ? scoreNum.toLocaleString('en-US') : '—') + '</td><td>' + (name || '—') + '</td><td>' + (Number.isFinite(waveNum) ? waveNum : '—') + '</td><td>' + formatTimestamp(timestamp) + '</td><td>' + (Number.isFinite(streakNum) ? streakNum : '—') + '</td><td>' + checkInFormatted + '</td></tr>';
         }).join('');
     }
 

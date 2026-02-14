@@ -7,19 +7,6 @@ const CHECKIN_ADDR = '0x709Ef1bc52a302206E1244Df92Ae0329a9d3C736';
 // On-chain leaderboard (Base). Contract may keep only top N entries (e.g. 100); new scores below the minimum may not appear.
 const LEADERBOARD_ADDR = '0xAC89DA9d8508d0865c55083552da91894537aC89'; // V2 contract with clear function
 
-// Supabase (check-in column 7)
-const SUPABASE_URL = 'https://koacrzrboxqglxkpqhku.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvYWNyenJib3hxZ2x4a3BxaGt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MDEzNDMsImV4cCI6MjA4NTM3NzM0M30.8UYe_xGvsdcIcncsQVOw6tjfLv12_HGyTC2GyceFzBQ';
-
-let supabaseClient = null;
-async function getSupabase() {
-    if (!supabaseClient) {
-        const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-        supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    }
-    return supabaseClient;
-}
-
 // viem: use esm.sh only (Skypack pulls "ox/tempo" which fails in browser)
 let viemPromise = null;
 function getViem() {
@@ -263,21 +250,7 @@ window.baseInvadersOnchainCheckIn = async function () {
             value: 0n
         });
         console.log('[miniapp] checkIn hash:', hash);
-        window.__baseInvadersWalletAddress = String(account).toLowerCase();
         window.dispatchEvent(new CustomEvent('base-invaders:wallet-connected', { detail: { address: account } }));
-
-        // Upsert last_checkin_date to Supabase (7th field in leaderboard)
-        const todayKey = new Date().toISOString().slice(0, 10);
-        try {
-            const sb = await getSupabase();
-            await sb.from('player_progress').upsert(
-                { player: String(account).toLowerCase(), last_checkin_date: todayKey },
-                { onConflict: 'player' }
-            );
-            console.log('[miniapp] Supabase player_progress upsert OK');
-        } catch (e) {
-            console.warn('[miniapp] Supabase upsert failed', e?.message || e);
-        }
         return { success: true, hash };
     } catch (e) {
         console.error('[miniapp] CheckIn tx failed', e);
@@ -344,7 +317,6 @@ window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
             throw new Error('Transaction reverted. Leaderboard may be full (top 100 only) or score too low.');
         }
         console.log('[miniapp] submitScore SUCCESS — confirmed, block:', receipt?.blockNumber);
-        window.__baseInvadersWalletAddress = String(account).toLowerCase();
         window.dispatchEvent(new CustomEvent('base-invaders:wallet-connected', { detail: { address: account } }));
         return { success: true, hash };
     } catch (e) {
@@ -413,7 +385,10 @@ window.baseInvadersGetLeaderboard = async function () {
     const { createPublicClient, parseAbi, custom } = viem;
     const http = viem.http;
     // Unnamed tuple (abitype rejects named tuple in parseAbi); order: player, name, score, wave, streak, timestamp
-    const LEADERBOARD_ABI = parseAbi(['function getTopPlayers() view returns ((address,string,uint256,uint256,uint256,uint256)[])']);
+    const LEADERBOARD_ABI = parseAbi([
+        'function getTopPlayers() view returns ((address,string,uint256,uint256,uint256,uint256)[])',
+        'function lastCheckIn(address) view returns (uint256)'
+    ]);
 
     let lastError = null;
     for (const rpcUrl of BASE_RPC_URLS) {
@@ -435,28 +410,15 @@ window.baseInvadersGetLeaderboard = async function () {
             const data = await client.readContract({ address: LEADERBOARD_ADDR, abi: LEADERBOARD_ABI, functionName: 'getTopPlayers' });
             const arr = Array.isArray(data) ? data : [];
             console.log('[miniapp] getTopPlayers OK via', rpcUrl, 'entries:', arr.length);
-
-            // Fetch check-in dates from Supabase (7th field); fetch all and filter in JS to avoid .in() 400
-            let checkInMap = {};
-            try {
-                const sb = await getSupabase();
-                const addrsSet = new Set(arr.map((r) => String(r[0]).toLowerCase()).filter(Boolean));
-                const { data: rows } = await sb.from('player_progress').select('player, last_checkin_date');
-                if (rows && Array.isArray(rows)) {
-                    rows.forEach((r) => {
-                        const p = r.player && String(r.player).toLowerCase();
-                        if (p && addrsSet.has(p) && r.last_checkin_date) checkInMap[p] = r.last_checkin_date;
-                    });
-                }
-            } catch (e) {
-                console.warn('[miniapp] Supabase player_progress fetch failed', e?.message || e);
-            }
-
-            const withCheckIn = arr.map((row) => {
-                const playerLower = (row[0] && String(row[0]).toLowerCase()) || '';
-                const checkInVal = checkInMap[playerLower] || null;
-                return [...row, checkInVal];
-            });
+            // Fetch lastCheckIn for each player (parallel)
+            const withCheckIn = await Promise.all(arr.map(async (row) => {
+                const player = row[0];
+                let checkInTs = 0n;
+                try {
+                    checkInTs = await client.readContract({ address: LEADERBOARD_ADDR, abi: LEADERBOARD_ABI, functionName: 'lastCheckIn', args: [player] });
+                } catch (e) { /* no check-in or old contract */ }
+                return [...row, checkInTs];
+            }));
             return withCheckIn;
         } catch (e) {
             lastError = e;
@@ -494,31 +456,6 @@ window.baseInvadersMiniAppSdk = getSdk();
     setCheckInFid();
 })();
 
-function startSupabaseCheckInRealtime() {
-    if (window.__baseInvadersSupabaseRealtimeStarted) return;
-    window.__baseInvadersSupabaseRealtimeStarted = true;
-    (async () => {
-        try {
-            const sb = await getSupabase();
-            sb.channel('player_progress_checkin')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'player_progress' }, (payload) => {
-                    const rec = payload?.new || payload?.old;
-                    const player = rec?.player ? String(rec.player).toLowerCase() : '';
-                    const addr = window.__baseInvadersWalletAddress;
-                    if (addr && player === addr) {
-                        const lastCheckin = rec?.last_checkin_date || null;
-                        window.dispatchEvent(new CustomEvent('base-invaders:checkin-synced', { detail: { last_checkin_date: lastCheckin } }));
-                    }
-                })
-                .subscribe();
-            console.log('[miniapp] Supabase RealTime check-in subscription started');
-        } catch (e) {
-            console.warn('[miniapp] Supabase RealTime failed', e?.message || e);
-            window.__baseInvadersSupabaseRealtimeStarted = false;
-        }
-    })();
-}
-
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('[miniapp] DOMContentLoaded');
     try {
@@ -532,7 +469,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 window.__baseInvadersCheckInFid = String(ctx.user.fid);
             }
         }
-        startSupabaseCheckInRealtime();
     } catch (e) {
         console.error('[miniapp] DOMContentLoaded ready failed', e);
     }
