@@ -37,6 +37,7 @@ class UI {
         window.addEventListener('base-invaders:wallet-connected', () => {
             this.updateCheckInButtonState();
         });
+        window.addEventListener('base-invaders:checkin-synced', () => this.updateCheckInButtonState());
     }
 
     createTopBar() {
@@ -1130,6 +1131,16 @@ class UI {
         return Math.floor(num).toString();
     }
 }
+
+// Global RealTime check-in sync (runs before UI exists)
+window.addEventListener('base-invaders:checkin-synced', function globalCheckInSynced(e) {
+    const val = e?.detail?.last_checkin_date;
+    if (!val || !/^\d{4}-\d{2}-\d{2}$/.test(val)) return;
+    const fid = window.__baseInvadersCheckInFid || 'default';
+    localStorage.setItem('lastCheckIn_' + fid, val);
+    const g = window.game?.scene?.getScene?.('GameScene');
+    if (g?.ui?.updateCheckInButtonState) g.ui.updateCheckInButtonState();
+});
 
 // Debug helper for Daily Check-in (dev only)
 (function() {
