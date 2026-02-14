@@ -46,9 +46,12 @@
     /** Format check-in date (Supabase YYYY-MM-DD string or unix timestamp). */
     function formatCheckInDate(val) {
         if (val == null) return '—';
-        if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
-            const [y, m, d] = val.split('-');
-            return d + '.' + m + '.' + y;
+        if (typeof val === 'string') {
+            var datePart = val.slice(0, 10);
+            if (/^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
+                var parts = datePart.split('-');
+                return parts[2] + '.' + parts[1] + '.' + parts[0];
+            }
         }
         const n = typeof val === 'bigint' ? Number(val) : Number(val);
         if (Number.isFinite(n) && n > 0) return formatDateDDMMYYYY(new Date(n * 1000)).replace(/,/g, '.');

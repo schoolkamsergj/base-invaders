@@ -422,8 +422,8 @@ class UI {
         this.checkInButton.setSize(layout.checkInWidth * 1.2, layout.checkInHeight * 1.2);
         this.checkInButtonText.setPosition(checkInX, checkInY);
         this.checkInButtonText.setFontSize(`${Math.max(11, layout.checkInHeight * 0.35)}px`);
-        this.checkInCountdownText.setPosition(checkInX, checkInY + layout.checkInHeight * 0.35);
-        this.checkInCountdownText.setFontSize(`${Math.max(10, layout.checkInHeight * 0.28)}px`);
+        this.checkInCountdownText.setPosition(checkInX, checkInY + (layout.checkInHeight ?? layout.height ?? 40) * 0.35);
+        this.checkInCountdownText.setFontSize(`${Math.max(10, (layout.checkInHeight ?? layout.height ?? 40) * 0.28)}px`);
 
         this.attachCheckInHandlers();
         this.updateCheckInButtonState();
@@ -686,21 +686,23 @@ class UI {
             this.checkInButtonText.setScale(1);
         });
         
-        // Start countdown interval on creation
-        this.startCountdownInterval();
+        // Start countdown interval after layout is applied (avoids Phaser glTexture null on first frame)
+        if (this.scene && this.scene.time) {
+            this.scene.time.delayedCall(100, () => this.startCountdownInterval(), [], this);
+        } else {
+            this.startCountdownInterval();
+        }
     }
 
     startCountdownInterval() {
-        // Clear existing interval if any
         if (this.countdownInterval) {
             clearInterval(this.countdownInterval);
+            this.countdownInterval = null;
         }
-        
-        // Update immediately
+        if (!this.scene?.scene?.isActive?.()) return;
         this.updateCheckInButtonState();
-        
-        // Update every second
         this.countdownInterval = setInterval(() => {
+            if (!this.scene?.scene?.isActive?.()) return;
             this.updateCheckInButtonState();
         }, 1000);
     }
@@ -816,18 +818,20 @@ class UI {
     
 
     updateCheckInButtonState() {
+        if (!this.scene?.scene?.isActive?.() || !this.checkInButtonText || !this.checkInButton) return;
         const layout = this.checkInLayout || { x: 80, y: 170, width: 120, height: 40 };
         const buttonX = layout.x;
         const buttonY = layout.y;
-
-        const buttonWidth = layout.width;
-        const buttonHeight = layout.height;
+        const buttonWidth = layout.width || 120;
+        const buttonHeight = layout.height || 40;
+        const layoutCheckInHeight = layout.checkInHeight ?? layout.height ?? 40;
         const streakInfo = this.getCheckInStreak();
 
-        
         const isActive = this.isCheckInActive();
         const timeRemaining = this.getCheckInTimeRemaining();
-        
+
+        if (!this.checkInButtonBg || !this.checkInGlow) return;
+        try {
         // Clear and redraw background
         this.checkInButtonBg.clear();
         this.checkInGlow.clear();
@@ -854,7 +858,7 @@ class UI {
             const nextMilestone = Math.ceil(nextDay / 7) * 7;
             
             // Build button text (restore font size after disabled state)
-            this.checkInButtonText.setFontSize(Math.max(11, Math.min(13, layout.checkInHeight * 0.35)) + 'px');
+            this.checkInButtonText.setFontSize(Math.max(11, Math.min(13, layoutCheckInHeight * 0.35)) + 'px');
             this.checkInButtonText.setPosition(buttonX, buttonY);
             if (isNextMilestone) {
                 this.checkInButtonText.setText(typeof getText === 'function' ? getText('ui.dayMilestone', { next: nextDay, next7: nextDay + 7 }) : `📅 Day ${nextDay} →${nextDay + 7} 🎉`);
@@ -890,6 +894,9 @@ class UI {
             // Disable interaction
             this.checkInButton.disableInteractive();
             this.checkInButtonText.disableInteractive();
+        }
+        } catch (e) {
+            if (e?.message && e.message.indexOf('glTexture') === -1) console.warn('[UI] updateCheckInButtonState', e.message);
         }
     }
 

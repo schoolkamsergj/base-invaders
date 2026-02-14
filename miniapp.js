@@ -436,16 +436,16 @@ window.baseInvadersGetLeaderboard = async function () {
             const arr = Array.isArray(data) ? data : [];
             console.log('[miniapp] getTopPlayers OK via', rpcUrl, 'entries:', arr.length);
 
-            // Fetch check-in dates from Supabase (7th field)
+            // Fetch check-in dates from Supabase (7th field); fetch all and filter in JS to avoid .in() 400
             let checkInMap = {};
             try {
                 const sb = await getSupabase();
-                const addrs = arr.map((r) => String(r[0]).toLowerCase()).filter(Boolean);
-                const { data: rows } = await sb.from('player_progress').select('player, last_checkin_date').in('player', addrs);
+                const addrsSet = new Set(arr.map((r) => String(r[0]).toLowerCase()).filter(Boolean));
+                const { data: rows } = await sb.from('player_progress').select('player, last_checkin_date');
                 if (rows && Array.isArray(rows)) {
                     rows.forEach((r) => {
                         const p = r.player && String(r.player).toLowerCase();
-                        if (p && r.last_checkin_date) checkInMap[p] = r.last_checkin_date;
+                        if (p && addrsSet.has(p) && r.last_checkin_date) checkInMap[p] = r.last_checkin_date;
                     });
                 }
             } catch (e) {
