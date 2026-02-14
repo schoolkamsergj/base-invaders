@@ -24,17 +24,24 @@ class UI {
             this.applyLayout(gameSize.width, gameSize.height);
         });
 
+        // On-chain check-in day cache (sync between devices: phone/laptop use same chain state)
+        this._lastCheckInDayOnChain = null;
+
         window.addEventListener('load', () => {
+            this.refreshLastCheckInFromChain();
             this.updateCheckInButtonState();
         });
         window.addEventListener('focus', () => {
+            this.refreshLastCheckInFromChain();
             this.updateCheckInButtonState();
         });
         window.addEventListener('base-invaders:game-ready', () => {
             this.attachCheckInHandlers();
+            this.refreshLastCheckInFromChain();
             this.updateCheckInButtonState();
         });
         window.addEventListener('base-invaders:wallet-connected', () => {
+            this.refreshLastCheckInFromChain();
             this.updateCheckInButtonState();
         });
     }
@@ -496,6 +503,22 @@ class UI {
         return 'checkInStreak_' + fid;
     }
 
+    /** Refresh last check-in day from chain so button state syncs across devices (phone/laptop). */
+    async refreshLastCheckInFromChain() {
+        if (typeof window.baseInvadersGetLastCheckInDayFromChain !== 'function') return;
+        try {
+            const day = await window.baseInvadersGetLastCheckInDayFromChain();
+            this._lastCheckInDayOnChain = day != null && Number.isFinite(day) ? day : null;
+        } catch (e) {
+            this._lastCheckInDayOnChain = null;
+        }
+    }
+
+    /** Current UTC day index (same as contract: block.timestamp / 1 days). */
+    getCurrentUTCDay() {
+        return Math.floor(Date.now() / 1000 / 86400);
+    }
+
     createDailyCheckInButton() {
         this._checkInFid = 'default';
         (async () => {
@@ -597,6 +620,9 @@ class UI {
                 const result = await window.baseInvadersOnchainCheckIn();
                 console.log('[UI] Check-in tx success:', result);
 
+                // Sync state from chain so other devices see it; update cache so this device shows checked-in immediately
+                this._lastCheckInDayOnChain = this.getCurrentUTCDay();
+
                 const lastKey = this.getLastCheckInKey();
                 const streakKey = this.getStreakKey();
                 this._lastCheckInKeyUsed = lastKey;
@@ -651,6 +677,7 @@ class UI {
                 else if (error.message.includes('not available')) errorMsg = t('ui.walletNotReady');
                 else if (error.message.includes('Already checked in today')) {
                     errorMsg = t('ui.alreadyCheckedIn');
+                    this._lastCheckInDayOnChain = this.getCurrentUTCDay();
                     const key = this.getLastCheckInKey();
                     this._lastCheckInKeyUsed = key;
                     localStorage.setItem(key, todayKey);
@@ -759,6 +786,11 @@ class UI {
     }
 
     isCheckInActive() {
+        // Prefer on-chain state so check-in syncs between devices (phone + laptop)
+        if (this._lastCheckInDayOnChain != null) {
+            const currentDayUTC = this.getCurrentUTCDay();
+            return this._lastCheckInDayOnChain < currentDayUTC;
+        }
         const lastCheckIn = this._getLastCheckInValue();
         if (!lastCheckIn) {
             return true; // Never checked in, button is active
@@ -768,6 +800,18 @@ class UI {
     }
 
     getCheckInTimeRemaining() {
+        // Prefer on-chain state: countdown to next UTC midnight (same as contract)
+        if (this._lastCheckInDayOnChain != null) {
+            const currentDayUTC = this.getCurrentUTCDay();
+            if (this._lastCheckInDayOnChain < currentDayUTC) return null;
+            const nextUTCMidnightMs = (currentDayUTC + 1) * 86400 * 1000;
+            const msRemaining = nextUTCMidnightMs - Date.now();
+            if (msRemaining <= 0) return null;
+            const hours = Math.floor(msRemaining / (1000 * 60 * 60));
+            const minutes = Math.floor((msRemaining % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((msRemaining % (1000 * 60)) / 1000);
+            return { hours, minutes, seconds };
+        }
         const lastCheckIn = this._getLastCheckInValue();
         if (!lastCheckIn) {
             return null; // No cooldown

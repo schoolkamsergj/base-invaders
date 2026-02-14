@@ -212,6 +212,53 @@ async function ensureWalletProvider(sdk) {
     return { provider, account: address, error: null };
 }
 
+/** Get last check-in UTC day index from chain (for current wallet). Returns null if no wallet or read fails. */
+window.baseInvadersGetLastCheckInDayFromChain = async function () {
+    try {
+        const sdk = getSdk();
+        if (!sdk) return null;
+        if (typeof sdk.ready === 'function') await sdk.ready();
+        else if (sdk.actions && typeof sdk.actions.ready === 'function') { try { await sdk.actions.ready({ disableNativeGestures: false }); } catch (_) {} }
+        let provider = null;
+        try {
+            const p = sdk?.wallet?.getEthereumProvider?.();
+            provider = (p && typeof p.then === 'function') ? await p : p;
+        } catch (_) {}
+        if (!provider) provider = window.farcasterProvider || null;
+        if (!provider || typeof provider.request !== 'function') return null;
+        const accounts = await provider.request({ method: 'eth_requestAccounts', params: [] });
+        const account = accounts?.[0];
+        if (!account) return null;
+
+        const viem = await getViem();
+        const baseChain = viem.base || (await import('https://esm.sh/viem/chains').then((m) => m.base));
+        const { createPublicClient, parseAbi, getAddress, http } = viem;
+        const CHECKIN_READ_ABI = parseAbi(['function lastCheckInDay(address) view returns (uint256)']);
+        const httpFn = viem.http;
+        let client = null;
+        for (const rpcUrl of BASE_RPC_URLS) {
+            try {
+                const transport = typeof httpFn === 'function'
+                    ? httpFn(rpcUrl)
+                    : viem.custom(async ({ method, params }) => {
+                        const res = await fetch(rpcUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }) });
+                        if (!res.ok) throw new Error('RPC ' + res.status);
+                        const json = await res.json();
+                        if (json.error) throw new Error(json.error.message || JSON.stringify(json.error));
+                        return json.result;
+                    });
+                client = createPublicClient({ chain: baseChain, transport });
+                const day = await client.readContract({ address: CHECKIN_ADDR, abi: CHECKIN_READ_ABI, functionName: 'lastCheckInDay', args: [getAddress(account)] });
+                return typeof day === 'bigint' ? Number(day) : Number(day);
+            } catch (_) {}
+        }
+        return null;
+    } catch (e) {
+        console.warn('[miniapp] getLastCheckInDayFromChain failed', e?.message || e);
+        return null;
+    }
+};
+
 window.baseInvadersOnchainCheckIn = async function () {
     console.log('[miniapp] baseInvadersOnchainCheckIn start');
     try {
@@ -250,6 +297,22 @@ window.baseInvadersOnchainCheckIn = async function () {
             value: 0n
         });
         console.log('[miniapp] checkIn hash:', hash);
+
+        // Record check-in date in leaderboard so it appears in the leaderboard table (sync across devices)
+        try {
+            const LEADERBOARD_CHECKIN_ABI = parseAbi(['function recordCheckIn() external']);
+            const hash2 = await client.writeContract({
+                address: LEADERBOARD_ADDR,
+                abi: LEADERBOARD_CHECKIN_ABI,
+                functionName: 'recordCheckIn',
+                account: accountObj,
+                value: 0n
+            });
+            console.log('[miniapp] leaderboard recordCheckIn hash:', hash2);
+        } catch (e2) {
+            console.warn('[miniapp] leaderboard recordCheckIn failed (check-in already saved)', e2?.message || e2);
+        }
+
         window.dispatchEvent(new CustomEvent('base-invaders:wallet-connected', { detail: { address: account } }));
         return { success: true, hash };
     } catch (e) {
