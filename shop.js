@@ -10,6 +10,8 @@ class ShopSystem {
         // Setup tab buttons (use currentTarget so click on button text still gives correct data-tab)
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                const gameScene = window.game && window.game.scene && window.game.scene.getScene ? window.game.scene.getScene('GameScene') : null;
+                if (gameScene && typeof gameScene.playSound === 'function') gameScene.playSound('click');
                 const tab = (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.tab) || e.target.dataset.tab;
                 if (tab) this.switchTab(tab);
             });

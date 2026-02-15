@@ -9,6 +9,10 @@ class MenuScene extends Phaser.Scene {
         super({ key: 'MenuScene' });
     }
 
+    preload() {
+        this.load.audio('click', 'assets/sounds/click.mp3');
+    }
+
     create() {
         const width = this.scale.width;
         const height = this.scale.height;
@@ -125,6 +129,7 @@ class MenuScene extends Phaser.Scene {
 
         // Click to start game (this.scene.start auto-stops current scene)
         this.startBtn.on('pointerdown', () => {
+            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
             this.tweens.add({
                 targets: [this.startBtn, this.startText],
                 scale: 0.95,
@@ -169,6 +174,7 @@ class MenuScene extends Phaser.Scene {
             this.tweens.add({ targets: this.languageText, scale: 1, duration: 200 });
         });
         this.languageBtn.on('pointerdown', () => {
+            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
             console.log('LANGUAGE BUTTON CLICKED!');
             this.tweens.add({
                 targets: [this.languageBtn, this.languageText],
@@ -234,6 +240,7 @@ class MenuScene extends Phaser.Scene {
 
         // Click to show instructions overlay
         this.instructionsBtn.on('pointerdown', () => {
+            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
             this.tweens.add({
                 targets: [this.instructionsBtn, this.instructionsBtnText],
                 scale: 0.95,
@@ -287,6 +294,7 @@ class MenuScene extends Phaser.Scene {
         
         // Click handler: reset without confirmation (player knows the consequences)
         this.resetBtn.on('pointerdown', () => {
+            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
             localStorage.removeItem('baseInvadersData');
             localStorage.removeItem('baseInvadersShop');
             localStorage.removeItem('baseInvadersVibration');
@@ -334,10 +342,19 @@ class MenuScene extends Phaser.Scene {
         });
         
         this.leaderboardBtn.on('pointerdown', () => {
+            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
             if (window.baseInvadersLeaderboard && window.baseInvadersLeaderboard.open) {
                 window.baseInvadersLeaderboard.open();
             }
         });
+
+        // Init click sound for menu buttons (same as pause menu)
+        this.clickSound = null;
+        try {
+            if (this.cache.audio && this.cache.audio.exists('click')) {
+                this.clickSound = this.sound.add('click', { volume: 0.5 });
+            }
+        } catch (e) {}
 
         this.updateMenuLayout(width, height);
         this.scale.on('resize', (gameSize) => {
