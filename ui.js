@@ -47,7 +47,8 @@ class UI {
             this.currencyContainer, this.stageText, this.scoreText, this.levelText,
             this.healthBarBg, this.healthBar, this.healthBarGlow, this.healthText,
             this.shopBtn, this.shopBtnText, this.pauseBtn, this.pauseBtnText,
-            this.checkInButtonBg, this.checkInButton, this.checkInButtonText, this.checkInCountdownText, this.checkInGlow
+            this.checkInButtonBg, this.checkInButton, this.checkInButtonText, this.checkInCountdownText, this.checkInGlow,
+            this.smartBombBtn, this.smartBombBtnText, this.laserBtn, this.laserBtnText
         ];
         toDestroy.forEach(function (o) { try { if (o && typeof o.destroy === 'function') o.destroy(); } catch (e) {} });
     }
@@ -272,6 +273,50 @@ class UI {
             }
             this.scene.togglePause();
         });
+
+        // Ability buttons (right side, vertical): smart bomb and laser beam — only if owned
+        this.smartBombBtn = null;
+        this.smartBombBtnText = null;
+        this.laserBtn = null;
+        this.laserBtnText = null;
+        if (this.gameState.hasSmartBomb || this.gameState.hasLaserBeam) {
+            this.createAbilityButtons();
+        }
+    }
+
+    createAbilityButtons() {
+        const scene = this.scene;
+        const gs = this.gameState;
+        const size = 44;
+        const alpha = 0.42;
+
+        if (gs.hasSmartBomb) {
+            this.smartBombBtn = scene.add.rectangle(0, 0, size, size, 0x1a1a2e, alpha);
+            this.smartBombBtn.setScrollFactor(0);
+            this.smartBombBtn.setDepth(100);
+            this.smartBombBtn.setInteractive({ useHandCursor: true });
+            this.smartBombBtnText = scene.add.text(0, 0, '\u{1F4A3}', { fontSize: '24px', align: 'center' });
+            this.smartBombBtnText.setOrigin(0.5);
+            this.smartBombBtnText.setScrollFactor(0);
+            this.smartBombBtnText.setDepth(101);
+            this.smartBombBtn.on('pointerdown', () => {
+                if (gs.smartBombUses > 0 && scene.useSmartBomb) scene.useSmartBomb();
+            });
+        }
+
+        if (gs.hasLaserBeam) {
+            this.laserBtn = scene.add.rectangle(0, 0, size, size, 0x1a1a2e, alpha);
+            this.laserBtn.setScrollFactor(0);
+            this.laserBtn.setDepth(100);
+            this.laserBtn.setInteractive({ useHandCursor: true });
+            this.laserBtnText = scene.add.text(0, 0, '\u26A1', { fontSize: '26px', align: 'center' });
+            this.laserBtnText.setOrigin(0.5);
+            this.laserBtnText.setScrollFactor(0);
+            this.laserBtnText.setDepth(101);
+            this.laserBtn.on('pointerdown', () => { if (scene.setLaserActive) scene.setLaserActive(true); });
+            this.laserBtn.on('pointerup', () => { if (scene.setLaserActive) scene.setLaserActive(false); });
+            this.laserBtn.on('pointerout', () => { if (scene.setLaserActive) scene.setLaserActive(false); });
+        }
     }
 
     getLayoutMetrics(width = this.scene.scale.width, height = this.scene.scale.height) {
@@ -312,6 +357,13 @@ class UI {
         const checkInHeight = Math.max(34, Math.min(height * 0.06, 46));
         const checkInY = topMargin + currencySpacing * 3 + checkInHeight / 2 + Math.max(8, height * 0.01);
         const checkInX = margin + checkInWidth / 2;
+
+        // Ability buttons (right side, vertical: laser above bomb)
+        const abilityBtnSize = Math.max(40, Math.min(48, width * 0.1));
+        const abilityGap = 10;
+        const abilityX = width - margin - abilityBtnSize / 2 - 4;
+        const abilityBombY = healthBarY - abilityBtnSize / 2 - 12;
+        const abilityLaserY = healthBarY - abilityBtnSize - abilityGap - abilityBtnSize / 2 - 12;
         
         // Button fonts
         const shopFont = Math.max(12, Math.min(width * 0.032, 16));
@@ -355,7 +407,14 @@ class UI {
             checkInWidth,
             checkInHeight,
             checkInX,
-            checkInY
+            checkInY,
+
+            // Ability buttons
+            abilityBtnSize,
+            abilityGap,
+            abilityX,
+            abilityBombY,
+            abilityLaserY
         };
     }
 
@@ -439,6 +498,21 @@ class UI {
 
         this.attachCheckInHandlers();
         this.updateCheckInButtonState();
+
+        // Ability buttons (right side vertical)
+        if (this.smartBombBtn && layout.abilityX !== undefined) {
+            this.smartBombBtn.setPosition(layout.abilityX, layout.abilityBombY);
+            this.smartBombBtn.setSize(layout.abilityBtnSize, layout.abilityBtnSize);
+            this.smartBombBtnText.setPosition(layout.abilityX, layout.abilityBombY);
+            this.smartBombBtnText.setFontSize(`${Math.min(24, layout.abilityBtnSize * 0.55)}px`);
+            this.smartBombBtn.setAlpha(this.gameState.smartBombUses > 0 ? 0.42 : 0.25);
+        }
+        if (this.laserBtn && layout.abilityX !== undefined) {
+            this.laserBtn.setPosition(layout.abilityX, layout.abilityLaserY);
+            this.laserBtn.setSize(layout.abilityBtnSize, layout.abilityBtnSize);
+            this.laserBtnText.setPosition(layout.abilityX, layout.abilityLaserY);
+            this.laserBtnText.setFontSize(`${Math.min(26, layout.abilityBtnSize * 0.6)}px`);
+        }
         
         // Update mute button position after layout (if it exists)
         if (this.scene.updateMuteButtonPosition) {
@@ -1116,6 +1190,8 @@ class UI {
         const multiplier = gameState.scoreMultiplier || 1;
         this.scoreText.setText(`${scoreLabel}: ${this.formatNumber(gameState.score * multiplier)}`);
         this.levelText.setText(`${levelLabel} ${gameState.playerLevel}`);
+
+        if (this.smartBombBtn) this.smartBombBtn.setAlpha(gameState.smartBombUses > 0 ? 0.42 : 0.25);
         
         // Update health bar - only if properly initialized and valid coordinates
         if (this.scene.player && this.healthBar && this.healthBarGlow && 

@@ -957,6 +957,8 @@ class GameScene extends Phaser.Scene {
 
             // Initialize boss flag
             this.bossActive = false;
+            this.laserActive = false;
+            this.laserBeamGraphic = null;
             
             // Mission system
             this.missionSystem = {
@@ -1041,6 +1043,23 @@ class GameScene extends Phaser.Scene {
             } catch (e) {
                 console.warn('Error loading player stats:', e);
             }
+
+            // Ability state from shop: 1 smart bomb per run if owned; laser beam if owned
+            this.gameState.smartBombUses = 0;
+            this.gameState.hasSmartBomb = false;
+            this.gameState.hasLaserBeam = false;
+            try {
+                const shopJson = localStorage.getItem('baseInvadersShop');
+                if (shopJson) {
+                    const shop = JSON.parse(shopJson);
+                    const up = shop.upgrades || {};
+                    if (up.smartBomb) {
+                        this.gameState.hasSmartBomb = true;
+                        this.gameState.smartBombUses = 1;
+                    }
+                    if (up.laserBeam) this.gameState.hasLaserBeam = true;
+                }
+            } catch (e) {}
 
             // Create groups FIRST (before creating objects)
             this.bullets = this.add.group();
@@ -1812,6 +1831,16 @@ class GameScene extends Phaser.Scene {
                 console.warn('Error checking collisions:', e);
             }
 
+            if (this.laserActive && this.gameState.hasLaserBeam && this.player) {
+                try {
+                    this.updateLaserBeam(delta);
+                } catch (e) {
+                    console.warn('Error updating laser beam:', e);
+                }
+            } else if (this.laserBeamGraphic) {
+                this.laserBeamGraphic.clear();
+            }
+
             // Spawn enemies
             try {
                 this.handleSpawning(time);
@@ -1921,6 +1950,57 @@ class GameScene extends Phaser.Scene {
         this.bullets.add(bullet);
         
         // NO glow pulse animation - removed to prevent duplicates
+    }
+
+    useSmartBomb() {
+        if (this.gameState.paused || this.gameState.gameOver || !this.gameState.smartBombUses) return;
+        this.gameState.smartBombUses--;
+        if (this.playSound) this.playSound('explosion');
+        const list = this.enemies.getChildren().slice();
+        list.forEach(enemySprite => {
+            const enemy = enemySprite.enemyObject;
+            if (enemy) {
+                this.onEnemyDestroyed(enemy);
+                this.destroyEnemy(enemy, enemySprite);
+            }
+        });
+        this.enemyBullets.getChildren().forEach(b => { b.destroy(); });
+    }
+
+    setLaserActive(active) {
+        this.laserActive = !!active;
+        if (!active && this.laserBeamGraphic) {
+            this.laserBeamGraphic.clear();
+        }
+    }
+
+    updateLaserBeam(delta) {
+        if (!this.player || !this.player.sprite || !this.gameState.hasLaserBeam) return;
+        const px = this.player.x;
+        const py = this.player.y - 25;
+        const beamHalfW = 18;
+        const damagePerSecond = 70;
+        const damage = (damagePerSecond * delta) / 1000;
+        if (!this.laserBeamGraphic) {
+            this.laserBeamGraphic = this.add.graphics();
+            this.laserBeamGraphic.setScrollFactor(0);
+            this.laserBeamGraphic.setDepth(10.5);
+        }
+        this.laserBeamGraphic.clear();
+        this.laserBeamGraphic.fillStyle(0x00ffff, 0.35);
+        this.laserBeamGraphic.fillRect(px - beamHalfW, 0, beamHalfW * 2, py);
+        this.enemies.getChildren().slice().forEach(enemySprite => {
+            const enemy = enemySprite.enemyObject;
+            if (!enemy || !enemy.sprite || !enemy.takeDamage) return;
+            const ex = enemy.sprite.x, ey = enemy.sprite.y;
+            if (ey >= py) return;
+            if (Math.abs(ex - px) > beamHalfW + 20) return;
+            const destroyed = enemy.takeDamage(damage);
+            if (destroyed) {
+                this.onEnemyDestroyed(enemy);
+                this.destroyEnemy(enemy, enemySprite);
+            }
+        });
     }
 
     updateBullets() {
@@ -2687,6 +2767,12 @@ class GameScene extends Phaser.Scene {
             this.bgMusic.stop();
         }
 
+        this.laserActive = false;
+        if (this.laserBeamGraphic) {
+            try { this.laserBeamGraphic.destroy(); } catch (e) {}
+            this.laserBeamGraphic = null;
+        }
+
         // КРИТИЧНО! Знищити гравця, інакше при рестарті update() бачить старий sprite (glTexture помилки)
         if (this.player && this.player.sprite) {
             try {
@@ -2842,6 +2928,12 @@ class GameScene extends Phaser.Scene {
                 }
             }
             if (shop.speed) this.playerStats.speed = shop.speed;
+            const up = shop.upgrades || {};
+            if (this.gameState) {
+                this.gameState.hasLaserBeam = !!(up.laserBeam);
+                this.gameState.hasSmartBomb = !!(up.smartBomb);
+                if (up.smartBomb) this.gameState.smartBombUses = Math.max(1, this.gameState.smartBombUses || 0);
+            }
         }
     }
 }

@@ -106,7 +106,7 @@ class ShopSystem {
             { id: 'multiShot2', name: g('shopItems.multiShot2.name'), icon: '🔫', price: { gold: 200 }, stats: g('shopItems.multiShot2.stats'), owned: this.data.multiShot >= 2, required: { multiShot: 1 } },
             { id: 'multiShot3', name: g('shopItems.multiShot3.name'), icon: '🔫', price: { gold: 500 }, stats: g('shopItems.multiShot3.stats'), owned: this.data.multiShot >= 3, required: { multiShot: 2 } },
             { id: 'multiShot5', name: g('shopItems.multiShot5.name'), icon: '🔫', price: { diamonds: 20 }, stats: g('shopItems.multiShot5.stats'), owned: this.data.multiShot >= 5, required: { multiShot: 3 } },
-            { id: 'laserBeam', name: g('shopItems.laserBeam.name'), icon: '⚡', price: { diamonds: 50 }, stats: g('shopItems.laserBeam.stats'), owned: false }
+            { id: 'laserBeam', name: g('shopItems.laserBeam.name'), icon: '⚡', price: { diamonds: 50 }, stats: g('shopItems.laserBeam.stats'), owned: (this.data.upgrades && this.data.upgrades.laserBeam) || false }
         ];
 
         weapons.forEach(weapon => {
@@ -119,7 +119,7 @@ class ShopSystem {
         const g = typeof window !== 'undefined' && typeof window.getText === 'function' ? window.getText : function (k, r) { return k; };
         const powerUps = [
             { id: 'shield', name: g('shopItems.shieldGen.name'), icon: '🛡️', price: { diamonds: 10 }, stats: g('shopItems.shieldGen.stats'), owned: false },
-            { id: 'smartBomb', name: g('shopItems.smartBomb.name'), icon: '💣', price: { diamonds: 5 }, stats: g('shopItems.smartBomb.stats'), owned: false },
+            { id: 'smartBomb', name: g('shopItems.smartBomb.name'), icon: '💣', price: { diamonds: 5 }, stats: g('shopItems.smartBomb.stats'), owned: (this.data.upgrades && this.data.upgrades.smartBomb) || false },
             { id: 'coinMagnet', name: g('shopItems.coinMagnet.name'), icon: '🧲', price: { gold: 100 }, stats: g('shopItems.coinMagnet.stats'), owned: (this.data.upgrades && this.data.upgrades.coinMagnet) || false },
             { id: 'score2x', name: g('shopItems.score2x.name'), icon: '⭐', price: { diamonds: 20 }, stats: g('shopItems.score2x.stats'), owned: false },
             { id: 'extraLife', name: g('shopItems.extraLife.name'), icon: '❤️', price: { diamonds: 30 }, stats: g('shopItems.extraLife.stats'), owned: false }
@@ -398,6 +398,12 @@ class ShopSystem {
                 break;
             case 'coinMagnet':
                 this.data.upgrades.coinMagnet = true;
+                break;
+            case 'smartBomb':
+                this.data.upgrades.smartBomb = true;
+                break;
+            case 'laserBeam':
+                this.data.upgrades.laserBeam = true;
                 break;
             case 'speedDemon':
             case 'baseDefender':
