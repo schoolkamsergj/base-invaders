@@ -2419,8 +2419,9 @@ class GameScene extends Phaser.Scene {
 
     spawnBoss() {
         if (!this.missionSystem) return;
+        // bossActive already set in completeWave() so only one spawn is scheduled
         
-        // Calculate boss HP based on mission
+        // Calculate boss HP based on mission (one boss, stronger each mission)
         let bossHP;
         if (this.missionSystem.currentMission === 1) {
             bossHP = 500;
@@ -2527,14 +2528,17 @@ class GameScene extends Phaser.Scene {
         if (this.syncProgress) this.syncProgress();
         // Move to next wave or spawn boss
         if (this.missionSystem.currentWave >= this.missionSystem.maxWaves) {
-            // All waves complete, spawn boss
-            console.log('All waves complete! Spawning boss...');
+            // All waves complete — spawn exactly ONE boss (Jesse Pollak). Set flag now so duplicate completeWave() won't schedule another spawn.
+            if (this.missionSystem.bossActive) return;
+            this.missionSystem.bossActive = true;
+            this.bossActive = true;
+            console.log('All waves complete! Spawning single boss...');
             this.time.delayedCall(2000, () => {
-                // Ensure no enemies remain before spawning boss
                 if (this.enemies.children.size === 0) {
                     this.spawnBoss();
                 } else {
-                    console.warn('Enemies still on screen, waiting...');
+                    this.bossActive = false;
+                    this.missionSystem.bossActive = false;
                     this.time.delayedCall(1000, () => this.completeWave());
                 }
             });
