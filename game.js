@@ -1065,7 +1065,7 @@ class GameScene extends Phaser.Scene {
 
             this.sceneReady = true;
 
-            window.addEventListener('base-invaders:lang-changed', () => {
+            this._langChangedCallback = () => {
                 if (this.ui) {
                     if (this.ui.shopBtnText && typeof getText === 'function') this.ui.shopBtnText.setText(getText('ui.shop'));
                     if (this.gameState) {
@@ -1073,13 +1073,13 @@ class GameScene extends Phaser.Scene {
                         this.ui.updateCheckInButtonState();
                     }
                 }
-            });
+            };
+            window.addEventListener('base-invaders:lang-changed', this._langChangedCallback);
 
-            this.scale.on('resize', () => {
-                if (this.updateMuteButtonPosition) {
-                    this.updateMuteButtonPosition();
-                }
-            });
+            this._resizeCallback = () => {
+                if (this.updateMuteButtonPosition) this.updateMuteButtonPosition();
+            };
+            this.scale.on('resize', this._resizeCallback);
 
             // Initialize Sound System
             // Sounds will start after first user interaction (browser autoplay policy)
@@ -2619,15 +2619,25 @@ class GameScene extends Phaser.Scene {
 
         this.sceneReady = false;
 
+        // Remove scene-added listeners so they do not run after restart
+        if (this._langChangedCallback) {
+            window.removeEventListener('base-invaders:lang-changed', this._langChangedCallback);
+            this._langChangedCallback = null;
+        }
+        if (this._resizeCallback && this.scale) {
+            this.scale.off('resize', this._resizeCallback);
+            this._resizeCallback = null;
+        }
+
         // Clear intervals
         if (this.syncProgressInterval) {
             clearInterval(this.syncProgressInterval);
             this.syncProgressInterval = null;
         }
 
-        if (this.ui?.countdownInterval) {
-            clearInterval(this.ui.countdownInterval);
-            this.ui.countdownInterval = null;
+        if (this.ui) {
+            if (typeof this.ui.destroy === 'function') this.ui.destroy();
+            this.ui = null;
         }
 
         // КРИТИЧНО! Очистити ВСІ групи і обнулити посилання (щоб update() не використовував старі refs після рестарту)
@@ -2664,7 +2674,17 @@ class GameScene extends Phaser.Scene {
             this.player = null;
         }
 
-        this.ui = null;
+        // Destroy all display objects (background, etc.) so restart does not duplicate
+        try {
+            var list = [];
+            if (this.children) {
+                if (typeof this.children.getArray === 'function') list = this.children.getArray();
+                else if (this.children.list) list = this.children.list;
+            }
+            for (var i = list.length - 1; i >= 0; i--) {
+                if (list[i] && typeof list[i].destroy === 'function') list[i].destroy();
+            }
+        } catch (e) {}
 
         console.log('✅ Cleanup done');
     }

@@ -20,30 +20,36 @@ class UI {
         this.setupShopButton();
 
         this.applyLayout();
-        this.scene.scale.on('resize', (gameSize) => {
-            this.applyLayout(gameSize.width, gameSize.height);
-        });
+        this._resizeCallback = (gameSize) => { this.applyLayout(gameSize.width, gameSize.height); };
+        this.scene.scale.on('resize', this._resizeCallback);
 
         // On-chain check-in day cache (sync between devices: phone/laptop use same chain state)
         this._lastCheckInDayOnChain = null;
 
-        window.addEventListener('load', () => {
-            this.refreshLastCheckInFromChain();
-            this.updateCheckInButtonState();
-        });
-        window.addEventListener('focus', () => {
-            this.refreshLastCheckInFromChain();
-            this.updateCheckInButtonState();
-        });
-        window.addEventListener('base-invaders:game-ready', () => {
-            this.attachCheckInHandlers();
-            this.refreshLastCheckInFromChain();
-            this.updateCheckInButtonState();
-        });
-        window.addEventListener('base-invaders:wallet-connected', () => {
-            this.refreshLastCheckInFromChain();
-            this.updateCheckInButtonState();
-        });
+        this._onLoadFocus = () => { this.refreshLastCheckInFromChain(); this.updateCheckInButtonState(); };
+        this._onGameReady = () => { this.attachCheckInHandlers(); this.refreshLastCheckInFromChain(); this.updateCheckInButtonState(); };
+        this._onWalletConnected = () => { this.refreshLastCheckInFromChain(); this.updateCheckInButtonState(); };
+        window.addEventListener('load', this._onLoadFocus);
+        window.addEventListener('focus', this._onLoadFocus);
+        window.addEventListener('base-invaders:game-ready', this._onGameReady);
+        window.addEventListener('base-invaders:wallet-connected', this._onWalletConnected);
+    }
+
+    destroy() {
+        if (this._destroyed) return;
+        this._destroyed = true;
+        if (this.countdownInterval) { clearInterval(this.countdownInterval); this.countdownInterval = null; }
+        if (this._resizeCallback && this.scene && this.scene.scale) this.scene.scale.off('resize', this._resizeCallback);
+        if (this._onLoadFocus) { window.removeEventListener('load', this._onLoadFocus); window.removeEventListener('focus', this._onLoadFocus); }
+        if (this._onGameReady) window.removeEventListener('base-invaders:game-ready', this._onGameReady);
+        if (this._onWalletConnected) window.removeEventListener('base-invaders:wallet-connected', this._onWalletConnected);
+        var toDestroy = [
+            this.currencyContainer, this.stageText, this.scoreText, this.levelText,
+            this.healthBarBg, this.healthBar, this.healthBarGlow, this.healthText,
+            this.shopBtn, this.shopBtnText, this.pauseBtn, this.pauseBtnText,
+            this.checkInButtonBg, this.checkInButton, this.checkInButtonText, this.checkInCountdownText, this.checkInGlow
+        ];
+        toDestroy.forEach(function (o) { try { if (o && typeof o.destroy === 'function') o.destroy(); } catch (e) {} });
     }
 
     createTopBar() {
