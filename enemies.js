@@ -520,10 +520,11 @@ class BossEnemy {
         
         this.sprite.setDepth(5);
         
-        // Add glow effect
+        // Add glow effect — draw at (0,0) local so position = sprite position keeps it centered on boss (no pink circle artifact)
         this.glow = scene.add.graphics();
         this.glow.lineStyle(8, 0xff00ff, 0.8);
-        this.glow.strokeCircle(x, y, 65);
+        this.glow.strokeCircle(0, 0, 65);
+        this.glow.setPosition(x, y);
         this.glow.setDepth(4);
         this.glow.setBlendMode(Phaser.BlendModes.ADD);
         
