@@ -313,7 +313,7 @@ canvas {
     transform: scale(1.05);
 }
 
-/* Leaderboard Styles – compact, no horizontal scroll, English only */
+/* Leaderboard Styles – table has horizontal scroll so Check-in date fits */
 #leaderboard-overlay {
     overflow-x: hidden;
 }
@@ -329,6 +329,14 @@ canvas {
     overflow-x: hidden;
     overflow-y: auto;
     box-shadow: 0 0 30px rgba(0, 255, 255, 0.4);
+}
+
+.leaderboard-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    margin-bottom: 2px;
+    border-radius: 8px;
 }
 
 .leaderboard-header {
@@ -377,6 +385,7 @@ canvas {
 }
 
 .leaderboard-table {
+    min-width: 520px;
     width: 100%;
     border-collapse: collapse;
     background: rgba(0, 0, 0, 0.35);
@@ -412,18 +421,20 @@ canvas {
 }
 
 .leaderboard-table td:nth-child(1) { width: 6%; }   /* # */
-.leaderboard-table td:nth-child(2) { width: 16%; }  /* Score */
-.leaderboard-table td:nth-child(3) { width: 26%; }  /* Player */
-.leaderboard-table td:nth-child(4) { width: 9%; }   /* Wave */
-.leaderboard-table td:nth-child(5) { width: 23%; }  /* Date */
-.leaderboard-table td:nth-child(6) { width: 9%; }   /* Streak */
+.leaderboard-table td:nth-child(2) { width: 14%; } /* Score */
+.leaderboard-table td:nth-child(3) { width: 20%; } /* Player */
+.leaderboard-table td:nth-child(4) { width: 8%; }  /* Wave */
+.leaderboard-table td:nth-child(5) { width: 18%; } /* Date */
+.leaderboard-table td:nth-child(6) { width: 8%; }  /* Streak */
+.leaderboard-table td:nth-child(7) { width: 18%; min-width: 72px; } /* Check-in */
 
 .leaderboard-table th:nth-child(1) { width: 6%; }
-.leaderboard-table th:nth-child(2) { width: 16%; }
-.leaderboard-table th:nth-child(3) { width: 26%; }
-.leaderboard-table th:nth-child(4) { width: 9%; }
-.leaderboard-table th:nth-child(5) { width: 23%; }
-.leaderboard-table th:nth-child(6) { width: 9%; }
+.leaderboard-table th:nth-child(2) { width: 14%; }
+.leaderboard-table th:nth-child(3) { width: 20%; }
+.leaderboard-table th:nth-child(4) { width: 8%; }
+.leaderboard-table th:nth-child(5) { width: 18%; }
+.leaderboard-table th:nth-child(6) { width: 8%; }
+.leaderboard-table th:nth-child(7) { width: 18%; min-width: 72px; } /* Check-in */
 
 .leaderboard-table tbody tr:nth-child(even) {
     background: rgba(0, 255, 255, 0.05);
