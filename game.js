@@ -3025,7 +3025,7 @@ document.addEventListener('DOMContentLoaded', () => {
         location.reload();
     });
 
-    // EXIT GAME: save, hide all overlays, resume then stop GameScene, then start MenuScene (defer to avoid freeze on next Start)
+    // EXIT GAME: save progress, then reload page so next Start runs like first time (no freeze)
     document.getElementById('exit-game-btn')?.addEventListener('click', () => {
         if (window.game?.scene) {
             const gs = window.game.scene.getScene('GameScene');
@@ -3033,27 +3033,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (gs?.saveGameData) gs.saveGameData();
             if (gs?.gameState) {
                 localStorage.setItem('lastScore', String(gs.gameState.score));
-                const high = parseInt(localStorage.getItem('highScore') || '0', 10);
+                var high = parseInt(localStorage.getItem('highScore') || '0', 10);
                 if (gs.gameState.score > high) localStorage.setItem('highScore', String(gs.gameState.score));
             }
         }
-
-        ['pause-overlay', 'leaderboard-overlay', 'shop-overlay', 'gameover-overlay', 'leaderboard-submit-overlay', 'reset-confirm-overlay'].forEach(function (id) {
-            const el = document.getElementById(id);
-            if (el) el.classList.add('hidden');
-        });
-
-        if (window.game?.scene) {
-            if (window.game.scene.isPaused && window.game.scene.isPaused('GameScene')) {
-                window.game.scene.resume('GameScene');
-            }
-            window.game.scene.stop('GameScene');
-        }
-        setTimeout(function () {
-            if (window.game?.scene) {
-                window.game.scene.start('MenuScene');
-            }
-        }, 0);
+        location.reload();
     });
 
     document.getElementById('restart-btn')?.addEventListener('click', () => {
