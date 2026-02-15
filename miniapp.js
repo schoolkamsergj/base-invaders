@@ -212,30 +212,17 @@ async function ensureWalletProvider(sdk) {
     return { provider, account: address, error: null };
 }
 
-/** Get last check-in UTC day index from chain (for current wallet). Returns null if no wallet or read fails. */
+/** Get last check-in UTC day index from chain. Uses cached wallet address only (no wallet popup on load).
+ *  Cache is set after first check-in or submit score so sync works without calling provider on load/focus. */
 window.baseInvadersGetLastCheckInDayFromChain = async function () {
+    const account = (typeof window !== 'undefined' && window.__baseInvadersWalletAddress) || null;
+    if (!account) return null;
     try {
-        const sdk = getSdk();
-        if (!sdk) return null;
-        if (typeof sdk.ready === 'function') await sdk.ready();
-        else if (sdk.actions && typeof sdk.actions.ready === 'function') { try { await sdk.actions.ready({ disableNativeGestures: false }); } catch (_) {} }
-        let provider = null;
-        try {
-            const p = sdk?.wallet?.getEthereumProvider?.();
-            provider = (p && typeof p.then === 'function') ? await p : p;
-        } catch (_) {}
-        if (!provider) provider = window.farcasterProvider || null;
-        if (!provider || typeof provider.request !== 'function') return null;
-        const accounts = await provider.request({ method: 'eth_requestAccounts', params: [] });
-        const account = accounts?.[0];
-        if (!account) return null;
-
         const viem = await getViem();
         const baseChain = viem.base || (await import('https://esm.sh/viem/chains').then((m) => m.base));
         const { createPublicClient, parseAbi, getAddress, http } = viem;
         const CHECKIN_READ_ABI = parseAbi(['function lastCheckInDay(address) view returns (uint256)']);
         const httpFn = viem.http;
-        let client = null;
         for (const rpcUrl of BASE_RPC_URLS) {
             try {
                 const transport = typeof httpFn === 'function'
@@ -247,7 +234,7 @@ window.baseInvadersGetLastCheckInDayFromChain = async function () {
                         if (json.error) throw new Error(json.error.message || JSON.stringify(json.error));
                         return json.result;
                     });
-                client = createPublicClient({ chain: baseChain, transport });
+                const client = createPublicClient({ chain: baseChain, transport });
                 const day = await client.readContract({ address: CHECKIN_ADDR, abi: CHECKIN_READ_ABI, functionName: 'lastCheckInDay', args: [getAddress(account)] });
                 return typeof day === 'bigint' ? Number(day) : Number(day);
             } catch (_) {}
@@ -289,6 +276,7 @@ window.baseInvadersOnchainCheckIn = async function () {
         console.log('[miniapp] wallet client created');
 
         const accountObj = { address: getAddress(account), type: 'json-rpc' };
+        if (typeof window !== 'undefined') window.__baseInvadersWalletAddress = account;
         const hash = await client.writeContract({
             address: CHECKIN_ADDR,
             abi: CHECKIN_ABI,
@@ -340,6 +328,7 @@ window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
         console.log('[miniapp] submitScore — displayName:', displayName);
         const { provider, account } = await ensureWalletProvider(sdk);
         if (!provider || !account) throw new Error('Wallet not connected');
+        if (typeof window !== 'undefined') window.__baseInvadersWalletAddress = account;
         await ensureBaseNetwork(provider);
 
         const viem = await getViem();
