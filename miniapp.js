@@ -79,6 +79,28 @@ window.baseInvadersGetUserContext = async function () {
     return getContext(sdk);
 };
 
+/** Get custody address for current user by FID via Neynar (no wallet popup). For check-in sync on phone. */
+window.baseInvadersGetCustodyAddressByFid = async function () {
+    const key = typeof window !== 'undefined' && window.baseInvadersNeynarApiKey;
+    if (!key) return null;
+    try {
+        const ctx = await window.baseInvadersGetUserContext?.();
+        const fid = ctx?.user?.fid;
+        if (fid == null) return null;
+        const url = 'https://api.neynar.com/v2/farcaster/user/bulk?fids=' + encodeURIComponent(String(fid));
+        const res = await fetch(url, { headers: { 'x-api-key': key } });
+        if (!res.ok) return null;
+        const data = await res.json();
+        const users = data.users || data.result?.users || (Array.isArray(data) ? data : []);
+        const u = users[0];
+        const addr = (u && (u.custody_address || u.custodyAddress || '')) || '';
+        return (addr && String(addr).trim()) ? addr : null;
+    } catch (e) {
+        console.warn('[miniapp] getCustodyAddressByFid failed', e?.message || e);
+        return null;
+    }
+};
+
 /**
  * Resolve Ethereum addresses to Farcaster usernames via Neynar API.
  * Set window.baseInvadersNeynarApiKey (get key at neynar.com) to enable.
@@ -212,10 +234,31 @@ async function ensureWalletProvider(sdk) {
     return { provider, account: address, error: null };
 }
 
-/** Get last check-in UTC day index from chain. Uses cached wallet address only (no wallet popup on load).
- *  Cache is set after first check-in or submit score so sync works without calling provider on load/focus. */
+/** Get last check-in UTC day index from chain. Uses cache, eth_accounts, or Neynar custody by FID (no wallet popup).
+ *  Never calls eth_requestAccounts so check-in click still opens wallet once. */
 window.baseInvadersGetLastCheckInDayFromChain = async function () {
-    const account = (typeof window !== 'undefined' && window.__baseInvadersWalletAddress) || null;
+    let account = (typeof window !== 'undefined' && window.__baseInvadersWalletAddress) || null;
+    if (!account) {
+        try {
+            const sdk = getSdk();
+            if (!sdk) return null;
+            let provider = null;
+            try {
+                const p = sdk?.wallet?.getEthereumProvider?.();
+                provider = (p && typeof p.then === 'function') ? await p : p;
+            } catch (_) {}
+            if (!provider) provider = window.farcasterProvider || null;
+            if (provider && typeof provider.request === 'function') {
+                const accounts = await provider.request({ method: 'eth_accounts', params: [] });
+                account = accounts?.[0] || null;
+                if (account && typeof window !== 'undefined') window.__baseInvadersWalletAddress = account;
+            }
+            if (!account && typeof window.baseInvadersGetCustodyAddressByFid === 'function') {
+                account = await window.baseInvadersGetCustodyAddressByFid();
+                if (account && typeof window !== 'undefined') window.__baseInvadersWalletAddress = account;
+            }
+        } catch (_) {}
+    }
     if (!account) return null;
     try {
         const viem = await getViem();
@@ -285,21 +328,6 @@ window.baseInvadersOnchainCheckIn = async function () {
             value: 0n
         });
         console.log('[miniapp] checkIn hash:', hash);
-
-        // Record check-in date in leaderboard so it appears in the leaderboard table (sync across devices)
-        try {
-            const LEADERBOARD_CHECKIN_ABI = parseAbi(['function recordCheckIn() external']);
-            const hash2 = await client.writeContract({
-                address: LEADERBOARD_ADDR,
-                abi: LEADERBOARD_CHECKIN_ABI,
-                functionName: 'recordCheckIn',
-                account: accountObj,
-                value: 0n
-            });
-            console.log('[miniapp] leaderboard recordCheckIn hash:', hash2);
-        } catch (e2) {
-            console.warn('[miniapp] leaderboard recordCheckIn failed (check-in already saved)', e2?.message || e2);
-        }
 
         window.dispatchEvent(new CustomEvent('base-invaders:wallet-connected', { detail: { address: account } }));
         return { success: true, hash };
@@ -436,11 +464,11 @@ window.baseInvadersGetLeaderboard = async function () {
     const baseChain = viem.base || (await import('https://esm.sh/viem/chains').then((m) => m.base));
     const { createPublicClient, parseAbi, custom } = viem;
     const http = viem.http;
-    // Unnamed tuple (abitype rejects named tuple in parseAbi); order: player, name, score, wave, streak, timestamp
     const LEADERBOARD_ABI = parseAbi([
         'function getTopPlayers() view returns ((address,string,uint256,uint256,uint256,uint256)[])',
         'function lastCheckIn(address) view returns (uint256)'
     ]);
+    const CHECKIN_READ_ABI = parseAbi(['function lastCheckInDay(address) view returns (uint256)']);
 
     let lastError = null;
     for (const rpcUrl of BASE_RPC_URLS) {
@@ -462,13 +490,20 @@ window.baseInvadersGetLeaderboard = async function () {
             const data = await client.readContract({ address: LEADERBOARD_ADDR, abi: LEADERBOARD_ABI, functionName: 'getTopPlayers' });
             const arr = Array.isArray(data) ? data : [];
             console.log('[miniapp] getTopPlayers OK via', rpcUrl, 'entries:', arr.length);
-            // Fetch lastCheckIn for each player (parallel)
+            // Check-in date: read from check-in contract (lastCheckInDay → timestamp for display); fallback to leaderboard lastCheckIn
             const withCheckIn = await Promise.all(arr.map(async (row) => {
                 const player = row[0];
                 let checkInTs = 0n;
                 try {
-                    checkInTs = await client.readContract({ address: LEADERBOARD_ADDR, abi: LEADERBOARD_ABI, functionName: 'lastCheckIn', args: [player] });
-                } catch (e) { /* no check-in or old contract */ }
+                    const day = await client.readContract({ address: CHECKIN_ADDR, abi: CHECKIN_READ_ABI, functionName: 'lastCheckInDay', args: [player] });
+                    const d = typeof day === 'bigint' ? Number(day) : Number(day);
+                    if (d > 0) checkInTs = BigInt(d * 86400);
+                } catch (_) { /* check-in contract read failed */ }
+                if (checkInTs === 0n) {
+                    try {
+                        checkInTs = await client.readContract({ address: LEADERBOARD_ADDR, abi: LEADERBOARD_ABI, functionName: 'lastCheckIn', args: [player] });
+                    } catch (_) {}
+                }
                 return [...row, checkInTs];
             }));
             return withCheckIn;

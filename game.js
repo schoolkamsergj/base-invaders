@@ -879,6 +879,8 @@ class GameScene extends Phaser.Scene {
         console.log('Game create() started');
 
         this.sceneReady = false;
+        var pauseEl = document.getElementById('pause-overlay');
+        if (pauseEl) pauseEl.classList.add('hidden');
 
         // 🔥 V2 RESET: One-time localStorage clear for all players
         if (!localStorage.getItem('base_invaders_v2_migrated')) {
@@ -3003,7 +3005,7 @@ document.addEventListener('DOMContentLoaded', () => {
         location.reload();
     });
 
-    // EXIT GAME: зберегти, приховати паузу, resume (щоб shutdown спрацював), stop + start MenuScene
+    // EXIT GAME: save, hide all overlays, resume then stop GameScene, then start MenuScene (defer to avoid freeze on next Start)
     document.getElementById('exit-game-btn')?.addEventListener('click', () => {
         if (window.game?.scene) {
             const gs = window.game.scene.getScene('GameScene');
@@ -3016,15 +3018,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        document.getElementById('pause-overlay').classList.add('hidden');
+        ['pause-overlay', 'leaderboard-overlay', 'shop-overlay', 'gameover-overlay', 'leaderboard-submit-overlay', 'reset-confirm-overlay'].forEach(function (id) {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('hidden');
+        });
 
         if (window.game?.scene) {
             if (window.game.scene.isPaused && window.game.scene.isPaused('GameScene')) {
                 window.game.scene.resume('GameScene');
             }
             window.game.scene.stop('GameScene');
-            window.game.scene.start('MenuScene');
         }
+        setTimeout(function () {
+            if (window.game?.scene) {
+                window.game.scene.start('MenuScene');
+            }
+        }, 0);
     });
 
     document.getElementById('restart-btn')?.addEventListener('click', () => {
