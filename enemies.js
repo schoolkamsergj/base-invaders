@@ -520,24 +520,6 @@ class BossEnemy {
         
         this.sprite.setDepth(5);
         
-        // Add glow effect — draw at (0,0) local so position = sprite position keeps it centered on boss (no pink circle artifact)
-        this.glow = scene.add.graphics();
-        this.glow.lineStyle(8, 0xff00ff, 0.8);
-        this.glow.strokeCircle(0, 0, 65);
-        this.glow.setPosition(x, y);
-        this.glow.setDepth(4);
-        this.glow.setBlendMode(Phaser.BlendModes.ADD);
-        
-        // Pulsing glow animation
-        scene.tweens.add({
-            targets: this.glow,
-            alpha: { from: 0.5, to: 1 },
-            scale: { from: 0.95, to: 1.05 },
-            duration: 1000,
-            yoyo: true,
-            repeat: -1
-        });
-        
         // Health bar with gradient (green→yellow→red)
         const barWidth = 200;
         const barHeight = 12;
@@ -569,11 +551,6 @@ class BossEnemy {
             this.moveDirection *= -1;
         }
         
-        // Update glow position
-        if (this.glow) {
-            this.glow.x = this.sprite.x;
-            this.glow.y = this.sprite.y;
-        }
         // Update emoji position if using fallback
         if (this.bossEmoji) {
             this.bossEmoji.x = this.sprite.x;
@@ -678,16 +655,6 @@ class BossEnemy {
             duration: 100,
             yoyo: true
         });
-        
-        // Glow flash
-        if (this.glow) {
-            this.scene.tweens.add({
-                targets: this.glow,
-                alpha: { from: 1, to: 0.5 },
-                duration: 100,
-                yoyo: true
-            });
-        }
         
         // Screen shake
         this.scene.cameras.main.shake(200, 0.02);
