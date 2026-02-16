@@ -792,8 +792,7 @@ class UI {
                     this.scene.togglePause();
                 }
                 this.checkInPending = false;
-                this.checkInButton.setInteractive({ useHandCursor: true });
-                this.checkInButtonText.setInteractive({ useHandCursor: true });
+                this.updateCheckInButtonState();
             }
         };
         
