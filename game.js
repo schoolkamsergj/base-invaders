@@ -2706,6 +2706,7 @@ class GameScene extends Phaser.Scene {
         if (this.gameState.paused) {
             if (this.syncProgress) this.syncProgress();
             this.scene.pause();
+            if (typeof window.refreshHtmlOverlaysI18n === 'function') window.refreshHtmlOverlaysI18n();
             document.getElementById('pause-overlay').classList.remove('hidden');
         } else {
             // Resume game
@@ -3093,6 +3094,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (scene.ui) {
                     scene.ui.wasPausedBeforeShop = scene.gameState.paused;
                 }
+                if (typeof window.refreshHtmlOverlaysI18n === 'function') window.refreshHtmlOverlaysI18n();
                 document.getElementById('shop-overlay').classList.remove('hidden');
                 if (window.shopSystem) {
                     window.shopSystem.updateDisplay();

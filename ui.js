@@ -1409,8 +1409,8 @@ class UI {
 })();
 
 function refreshHtmlOverlaysI18n() {
-    if (typeof getText !== 'function') return;
-    const g = getText;
+    const g = (typeof window !== 'undefined' && typeof window.getText === 'function') ? window.getText : (typeof getText === 'function' ? getText : null);
+    if (!g) return;
     const shopH2 = document.querySelector('#shop-overlay .shop-header h2');
     if (shopH2) shopH2.textContent = g('shop.title');
     document.querySelectorAll('.shop-tabs .tab-btn').forEach(function (btn) {
@@ -1468,3 +1468,5 @@ function refreshHtmlOverlaysI18n() {
 }
 window.refreshHtmlOverlaysI18n = refreshHtmlOverlaysI18n;
 window.addEventListener('base-invaders:lang-changed', refreshHtmlOverlaysI18n);
+// Apply saved language to overlays on load (i18n fires lang-changed before this listener exists)
+if (typeof getText === 'function') refreshHtmlOverlaysI18n();
