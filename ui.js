@@ -25,6 +25,9 @@ class UI {
 
         // On-chain check-in day cache (sync between devices: phone/laptop use same chain state)
         this._lastCheckInDayOnChain = null;
+        // On-chain streak from leaderboard (syncs display across devices when localStorage is empty)
+        this._chainStreakForDisplay = null;
+        this._chainStreakRefreshScheduled = false;
 
         this._onLoadFocus = () => { this.refreshLastCheckInFromChain(); this.updateCheckInButtonState(); };
         this._onGameReady = () => { this.attachCheckInHandlers(); this.refreshLastCheckInFromChain(); this.updateCheckInButtonState(); };
@@ -589,9 +592,27 @@ class UI {
         try {
             const day = await window.baseInvadersGetLastCheckInDayFromChain();
             this._lastCheckInDayOnChain = day != null && Number.isFinite(day) ? day : null;
+            // When user can check in and might have stale local streak, refresh chain streak for display
+            const currentDayUTC = this.getCurrentUTCDay();
+            if (this._lastCheckInDayOnChain != null && this._lastCheckInDayOnChain < currentDayUTC && !this._chainStreakRefreshScheduled) {
+                this._chainStreakRefreshScheduled = true;
+                this._refreshChainStreakForDisplay();
+            }
         } catch (e) {
             this._lastCheckInDayOnChain = null;
         }
+    }
+
+    /** Fetch current user's streak from leaderboard (on-chain) for display sync across devices. */
+    async _refreshChainStreakForDisplay() {
+        if (typeof window.baseInvadersGetCurrentUserStreakFromLeaderboard !== 'function') return;
+        try {
+            const streak = await window.baseInvadersGetCurrentUserStreakFromLeaderboard();
+            if (streak != null && Number.isFinite(streak) && streak >= 0) {
+                this._chainStreakForDisplay = streak;
+                if (this.updateCheckInButtonState) this.updateCheckInButtonState();
+            }
+        } catch (e) { /* ignore */ }
     }
 
     /** Current UTC day index (same as contract: block.timestamp / 1 days). */
@@ -966,8 +987,20 @@ class UI {
             this.checkInGlow.fillStyle(0x00ffff, 0.3);
             this.checkInGlow.fillRoundedRect(buttonX - buttonWidth / 2 - 2, buttonY - buttonHeight / 2 - 2, buttonWidth + 4, buttonHeight + 4, 7);
             
-            // Next day to claim: if user checked in yesterday (totalDays=1), show "Day 2"; if never/missed, show "Day 1"
-            const currentStreak = streakInfo.totalDays || 0;
+            // Effective totalDays: use chain/leaderboard when local is empty (syncs display across devices)
+            let currentStreak = streakInfo.totalDays || 0;
+            if (this._lastCheckInDayOnChain != null) {
+                const currentDayUTC = this.getCurrentUTCDay();
+                const daysSinceLastCheckIn = currentDayUTC - this._lastCheckInDayOnChain;
+                if (daysSinceLastCheckIn === 1) {
+                    currentStreak = Math.max(currentStreak, 1);
+                } else if (daysSinceLastCheckIn > 1) {
+                    currentStreak = 0;
+                }
+            }
+            if (this._chainStreakForDisplay != null && Number.isFinite(this._chainStreakForDisplay) && this._chainStreakForDisplay >= 0) {
+                currentStreak = Math.max(currentStreak, this._chainStreakForDisplay);
+            }
             const nextDay = currentStreak + 1;
             
             // Check if next claim is milestone

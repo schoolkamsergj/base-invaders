@@ -458,6 +458,54 @@ const BASE_RPC_URLS = [
     'https://base.drpc.org'
 ];
 
+/** Get current user's streak from leaderboard (on-chain, syncs across devices). Returns streak number or null if not in top 100. */
+window.baseInvadersGetCurrentUserStreakFromLeaderboard = async function () {
+    let account = (typeof window !== 'undefined' && window.__baseInvadersWalletAddress) || null;
+    if (!account) {
+        try {
+            const sdk = getSdk();
+            if (!sdk) return null;
+            let provider = null;
+            try {
+                const p = sdk?.wallet?.getEthereumProvider?.();
+                provider = (p && typeof p.then === 'function') ? await p : p;
+            } catch (_) {}
+            if (!provider) provider = window.farcasterProvider || null;
+            if (provider && typeof provider.request === 'function') {
+                const accounts = await provider.request({ method: 'eth_accounts', params: [] });
+                account = accounts?.[0] || null;
+                if (account && typeof window !== 'undefined') window.__baseInvadersWalletAddress = account;
+            }
+            if (!account && typeof window.baseInvadersGetCustodyAddressByFid === 'function') {
+                account = await window.baseInvadersGetCustodyAddressByFid();
+                if (account && typeof window !== 'undefined') window.__baseInvadersWalletAddress = account;
+            }
+        } catch (_) {}
+    }
+    if (!account || typeof window.baseInvadersGetLeaderboard !== 'function') return null;
+    try {
+        const viem = await getViem();
+        const { getAddress } = viem;
+        const addrLower = getAddress(account).toLowerCase();
+        const data = await window.baseInvadersGetLeaderboard();
+        const arr = Array.isArray(data) ? data : [];
+        for (const row of arr) {
+            const player = row[0];
+            if (!player) continue;
+            const p = (typeof player === 'string' ? player : '').toLowerCase();
+            if (p === addrLower) {
+                const streak = row[4];
+                const n = typeof streak === 'bigint' ? Number(streak) : Number(streak);
+                return Number.isFinite(n) && n >= 0 ? n : null;
+            }
+        }
+        return null;
+    } catch (e) {
+        console.warn('[miniapp] getCurrentUserStreakFromLeaderboard failed', e?.message || e);
+        return null;
+    }
+};
+
 window.baseInvadersGetLeaderboard = async function () {
     console.log('[miniapp] baseInvadersGetLeaderboard start');
     const viem = await getViem();
