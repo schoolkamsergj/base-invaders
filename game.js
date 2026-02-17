@@ -2044,7 +2044,6 @@ class GameScene extends Phaser.Scene {
         const px = this.player.x;
         const py = this.player.y - 25;
         const beamHalfW = 18;
-        const damagePerFrame = 1.1;
         if (!this.laserBeamGraphic) {
             this.laserBeamGraphic = this.add.graphics();
             this.laserBeamGraphic.setScrollFactor(0);
@@ -2059,7 +2058,13 @@ class GameScene extends Phaser.Scene {
             const ex = enemy.sprite.x, ey = enemy.sprite.y;
             if (ey >= py) return;
             if (Math.abs(ex - px) > beamHalfW + 20) return;
-            const destroyed = enemy.takeDamage(damagePerFrame);
+            let damage;
+            if (enemy.type === 'boss') {
+                damage = (enemy.maxHP || enemy.hp) * 0.25 * (delta / 1000);
+            } else {
+                damage = (enemy.hp || 1) + 9999;
+            }
+            const destroyed = enemy.takeDamage(damage);
             if (destroyed) {
                 this.onEnemyDestroyed(enemy);
                 this.destroyEnemy(enemy, enemySprite);
