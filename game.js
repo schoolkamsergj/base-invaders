@@ -2161,10 +2161,11 @@ class GameScene extends Phaser.Scene {
             }
         });
 
-        // Power-ups vs Player
+        // Power-ups vs Player (destroy first so overlap cannot fire again, then collect by type)
         this.physics.overlap(this.powerUps, this.player.sprite, (powerUp, player) => {
-            this.collectPowerUp(powerUp);
+            const powerUpType = powerUp.powerUpType;
             powerUp.destroy();
+            this.collectPowerUp({ powerUpType });
         });
     }
 
@@ -2493,14 +2494,9 @@ class GameScene extends Phaser.Scene {
     }
 
     collectPowerUp(powerUp) {
-        // Play powerup collection sound
+        if (!powerUp || powerUp.powerUpType == null) return;
         this.playSound('powerup');
-        
-        // Haptic feedback - vibration on power-up collected
-        if (window.vibrationManager) {
-            window.vibrationManager.powerUpCollected();
-        }
-        
+        if (window.vibrationManager) window.vibrationManager.powerUpCollected();
         switch (powerUp.powerUpType) {
             case 'lightning':
                 this.gameState.lightning += 1;
@@ -2581,8 +2577,7 @@ class GameScene extends Phaser.Scene {
 
     spawnBoss() {
         if (!this.missionSystem) return;
-        // bossActive already set in completeWave() so only one spawn is scheduled
-        
+        if (this.enemies.getChildren().some(s => s.enemyObject && s.enemyObject.type === 'boss')) return;
         // Calculate boss HP based on mission (one boss, stronger each mission)
         let bossHP;
         if (this.missionSystem.currentMission === 1) {
@@ -2699,8 +2694,6 @@ class GameScene extends Phaser.Scene {
                 if (this.enemies.children.size === 0) {
                     this.spawnBoss();
                 } else {
-                    this.bossActive = false;
-                    this.missionSystem.bossActive = false;
                     this.time.delayedCall(1000, () => this.completeWave());
                 }
             });
