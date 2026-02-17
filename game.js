@@ -1819,15 +1819,19 @@ class GameScene extends Phaser.Scene {
                 console.warn('Error updating player:', e);
             }
 
-            // Auto-shoot (вимкнено під час лазера)
+            // Auto-shoot (вимкнено під час 8с ульту лазера)
             try {
-                const laserOver = !this.laserActive || time >= this.laserEndTime;
-                if (laserOver && time > this.shootTimer) {
-                    this.shootBullets();
-                    this.shootTimer = time + this.playerStats.fireRate;
+                if (this.laserActive && time <= this.laserEndTime) {
+                    // не стріляти кулями під час лазера
+                } else {
+                    if (time > this.shootTimer) {
+                        this.shootBullets();
+                        this.shootTimer = time + this.playerStats.fireRate;
+                    }
                 }
-                if (this.laserActive && time >= this.laserEndTime) {
-                    this.setLaserActive(false);
+                if (this.laserActive && time > this.laserEndTime) {
+                    this.laserActive = false;
+                    if (this.laserBeamGraphic) this.laserBeamGraphic.clear();
                 }
             } catch (e) {
                 console.warn('Error shooting:', e);
@@ -1868,7 +1872,7 @@ class GameScene extends Phaser.Scene {
                 console.warn('Error checking collisions:', e);
             }
 
-            if (this.laserActive && this.gameState.hasLaserBeam && this.player) {
+            if (this.laserActive && time <= this.laserEndTime && this.gameState.hasLaserBeam && this.player) {
                 try {
                     this.updateLaserBeam(delta);
                 } catch (e) {
@@ -1938,9 +1942,8 @@ class GameScene extends Phaser.Scene {
     }
 
     shootBullets() {
-        // Play shoot sound effect
+        if (this.laserActive) return;
         this.playSound('shoot');
-        
         const x = this.player.x;
         const y = this.player.y - 20;
         const bulletSpeed = 600;
@@ -2024,12 +2027,15 @@ class GameScene extends Phaser.Scene {
         if (active && this.gameState.hasLaserBeam) {
             const t = this.time.now;
             if (t < this.laserCooldownEnd) return;
-            this.laserEndTime = t + this.laserDuration * 1000;
+            this.laserEndTime = t + 8000;
             this.laserCooldownEnd = t + this.laserCooldown;
+            this.laserActive = true;
+            return;
         }
-        this.laserActive = !!active;
-        if (!active && this.laserBeamGraphic) {
-            this.laserBeamGraphic.clear();
+        if (!active) {
+            if (this.time.now < this.laserEndTime) return;
+            this.laserActive = false;
+            if (this.laserBeamGraphic) this.laserBeamGraphic.clear();
         }
     }
 
