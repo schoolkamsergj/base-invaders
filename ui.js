@@ -1479,12 +1479,10 @@ function refreshHtmlOverlaysI18n() {
     if (pauseH2) pauseH2.textContent = g('pause.title');
     const resumeBtn = document.getElementById('resume-btn');
     if (resumeBtn) resumeBtn.textContent = g('pause.resume');
-    const mainMenuBtn = document.getElementById('main-menu-btn');
-    if (mainMenuBtn) mainMenuBtn.textContent = g('pause.mainMenu');
     const resetGameBtn = document.getElementById('reset-game-btn');
     if (resetGameBtn) resetGameBtn.textContent = g('pause.resetGame');
     const exitGameBtn = document.getElementById('exit-game-btn');
-    if (exitGameBtn) exitGameBtn.textContent = g('pause.exitGame');
+    if (exitGameBtn) exitGameBtn.textContent = g('pause.mainMenu');
     const resetConfirmH2 = document.querySelector('#reset-confirm-overlay h2');
     if (resetConfirmH2) resetConfirmH2.textContent = g('resetConfirm.title');
     const resetConfirmP = document.querySelector('#reset-confirm-overlay p');

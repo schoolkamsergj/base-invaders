@@ -146,65 +146,6 @@ class ShopSystem {
             const item = this.createShopItem(upgrade);
             document.getElementById('shop-content').appendChild(item);
         });
-        
-        // Add vibration settings toggle (free, no purchase needed)
-        this.createVibrationToggle();
-    }
-
-    createVibrationToggle() {
-        const container = document.getElementById('shop-content');
-        const vibrationItem = document.createElement('div');
-        vibrationItem.className = 'shop-item';
-        vibrationItem.style.cssText = 'background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border: 2px solid #00ffff; border-radius: 10px; padding: 15px; margin: 10px; text-align: center;';
-        
-        const isEnabled = window.vibrationManager && window.vibrationManager.isEnabled();
-        const isSupported = window.vibrationManager && window.vibrationManager.supported;
-        
-        const g = typeof window !== 'undefined' && typeof window.getText === 'function' ? window.getText : function (k) { return k; };
-        vibrationItem.innerHTML = `
-            <div style="font-size: 32px; margin-bottom: 10px;">📳</div>
-            <div style="font-weight: bold; color: #00ffff; margin-bottom: 5px;">${g('shopItems.vibrationToggle')}</div>
-            <div style="color: #aaa; font-size: 12px; margin-bottom: 15px;">
-                ${isSupported ? g('shopItems.vibrationSupported') : g('shopItems.vibrationNotSupported')}
-            </div>
-            <button id="vibration-toggle" class="shop-item-btn" style="
-                background: ${isEnabled ? '#00aa00' : '#666'};
-                border: 2px solid #00ffff;
-                color: white;
-                padding: 10px 20px;
-                border-radius: 5px;
-                cursor: pointer;
-                font-weight: bold;
-                width: 100%;
-            ">
-                ${isEnabled ? '✓ ' + g('shopItems.enabled') : '✗ ' + g('shopItems.disabled')}
-            </button>
-        `;
-        
-        container.appendChild(vibrationItem);
-        
-        // Add click handler
-        const toggleBtn = vibrationItem.querySelector('#vibration-toggle');
-        if (toggleBtn && isSupported) {
-            toggleBtn.addEventListener('click', () => {
-                if (window.vibrationManager) {
-                    const newState = !window.vibrationManager.enabled;
-                    window.vibrationManager.setEnabled(newState);
-                    var gt = typeof window !== 'undefined' && typeof window.getText === 'function' ? window.getText : function (k) { return k; };
-                    toggleBtn.textContent = newState ? '✓ ' + gt('shopItems.enabled') : '✗ ' + gt('shopItems.disabled');
-                    toggleBtn.style.background = newState ? '#00aa00' : '#666';
-                    
-                    // Test vibration when enabling
-                    if (newState) {
-                        window.vibrationManager.vibrate(50);
-                    }
-                }
-            });
-        } else if (toggleBtn && !isSupported) {
-            toggleBtn.disabled = true;
-            toggleBtn.style.opacity = '0.5';
-            toggleBtn.style.cursor = 'not-allowed';
-        }
     }
 
     createShopItem(item) {

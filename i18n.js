@@ -215,7 +215,15 @@
             "howToPlay": "How to Play",
             "language": "Language 🌐",
             "resetProgress": "Reset Progress",
-            "leaderboard": "Leaderboard"
+            "leaderboard": "Leaderboard",
+            "settings": "Settings"
+        },
+        "settings": {
+            "title": "Settings",
+            "shop": "Shop",
+            "vibration": "Haptic Vibration",
+            "music": "Music",
+            "close": "Close"
         },
         "instructions": {
             "title": "📖 HOW TO PLAY",
@@ -342,7 +350,15 @@
             howToPlay: "कैसे खेलें",
             language: "भाषा 🌐",
             resetProgress: "प्रगति रीसेट करें",
-            leaderboard: "लीडरबोर्ड"
+            leaderboard: "लीडरबोर्ड",
+            settings: "सेटिंग्स"
+        },
+        settings: {
+            title: "सेटिंग्स",
+            shop: "दुकान",
+            vibration: "हैप्टिक वाइब्रेशन",
+            music: "संगीत",
+            close: "बंद करें"
         },
         instructions: {
             title: "📖 कैसे खेलें",
@@ -467,7 +483,15 @@
             howToPlay: "Как играть",
             language: "Язык 🌐",
             resetProgress: "Сбросить прогресс",
-            leaderboard: "Таблица лидеров"
+            leaderboard: "Таблица лидеров",
+            settings: "Настройки"
+        },
+        settings: {
+            title: "Настройки",
+            shop: "Магазин",
+            vibration: "Вибрация",
+            music: "Музыка",
+            close: "Закрыть"
         },
         instructions: {
             title: "КАК ИГРАТЬ",
@@ -592,7 +616,15 @@
             howToPlay: "Як грати",
             language: "Мова 🌐",
             resetProgress: "Скинути прогрес",
-            leaderboard: "Таблиця лідерів"
+            leaderboard: "Таблиця лідерів",
+            settings: "Налаштування"
+        },
+        settings: {
+            title: "Налаштування",
+            shop: "Магазин",
+            vibration: "Тактильна вібрація",
+            music: "Гучномовець",
+            close: "Закрити"
         },
         instructions: {
             title: "📖 ЯК ГРАТИ",
@@ -719,7 +751,15 @@
             howToPlay: "Paano Laruin",
             language: "Wika 🌐",
             resetProgress: "I-reset ang Progress",
-            leaderboard: "Leaderboard"
+            leaderboard: "Leaderboard",
+            settings: "Mga Setting"
+        },
+        settings: {
+            title: "Mga Setting",
+            shop: "Tindahan",
+            vibration: "Haptic Vibration",
+            music: "Musika",
+            close: "Isara"
         },
         instructions: {
             title: "PAANO LARUIN",
@@ -845,7 +885,15 @@
             howToPlay: "Cara Bermain",
             language: "Bahasa 🌐",
             resetProgress: "Reset Progres",
-            leaderboard: "Papan Peringkat"
+            leaderboard: "Papan Peringkat",
+            settings: "Pengaturan"
+        },
+        settings: {
+            title: "Pengaturan",
+            shop: "Toko",
+            vibration: "Getaran Haptik",
+            music: "Musik",
+            close: "Tutup"
         },
         instructions: {
             title: "CARA BERMAIN",
@@ -971,7 +1019,15 @@
             howToPlay: "Cách Chơi",
             language: "Ngôn ngữ 🌐",
             resetProgress: "Đặt lại Tiến trình",
-            leaderboard: "Bảng Xếp hạng"
+            leaderboard: "Bảng Xếp hạng",
+            settings: "Cài đặt"
+        },
+        settings: {
+            title: "Cài đặt",
+            shop: "Cửa hàng",
+            vibration: "Rung Xúc giác",
+            music: "Nhạc",
+            close: "Đóng"
         },
         instructions: {
             title: "CÁCH CHƠI",
@@ -1097,7 +1153,15 @@
             howToPlay: "Como Jogar",
             language: "Idioma 🌐",
             resetProgress: "Resetar Progresso",
-            leaderboard: "Classificação"
+            leaderboard: "Classificação",
+            settings: "Configurações"
+        },
+        settings: {
+            title: "Configurações",
+            shop: "Loja",
+            vibration: "Vibração Tátil",
+            music: "Música",
+            close: "Fechar"
         },
         instructions: {
             title: "COMO JOGAR",
@@ -1223,7 +1287,15 @@
             howToPlay: "Comment Jouer",
             language: "Langue 🌐",
             resetProgress: "Réinitialiser la Progression",
-            leaderboard: "Classement"
+            leaderboard: "Classement",
+            settings: "Paramètres"
+        },
+        settings: {
+            title: "Paramètres",
+            shop: "Boutique",
+            vibration: "Vibration Tactile",
+            music: "Musique",
+            close: "Fermer"
         },
         instructions: {
             title: "COMMENT JOUER",
@@ -1349,7 +1421,15 @@
             howToPlay: "Spielanleitung",
             language: "Sprache 🌐",
             resetProgress: "Fortschritt zurücksetzen",
-            leaderboard: "Bestenliste"
+            leaderboard: "Bestenliste",
+            settings: "Einstellungen"
+        },
+        settings: {
+            title: "Einstellungen",
+            shop: "Shop",
+            vibration: "Haptische Vibration",
+            music: "Musik",
+            close: "Schließen"
         },
         instructions: {
             title: "SPIELANLEITUNG",
@@ -1475,7 +1555,15 @@
             howToPlay: "如何游玩",
             language: "语言 🌐",
             resetProgress: "重置进度",
-            leaderboard: "排行榜"
+            leaderboard: "排行榜",
+            settings: "设置"
+        },
+        settings: {
+            title: "设置",
+            shop: "商店",
+            vibration: "触觉震动",
+            music: "音乐",
+            close: "关闭"
         },
         instructions: {
             title: "如何游玩",
@@ -1601,7 +1689,15 @@
             howToPlay: "Як гуляць",
             language: "Мова 🌐",
             resetProgress: "Скінуць прагрэс",
-            leaderboard: "Табліца лідараў"
+            leaderboard: "Табліца лідараў",
+            settings: "Налады"
+        },
+        settings: {
+            title: "Налады",
+            shop: "Магазін",
+            vibration: "Тактыльная вібрацыя",
+            music: "Гукаправод",
+            close: "Закрыць"
         },
         instructions: {
             title: "ЯК ГУЛЯЦЬ",
