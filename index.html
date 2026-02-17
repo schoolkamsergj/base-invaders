@@ -55,8 +55,8 @@
         <!-- Game canvas will be inserted here by Phaser -->
     </div>
     
-    <!-- Shop Overlay -->
-    <div id="shop-overlay" class="overlay hidden">
+    <!-- Shop Overlay (high z-index + pointer-events so clicks don't pass through to menu/game) -->
+    <div id="shop-overlay" class="overlay hidden" style="z-index: 10001; pointer-events: auto;">
         <div class="shop-container">
             <div class="shop-header">
                 <h2>🛒 SHOP</h2>
