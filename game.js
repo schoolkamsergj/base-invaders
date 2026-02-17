@@ -1060,7 +1060,9 @@ class GameScene extends Phaser.Scene {
                     const up = shop.upgrades || {};
                     if (up.smartBomb) {
                         this.gameState.hasSmartBomb = true;
-                        this.gameState.smartBombUses = 1;
+                        this.gameState.maxSmartBombs = up.maxSmartBombs || 1;
+                        this.gameState.smartBombUses = Math.min(this.gameState.smartBombUses || 0, this.gameState.maxSmartBombs);
+                        if (this.gameState.smartBombUses < 1) this.gameState.smartBombUses = this.gameState.maxSmartBombs;
                     }
                     if (up.laserBeam) this.gameState.hasLaserBeam = true;
                 }
@@ -2446,12 +2448,12 @@ class GameScene extends Phaser.Scene {
         powerUp.powerUpType = type;
         this.physics.add.existing(powerUp);
         
-        // CRITICAL FIX: Ensure physics body has velocity and falls properly
         if (powerUp.body) {
-            powerUp.body.setVelocity(0, 100);  // Fall down at 100 pixels/second
-            powerUp.body.setGravityY(0);  // No gravity (using velocity instead)
-            powerUp.body.setCollideWorldBounds(false);  // Allow to fall off screen
-            powerUp.body.setMaxVelocity(1000, 1000);  // Ensure velocity isn't capped too low
+            powerUp.body.setSize(36, 36);
+            powerUp.body.setVelocity(0, 100);
+            powerUp.body.setGravityY(0);
+            powerUp.body.setCollideWorldBounds(false);
+            powerUp.body.setMaxVelocity(1000, 1000);
         }
         
         this.tweens.add({
@@ -2489,12 +2491,14 @@ class GameScene extends Phaser.Scene {
                     }
                 });
                 break;
-            case 'smartBomb':
-                if (this.gameState.smartBombUses < (this.gameState.maxSmartBombs || 1)) {
+            case 'smartBomb': {
+                const max = Math.max(1, this.gameState.maxSmartBombs || 1);
+                if (this.gameState.smartBombUses < max) {
                     this.gameState.smartBombUses++;
                 }
                 if (this.ui && this.ui.update) this.ui.update(this.gameState);
                 break;
+            }
             case 'score2x':
                 this.gameState.scoreMultiplier = 2;
                 this.time.delayedCall(60000, () => {
@@ -3080,6 +3084,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Apply purchased upgrades to current game (multi-shot, damage, HP, etc.)
                 if (scene.loadPlayerStats) {
                     scene.loadPlayerStats();
+                }
+                if (scene.ui) {
+                    scene.ui.createAbilityButtons();
+                    scene.ui.applyLayout();
+                    if (scene.ui.update) scene.ui.update(scene.gameState);
                 }
                 if (scene.syncProgress) scene.syncProgress();
             }

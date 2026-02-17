@@ -293,7 +293,7 @@ class UI {
         const size = 44;
         const alpha = 0.42;
 
-        if (gs.hasSmartBomb) {
+        if (gs.hasSmartBomb && !this.smartBombBtn) {
             this.smartBombBtn = scene.add.rectangle(0, 0, size, size, 0x1a1a2e, alpha);
             this.smartBombBtn.setScrollFactor(0);
             this.smartBombBtn.setDepth(100);
@@ -307,7 +307,7 @@ class UI {
             });
         }
 
-        if (gs.hasLaserBeam) {
+        if (gs.hasLaserBeam && !this.laserBtn) {
             this.laserBtn = scene.add.rectangle(0, 0, size, size, 0x1a1a2e, alpha);
             this.laserBtn.setScrollFactor(0);
             this.laserBtn.setDepth(100);
@@ -361,12 +361,12 @@ class UI {
         const checkInY = topMargin + currencySpacing * 3 + checkInHeight / 2 + Math.max(8, height * 0.01);
         const checkInX = margin + checkInWidth / 2;
 
-        // Ability buttons (right side, vertical: laser above bomb)
+        // Ability buttons (right side, vertical: laser above bomb, однаковий X)
         const abilityBtnSize = Math.max(40, Math.min(48, width * 0.1));
         const abilityGap = 10;
-        const abilityX = width - margin - abilityBtnSize / 2 - 4;
+        const abilityX = width - margin - abilityBtnSize / 2;
         const abilityBombY = healthBarY - abilityBtnSize / 2 - 12;
-        const abilityLaserY = healthBarY - abilityBtnSize - abilityGap - abilityBtnSize / 2 - 12;
+        const abilityLaserY = abilityBombY - abilityBtnSize - abilityGap;
         
         // Button fonts
         const shopFont = Math.max(12, Math.min(width * 0.032, 16));
