@@ -27,7 +27,7 @@ canvas {
     max-height: 100%;
 }
 
-/* Overlays */
+/* Overlays - block all clicks so nothing passes through to canvas/menu */
 .overlay {
     position: fixed;
     top: 0;
@@ -40,6 +40,7 @@ canvas {
     align-items: center;
     z-index: 1000;
     backdrop-filter: blur(5px);
+    pointer-events: auto;
 }
 
 .overlay.hidden {
