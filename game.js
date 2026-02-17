@@ -2676,25 +2676,23 @@ class GameScene extends Phaser.Scene {
         }
     }
     
-    completeWave() {
+    completeWave(fromRetry) {
         if (!this.missionSystem) return;
-        
+        if (fromRetry !== true && this.missionSystem.currentWave >= this.missionSystem.maxWaves && this._bossSpawnScheduled) return;
         if (this.missionSystem.currentWave >= this.missionSystem.maxWaves) {
-            if (this.missionSystem.bossActive && this._bossSpawnScheduled) {
-                this.time.delayedCall(0, () => {
-                    if (this.enemies.children.size === 0) {
-                        this.spawnBoss();
-                    } else {
-                        this.time.delayedCall(1000, () => this.completeWave());
-                    }
-                });
+            if (this._bossSpawnScheduled && fromRetry === true) {
+                const n = this.enemies.children.size;
+                if (n === 0) {
+                    this.spawnBoss();
+                } else {
+                    this.time.delayedCall(1000, () => this.completeWave(true));
+                }
                 return;
             }
             if (this.missionSystem.bossActive) return;
         } else {
             if (this.missionSystem.bossActive) return;
         }
-        
         console.log(`Wave ${this.missionSystem.currentWave} complete!`);
         if (this.syncProgress) this.syncProgress();
         if (this.missionSystem.currentWave >= this.missionSystem.maxWaves) {
@@ -2703,21 +2701,20 @@ class GameScene extends Phaser.Scene {
             this._bossSpawnScheduled = true;
             console.log('All waves complete! Spawning single boss...');
             this.time.delayedCall(2000, () => {
-                if (this.enemies.children.size === 0) {
+                const n = this.enemies.children.size;
+                if (n === 0) {
                     this.spawnBoss();
                 } else {
-                    this.time.delayedCall(1000, () => this.completeWave());
+                    this.time.delayedCall(1000, () => this.completeWave(true));
                 }
             });
         } else {
-            // Next wave
             this.missionSystem.currentWave++;
             this.time.delayedCall(2000, () => {
-                // Ensure no enemies remain before starting next wave
-                if (this.enemies.children.size === 0) {
+                const n = this.enemies.children.size;
+                if (n === 0) {
                     this.startWave();
                 } else {
-                    console.warn('Enemies still on screen, waiting...');
                     this.time.delayedCall(1000, () => this.completeWave());
                 }
             });
