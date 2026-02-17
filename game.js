@@ -2578,6 +2578,7 @@ class GameScene extends Phaser.Scene {
     spawnBoss() {
         if (!this.missionSystem) return;
         if (this.enemies.getChildren().some(s => s.enemyObject && s.enemyObject.type === 'boss')) return;
+        this._bossSpawnScheduled = false;
         // Calculate boss HP based on mission (one boss, stronger each mission)
         let bossHP;
         if (this.missionSystem.currentMission === 1) {
@@ -2678,17 +2679,28 @@ class GameScene extends Phaser.Scene {
     completeWave() {
         if (!this.missionSystem) return;
         
-        // Prevent multiple calls
-        if (this.missionSystem.bossActive) return;
+        if (this.missionSystem.currentWave >= this.missionSystem.maxWaves) {
+            if (this.missionSystem.bossActive && this._bossSpawnScheduled) {
+                this.time.delayedCall(0, () => {
+                    if (this.enemies.children.size === 0) {
+                        this.spawnBoss();
+                    } else {
+                        this.time.delayedCall(1000, () => this.completeWave());
+                    }
+                });
+                return;
+            }
+            if (this.missionSystem.bossActive) return;
+        } else {
+            if (this.missionSystem.bossActive) return;
+        }
         
         console.log(`Wave ${this.missionSystem.currentWave} complete!`);
         if (this.syncProgress) this.syncProgress();
-        // Move to next wave or spawn boss
         if (this.missionSystem.currentWave >= this.missionSystem.maxWaves) {
-            // All waves complete — spawn exactly ONE boss (Jesse Pollak). Set flag now so duplicate completeWave() won't schedule another spawn.
-            if (this.missionSystem.bossActive) return;
             this.missionSystem.bossActive = true;
             this.bossActive = true;
+            this._bossSpawnScheduled = true;
             console.log('All waves complete! Spawning single boss...');
             this.time.delayedCall(2000, () => {
                 if (this.enemies.children.size === 0) {
@@ -2727,6 +2739,7 @@ class GameScene extends Phaser.Scene {
         this.missionSystem.currentWave = 1;
         this.missionSystem.bossActive = false;
         this.bossActive = false;
+        this._bossSpawnScheduled = false;
         
         // Start next mission after delay
         this.time.delayedCall(3000, () => {
