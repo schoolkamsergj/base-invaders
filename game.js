@@ -944,7 +944,9 @@ class GameScene extends Phaser.Scene {
                 paused: false,
                 gameOver: false,
                 scoreMultiplier: 1,
-                inMenuPause: false
+                inMenuPause: false,
+                extraLives: 0,
+                score2xEndTime: 0
             };
 
             // Create background
@@ -1114,6 +1116,7 @@ class GameScene extends Phaser.Scene {
                 if (this.player) {
                     this.player.maxHP = this.playerStats.maxHP;
                     this.player.hp = this.playerStats.maxHP;
+                    this.player.shield = this.playerStats.shield || 0;
                     console.log('Player created');
                 }
             } catch (e) {
@@ -1809,6 +1812,32 @@ class GameScene extends Phaser.Scene {
             } catch (e) {
                 console.warn('Error updating background:', e);
             }
+
+            // Score 2x: activate from banked or count down
+            try {
+                if (this.gameState) {
+                    let shopData = null;
+                    try {
+                        const raw = localStorage.getItem('baseInvadersShop');
+                        if (raw) shopData = JSON.parse(raw);
+                    } catch (e) {}
+                    const banked = (shopData && shopData.score2xBankedSeconds) || 0;
+                    const endTime = this.gameState.score2xEndTime || 0;
+                    if (endTime > 0 && time < endTime) {
+                        this.gameState.scoreMultiplier = 2;
+                    } else if (endTime > 0 && time >= endTime) {
+                        this.gameState.scoreMultiplier = 1;
+                        this.gameState.score2xEndTime = 0;
+                    } else if (banked >= 60) {
+                        this.gameState.score2xEndTime = time + 60000;
+                        this.gameState.scoreMultiplier = 2;
+                        if (shopData) {
+                            shopData.score2xBankedSeconds = Math.max(0, banked - 60);
+                            localStorage.setItem('baseInvadersShop', JSON.stringify(shopData));
+                        }
+                    }
+                }
+            } catch (e) {}
 
             // Update player
             try {
@@ -2514,7 +2543,8 @@ class GameScene extends Phaser.Scene {
                 if (this.playSound) this.playSound('coin');
                 break;
             case 'shield':
-                this.playerStats.shield = 5;
+                this.playerStats.shield = (this.playerStats.shield || 0) + 5;
+                if (this.player) this.player.shield = this.playerStats.shield;
                 break;
             case 'bomb':
                 this.enemies.children.entries.forEach(enemy => {
@@ -2530,9 +2560,7 @@ class GameScene extends Phaser.Scene {
                 break;
             case 'score2x':
                 this.gameState.scoreMultiplier = 2;
-                this.time.delayedCall(60000, () => {
-                    this.gameState.scoreMultiplier = 1;
-                });
+                this.gameState.score2xEndTime = this.time.now + 60000;
                 break;
         }
     }
@@ -3047,7 +3075,32 @@ class GameScene extends Phaser.Scene {
                 this.gameState.maxSmartBombs = up.maxSmartBombs || 1;
                 if (up.smartBomb) this.gameState.smartBombUses = this.gameState.maxSmartBombs;
             }
+            if (shop.shield != null) this.playerStats.shield = Number(shop.shield) || 0;
+            if (this.player) this.player.shield = this.playerStats.shield || 0;
+            if (shop.extraLives != null && this.gameState) this.gameState.extraLives = Math.max(0, Number(shop.extraLives) || 0);
         }
+    }
+
+    useExtraLife() {
+        if (!this.gameState || (this.gameState.extraLives || 0) <= 0) return;
+        this.gameState.extraLives--;
+        try {
+            const shopJson = localStorage.getItem('baseInvadersShop');
+            if (shopJson) {
+                const shop = JSON.parse(shopJson);
+                shop.extraLives = Math.max(0, (shop.extraLives || 0) - 1);
+                localStorage.setItem('baseInvadersShop', JSON.stringify(shop));
+            }
+        } catch (e) {}
+        this.player.hp = this.player.maxHP;
+        this.player.shield = this.playerStats.shield || 0;
+        if (this.missionSystem) {
+            this.missionSystem.currentWave = Math.min(5, (this.missionSystem.currentWave || 1) + 1);
+            this.missionSystem.waveEnemiesKilled = 0;
+            this.missionSystem.waveEnemiesTotal = 0;
+        }
+        this.playSound('powerup');
+        if (this.ui) this.ui.update(this.gameState);
     }
 }
 

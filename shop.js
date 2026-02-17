@@ -32,7 +32,10 @@ class ShopSystem {
             multiShot: 1,
             maxHP: 100,
             speed: 300,
-            upgrades: {}
+            upgrades: {},
+            shield: 0,
+            extraLives: 0,
+            score2xBankedSeconds: 0
         };
         const saved = localStorage.getItem('baseInvadersShop');
         if (saved) {
@@ -405,6 +408,24 @@ class ShopSystem {
             case 'laserBeam':
                 this.data.upgrades.laserBeam = true;
                 break;
+            case 'shield':
+                this.data.shield = (this.data.shield || 0) + 5;
+                if (gameScene && gameScene.playerStats) gameScene.playerStats.shield = (gameScene.playerStats.shield || 0) + 5;
+                if (gameScene && gameScene.player) gameScene.player.shield = (gameScene.playerStats?.shield || 0);
+                break;
+            case 'score2x':
+                if (gameScene && gameScene.gameState && gameScene.time) {
+                    const now = gameScene.time.now;
+                    const add = 60000;
+                    gameScene.gameState.score2xEndTime = Math.max(now, (gameScene.gameState.score2xEndTime || 0)) + add;
+                } else {
+                    this.data.score2xBankedSeconds = (this.data.score2xBankedSeconds || 0) + 60;
+                }
+                break;
+            case 'extraLife':
+                this.data.extraLives = (this.data.extraLives || 0) + 1;
+                if (gameScene && gameScene.gameState) gameScene.gameState.extraLives = (gameScene.gameState.extraLives || 0) + 1;
+                break;
             case 'speedDemon':
             case 'baseDefender':
             case 'tank':
@@ -444,7 +465,9 @@ class ShopSystem {
             if (scene.player) {
                 scene.player.maxHP = scene.playerStats.maxHP;
                 scene.player.hp = Math.min(scene.player.hp, scene.playerStats.maxHP);
+                scene.player.shield = scene.playerStats.shield || 0;
             }
+            if (scene.ui && scene.ui.update) scene.ui.update(scene.gameState);
         }
     }
 

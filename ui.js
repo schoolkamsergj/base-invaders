@@ -49,6 +49,7 @@ class UI {
         var toDestroy = [
             this.currencyContainer, this.stageText, this.scoreText, this.levelText,
             this.healthBarBg, this.healthBar, this.healthBarGlow, this.healthText,
+            this.extraLivesText, this.shieldText, this.score2xText,
             this.shopBtn, this.shopBtnText, this.pauseBtn, this.pauseBtnText,
             this.checkInButtonBg, this.checkInButton, this.checkInButtonText, this.checkInCountdownText, this.checkInGlow,
             this.smartBombBtn, this.smartBombBtnText, this.laserBtn, this.laserBtnText
@@ -205,6 +206,20 @@ class UI {
         this.healthText.setOrigin(0.5);
         this.healthText.setScrollFactor(0);
         this.healthText.setDepth(102);
+
+        // Extra lives (hearts), Shield, Score 2x - to the right of HP bar
+        this.extraLivesText = this.scene.add.text(0, 0, '', { fontSize: '14px', fontWeight: 'bold', color: '#ff69b4' });
+        this.extraLivesText.setOrigin(0, 0.5);
+        this.extraLivesText.setScrollFactor(0);
+        this.extraLivesText.setDepth(102);
+        this.shieldText = this.scene.add.text(0, 0, '', { fontSize: '12px', fontWeight: 'bold', color: '#4488ff' });
+        this.shieldText.setOrigin(0, 0.5);
+        this.shieldText.setScrollFactor(0);
+        this.shieldText.setDepth(102);
+        this.score2xText = this.scene.add.text(0, 0, '', { fontSize: '12px', fontWeight: 'bold', color: '#ffd700' });
+        this.score2xText.setOrigin(0, 0.5);
+        this.score2xText.setScrollFactor(0);
+        this.score2xText.setDepth(102);
     }
 
     createButtons() {
@@ -482,6 +497,12 @@ class UI {
 
         this.healthText.setPosition(this.barX + this.barWidth / 2, this.barY);
         this.healthText.setFontSize(`${Math.max(12, layout.healthBarHeight)}px`);
+
+        // Extra lives, Shield, 2x - right of health bar
+        const hpRightX = this.barX + this.barWidth + 8;
+        if (this.extraLivesText) this.extraLivesText.setPosition(hpRightX, this.barY);
+        if (this.shieldText) this.shieldText.setPosition(hpRightX + 50, this.barY);
+        if (this.score2xText) this.score2xText.setPosition(hpRightX + 110, this.barY);
 
         // Daily check-in button
         const checkInX = layout.margin + layout.checkInWidth / 2;
@@ -1221,8 +1242,7 @@ class UI {
             this.stageText.setText(`${stageLabel} ${gameState.stage}`);
             this.stageText.setColor('#00ffff');
         }
-        const multiplier = gameState.scoreMultiplier || 1;
-        this.scoreText.setText(`${scoreLabel}: ${this.formatNumber(gameState.score * multiplier)}`);
+        this.scoreText.setText(`${scoreLabel}: ${this.formatNumber(gameState.score)}`);
         this.levelText.setText(`${levelLabel} ${gameState.playerLevel}`);
 
         if (this.smartBombBtn) {
@@ -1280,6 +1300,30 @@ class UI {
             
             if (this.healthText) {
                 this.healthText.setText(`${Math.ceil(hp)} / ${maxHP}`);
+            }
+            // Extra lives, shield, 2x
+            const ext = (this.gameState.extraLives || 0);
+            if (this.extraLivesText) {
+                this.extraLivesText.setText(ext > 0 ? '\u2764'.repeat(Math.min(ext, 5)) : '');
+                this.extraLivesText.setVisible(ext > 0);
+            }
+            const sh = (this.scene.playerStats && this.scene.playerStats.shield) || 0;
+            if (this.shieldText) {
+                this.shieldText.setText(sh > 0 ? '\uD83D\uDEE1 ' + (typeof getText === 'function' ? getText('ui.shield') : 'Щит') + ': ' + sh : '');
+                this.shieldText.setVisible(sh > 0);
+            }
+            const endT = this.gameState.score2xEndTime || 0;
+            const mult = this.gameState.scoreMultiplier || 1;
+            const now = this.scene.time ? this.scene.time.now : 0;
+            const rem = endT > 0 && now < endT ? Math.ceil((endT - now) / 1000) : 0;
+            if (this.score2xText) {
+                this.score2xText.setText(rem > 0 ? '\u2B50 2x: ' + rem + 's' : '');
+                this.score2xText.setVisible(rem > 0);
+            }
+            if (rem > 0 && this.scoreText) {
+                this.scoreText.setStyle({ backgroundColor: '#ffd700', color: '#333' });
+            } else if (this.scoreText) {
+                this.scoreText.setStyle({ backgroundColor: 'transparent', color: '#ffff00' });
             }
         } else {
             // If health bar not ready, ensure graphics are cleared to prevent artifacts

@@ -234,11 +234,30 @@ class Player {
         if (this.engineTrail) {
             this.engineTrail.setPosition(this.sprite.x, this.sprite.y + 20);
         }
+
+        // Shield dome (blue / red when 1, blinking)
+        const shieldVal = (stats && stats.shield) || 0;
+        if (shieldVal > 0) {
+            if (!this.shieldDome) {
+                this.shieldDome = this.scene.add.graphics();
+                this.shieldDome.setDepth(8);
+            }
+            this.shieldDome.clear();
+            const isLow = shieldVal === 1;
+            const col = isLow ? 0xff4444 : 0x4488ff;
+            const blink = 0.3 + 0.4 * Math.abs(Math.sin(time * 0.008));
+            this.shieldDome.lineStyle(3, col, blink);
+            this.shieldDome.strokeCircle(this.sprite.x, this.sprite.y, 55);
+        } else if (this.shieldDome) {
+            this.shieldDome.clear();
+        }
     }
 
     takeDamage(amount) {
-        if (this.shield > 0) {
-            this.shield--;
+        const shieldVal = (this.scene.playerStats && this.scene.playerStats.shield) || this.shield || 0;
+        if (shieldVal > 0) {
+            if (this.scene.playerStats) this.scene.playerStats.shield = Math.max(0, this.scene.playerStats.shield - 1);
+            this.shield = (this.scene.playerStats && this.scene.playerStats.shield) || 0;
             // Shield hit effect
             this.scene.tweens.add({
                 targets: this.sprite,
@@ -269,7 +288,13 @@ class Player {
 
         if (this.hp <= 0) {
             this.hp = 0;
-            this.scene.gameOver();
+            const gs = this.scene.gameState;
+            const extraLives = (gs && gs.extraLives) || 0;
+            if (extraLives > 0 && this.scene.useExtraLife) {
+                this.scene.useExtraLife();
+            } else {
+                this.scene.gameOver();
+            }
         }
     }
 
