@@ -959,6 +959,11 @@ class GameScene extends Phaser.Scene {
             this.bossActive = false;
             this.laserActive = false;
             this.laserBeamGraphic = null;
+            this.laserDuration = 3;
+            this.laserEndTime = 0;
+            this.laserCooldown = 15000;
+            this.laserCooldownEnd = 0;
+            this.enemyShootPausedUntil = 0;
             
             // Mission system
             this.missionSystem = {
@@ -1786,11 +1791,15 @@ class GameScene extends Phaser.Scene {
                 console.warn('Error updating player:', e);
             }
 
-            // Auto-shoot
+            // Auto-shoot (вимкнено під час лазера)
             try {
-                if (time > this.shootTimer) {
+                const laserOver = !this.laserActive || time >= this.laserEndTime;
+                if (laserOver && time > this.shootTimer) {
                     this.shootBullets();
                     this.shootTimer = time + this.playerStats.fireRate;
+                }
+                if (this.laserActive && time >= this.laserEndTime) {
+                    this.setLaserActive(false);
                 }
             } catch (e) {
                 console.warn('Error shooting:', e);
@@ -1855,8 +1864,11 @@ class GameScene extends Phaser.Scene {
                 console.warn('Error updating stage:', e);
             }
 
-            // Update UI
+            // Update UI (expose laser cooldown for ability buttons)
             try {
+                this.gameState.laserActive = this.laserActive;
+                this.gameState.laserCooldownEnd = this.laserCooldownEnd;
+                this.gameState.laserCooldownRemaining = Math.max(0, (this.laserCooldownEnd - time) / 1000);
                 if (this.ui && this.ui.update) {
                     this.ui.update(this.gameState);
                 }
@@ -1959,15 +1971,34 @@ class GameScene extends Phaser.Scene {
         const list = this.enemies.getChildren().slice();
         list.forEach(enemySprite => {
             const enemy = enemySprite.enemyObject;
-            if (enemy) {
+            if (!enemy) return;
+            if (enemy.type === 'boss') {
+                enemy.hp *= 0.75;
+            } else {
+                enemy.hp *= 0.4;
+            }
+            if (enemy.numberText) enemy.numberText.setText(Math.max(0, Math.ceil(enemy.hp)));
+            if (enemy.hp <= 0) {
                 this.onEnemyDestroyed(enemy);
                 this.destroyEnemy(enemy, enemySprite);
             }
         });
-        this.enemyBullets.getChildren().forEach(b => { b.destroy(); });
+        this.enemyBullets.clear(true, true);
+        const t = this.time.now;
+        this.enemyShootPausedUntil = t + 500;
+        const flash = this.add.rectangle(this.scale.width / 2, this.scale.height / 2, this.scale.width, this.scale.height, 0xffff00, 0.35);
+        flash.setScrollFactor(0);
+        flash.setDepth(1000);
+        this.tweens.add({ targets: flash, alpha: 0, duration: 300, onComplete: () => flash.destroy() });
     }
 
     setLaserActive(active) {
+        if (active && this.gameState.hasLaserBeam) {
+            const t = this.time.now;
+            if (t < this.laserCooldownEnd) return;
+            this.laserEndTime = t + this.laserDuration * 1000;
+            this.laserCooldownEnd = t + this.laserCooldown;
+        }
         this.laserActive = !!active;
         if (!active && this.laserBeamGraphic) {
             this.laserBeamGraphic.clear();
@@ -1979,15 +2010,14 @@ class GameScene extends Phaser.Scene {
         const px = this.player.x;
         const py = this.player.y - 25;
         const beamHalfW = 18;
-        const damagePerSecond = 70;
-        const damage = (damagePerSecond * delta) / 1000;
+        const damagePerFrame = 1.1;
         if (!this.laserBeamGraphic) {
             this.laserBeamGraphic = this.add.graphics();
             this.laserBeamGraphic.setScrollFactor(0);
             this.laserBeamGraphic.setDepth(10.5);
         }
         this.laserBeamGraphic.clear();
-        this.laserBeamGraphic.fillStyle(0x00ffff, 0.35);
+        this.laserBeamGraphic.fillStyle(0x0088ff, 0.4);
         this.laserBeamGraphic.fillRect(px - beamHalfW, 0, beamHalfW * 2, py);
         this.enemies.getChildren().slice().forEach(enemySprite => {
             const enemy = enemySprite.enemyObject;
@@ -1995,7 +2025,7 @@ class GameScene extends Phaser.Scene {
             const ex = enemy.sprite.x, ey = enemy.sprite.y;
             if (ey >= py) return;
             if (Math.abs(ex - px) > beamHalfW + 20) return;
-            const destroyed = enemy.takeDamage(damage);
+            const destroyed = enemy.takeDamage(damagePerFrame);
             if (destroyed) {
                 this.onEnemyDestroyed(enemy);
                 this.destroyEnemy(enemy, enemySprite);
@@ -2915,6 +2945,7 @@ class GameScene extends Phaser.Scene {
     }
 
     loadPlayerStats() {
+        this.laserDuration = 3 + (this.gameState.playerLevel || 1);
         const shopData = localStorage.getItem('baseInvadersShop');
         if (shopData) {
             const shop = JSON.parse(shopData);
@@ -2933,7 +2964,9 @@ class GameScene extends Phaser.Scene {
             if (this.gameState) {
                 this.gameState.hasLaserBeam = !!(up.laserBeam);
                 this.gameState.hasSmartBomb = !!(up.smartBomb);
-                if (up.smartBomb) this.gameState.smartBombUses = Math.max(1, this.gameState.smartBombUses || 0);
+                this.laserDuration += (up.laserLevel || 0);
+                this.gameState.maxSmartBombs = up.maxSmartBombs || 1;
+                if (up.smartBomb) this.gameState.smartBombUses = this.gameState.maxSmartBombs;
             }
         }
     }

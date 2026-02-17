@@ -370,8 +370,9 @@ class SpaceshipEnemy {
             this.engineGlow.y = this.sprite.y + 25;
         }
         
-        // Shoot at player
-        if (time > this.shootTimer && this.scene.player) {
+        // Shoot at player (pause after smart bomb)
+        const shootPaused = this.scene.enemyShootPausedUntil && time < this.scene.enemyShootPausedUntil;
+        if (!shootPaused && time > this.shootTimer && this.scene.player) {
             this.shoot();
             this.shootTimer = time + (this.isBoss ? 1000 : 2000) + Math.random() * 1000;
         }
@@ -599,8 +600,9 @@ class BossEnemy {
             this.attackPatternTimer = time + 3000; // Change pattern every 3 seconds
         }
         
-        // Shoot based on current pattern
-        if (time > this.shootTimer) {
+        // Shoot based on current pattern (pause after smart bomb)
+        const shootPaused = this.scene.enemyShootPausedUntil && time < this.scene.enemyShootPausedUntil;
+        if (!shootPaused && time > this.shootTimer) {
             if (this.currentAttackPattern === 0) {
                 this.attack1(); // Simple spread (3 bullets)
             } else if (this.currentAttackPattern === 1) {

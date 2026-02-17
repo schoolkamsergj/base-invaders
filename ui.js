@@ -1223,8 +1223,17 @@ class UI {
         this.scoreText.setText(`${scoreLabel}: ${this.formatNumber(gameState.score * multiplier)}`);
         this.levelText.setText(`${levelLabel} ${gameState.playerLevel}`);
 
-        if (this.smartBombBtn) this.smartBombBtn.setAlpha(gameState.smartBombUses > 0 ? 0.42 : 0.25);
-        
+        if (this.smartBombBtn) {
+            this.smartBombBtnText.setText('💣 x' + (gameState.smartBombUses || 0));
+            this.smartBombBtn.setAlpha((gameState.smartBombUses || 0) > 0 ? 1 : 0.25);
+        }
+        if (this.laserBtn) {
+            const laserRem = gameState.laserCooldownRemaining != null ? gameState.laserCooldownRemaining : 0;
+            const laserReady = laserRem <= 0;
+            this.laserBtn.setAlpha(laserReady ? 1 : 0.42);
+            this.laserBtnText.setText(laserReady ? '⚡' : (Math.ceil(laserRem) + 's'));
+        }
+
         // Update health bar - only if properly initialized and valid coordinates
         if (this.scene.player && this.healthBar && this.healthBarGlow && 
             typeof this.barX !== 'undefined' && typeof this.barY !== 'undefined' &&
