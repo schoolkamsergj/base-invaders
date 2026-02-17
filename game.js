@@ -1017,23 +1017,49 @@ class GameScene extends Phaser.Scene {
                         .then(data => {
                             if (!data || typeof data !== 'object') return;
                             if (typeof data.upgrades === 'string') { try { data.upgrades = JSON.parse(data.upgrades); } catch (e) { data.upgrades = null; } }
-                            this.gameState.gold = Number(data.gold) || this.gameState.gold;
-                            this.gameState.lightning = Number(data.lightning) || this.gameState.lightning;
-                            this.gameState.diamonds = Number(data.diamonds) || this.gameState.diamonds;
-                            this.gameState.playerLevel = Number(data.level) || this.gameState.playerLevel;
-                            this.gameState.stage = Number(data.wave) || this.gameState.stage;
-                            this.missionSystem.currentMission = Number(data.mission) || this.missionSystem.currentMission;
-                            this.missionSystem.currentWave = Number(data.wave) || this.missionSystem.currentWave;
-                            if (data.upgrades && typeof data.upgrades === 'object') {
-                                this.playerStats.fireRate = data.upgrades.fireRate ?? this.playerStats.fireRate;
-                                this.playerStats.damage = data.upgrades.damage ?? this.playerStats.damage;
-                                this.playerStats.multiShot = data.upgrades.multiShot ?? this.playerStats.multiShot;
-                                this.playerStats.maxHP = data.upgrades.maxHP ?? this.playerStats.maxHP;
-                                this.playerStats.speed = data.upgrades.speed ?? this.playerStats.speed;
+                            // Двостороння синхронізація: зливаємо сервер + локальні дані (беремо кращі значення), щоб апгрейди з ноутбука не скидалися телефоном і навпаки
+                            const localGold = this.gameState.gold || 0;
+                            const localDiamonds = this.gameState.diamonds || 0;
+                            const localLightning = this.gameState.lightning || 0;
+                            const localLevel = this.gameState.playerLevel || 1;
+                            const localWave = this.gameState.stage || 1;
+                            const localMission = this.missionSystem.currentMission || 1;
+                            const serverGold = Number(data.gold) || 0;
+                            const serverDiamonds = Number(data.diamonds) || 0;
+                            const serverLightning = Number(data.lightning) || 0;
+                            const serverLevel = Number(data.level) || 1;
+                            const serverWave = Number(data.wave) || 1;
+                            const serverMission = Number(data.mission) || 1;
+                            this.gameState.gold = Math.max(localGold, serverGold);
+                            this.gameState.lightning = Math.max(localLightning, serverLightning);
+                            this.gameState.diamonds = Math.max(localDiamonds, serverDiamonds);
+                            this.gameState.playerLevel = Math.max(localLevel, serverLevel);
+                            this.gameState.stage = Math.max(localWave, serverWave);
+                            this.missionSystem.currentMission = Math.max(localMission, serverMission);
+                            this.missionSystem.currentWave = Math.max(localWave, serverWave);
+                            const up = data.upgrades && typeof data.upgrades === 'object' ? data.upgrades : {};
+                            const lr = this.playerStats.fireRate ?? 300;
+                            const ld = this.playerStats.damage ?? 1;
+                            const lm = this.playerStats.multiShot ?? 1;
+                            const lh = this.playerStats.maxHP ?? 100;
+                            const ls = this.playerStats.speed ?? 300;
+                            this.playerStats.fireRate = Math.min(lr, up.fireRate != null ? Number(up.fireRate) : lr);
+                            this.playerStats.damage = Math.max(ld, up.damage != null ? Number(up.damage) : ld);
+                            this.playerStats.multiShot = Math.max(lm, up.multiShot != null ? Number(up.multiShot) : lm);
+                            this.playerStats.maxHP = Math.max(lh, up.maxHP != null ? Number(up.maxHP) : lh);
+                            this.playerStats.speed = Math.max(ls, up.speed != null ? Number(up.speed) : ls);
+                            const localBest = parseInt(localStorage.getItem('highScore') || '0', 10);
+                            const serverBest = data.best_score != null ? Number(data.best_score) : 0;
+                            const bestScore = Math.max(localBest, serverBest);
+                            localStorage.setItem('highScore', String(bestScore));
+                            this.mergeServerProgressIntoLocalStorage();
+                            this.loadPlayerStats();
+                            if (this.player) {
+                                this.player.maxHP = this.playerStats.maxHP;
+                                this.player.hp = Math.min(this.player.hp, this.playerStats.maxHP);
                             }
-                            if (data.best_score != null) localStorage.setItem('highScore', String(data.best_score));
                             if (this.ui) this.ui.update(this.gameState);
-                            console.log('✅ Progress loaded from server (async)');
+                            console.log('✅ Progress merged from server (sync both ways)');
                         })
                         .catch(() => console.log('⚠️ Server sync skipped'))
                         .finally(() => clearTimeout(timeout));
@@ -2904,6 +2930,36 @@ class GameScene extends Phaser.Scene {
             this.gameState.lightning = saved.lightning || 0;
             this.gameState.diamonds = saved.diamonds || 0;
             this.gameState.playerLevel = saved.playerLevel || 1;
+        }
+    }
+
+    /** Після злиття даних з сервера — записати об’єднаний стан у localStorage і оновити магазин, щоб обидва пристрої мали однаковий “кращий” прогрес. */
+    mergeServerProgressIntoLocalStorage() {
+        if (!this.gameState || !this.playerStats) return;
+        const data = {
+            gold: this.gameState.gold,
+            lightning: this.gameState.lightning,
+            diamonds: this.gameState.diamonds,
+            playerLevel: this.gameState.playerLevel,
+            highScore: parseInt(localStorage.getItem('highScore') || '0', 10)
+        };
+        localStorage.setItem('baseInvadersData', JSON.stringify(data));
+        let shopData = {};
+        try {
+            const raw = localStorage.getItem('baseInvadersShop');
+            if (raw) shopData = JSON.parse(raw);
+        } catch (e) {}
+        shopData.fireRate = this.playerStats.fireRate;
+        shopData.damage = this.playerStats.damage;
+        shopData.multiShot = this.playerStats.multiShot;
+        shopData.maxHP = this.playerStats.maxHP;
+        shopData.speed = this.playerStats.speed;
+        shopData.fireRateLevel = Math.min(10, Math.max(1, Math.round((300 - this.playerStats.fireRate) / 20) + 1));
+        shopData.damageLevel = Math.min(10, Math.max(1, this.playerStats.damage));
+        localStorage.setItem('baseInvadersShop', JSON.stringify(shopData));
+        if (window.shopSystem && typeof window.shopSystem.loadShopData === 'function') {
+            window.shopSystem.data = window.shopSystem.loadShopData();
+            if (typeof window.shopSystem.updateDisplay === 'function') window.shopSystem.updateDisplay();
         }
     }
 
