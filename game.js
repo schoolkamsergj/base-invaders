@@ -2449,7 +2449,7 @@ class GameScene extends Phaser.Scene {
         this.physics.add.existing(powerUp);
         
         if (powerUp.body) {
-            powerUp.body.setSize(36, 36);
+            powerUp.body.setSize(36, 36, true);
             powerUp.body.setVelocity(0, 100);
             powerUp.body.setGravityY(0);
             powerUp.body.setCollideWorldBounds(false);
@@ -2491,14 +2491,10 @@ class GameScene extends Phaser.Scene {
                     }
                 });
                 break;
-            case 'smartBomb': {
-                const max = Math.max(1, this.gameState.maxSmartBombs || 1);
-                if (this.gameState.smartBombUses < max) {
-                    this.gameState.smartBombUses++;
-                }
+            case 'smartBomb':
+                this.gameState.smartBombUses = Math.min(99, (this.gameState.smartBombUses || 0) + 1);
                 if (this.ui && this.ui.update) this.ui.update(this.gameState);
                 break;
-            }
             case 'score2x':
                 this.gameState.scoreMultiplier = 2;
                 this.time.delayedCall(60000, () => {
