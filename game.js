@@ -2207,6 +2207,9 @@ class GameScene extends Phaser.Scene {
         if (Math.random() < 0.1) {
             this.dropPowerUp(x, y);
         }
+        if (Math.random() < 0.05) {
+            this.dropPowerUp(x, y, 'smartBomb');
+        }
 
         // Track wave progress (mission system)
         if (this.missionSystem && !this.missionSystem.bossActive) {
@@ -2433,10 +2436,10 @@ class GameScene extends Phaser.Scene {
         });
     }
 
-    dropPowerUp(x, y) {
+    dropPowerUp(x, y, forcedType) {
         const types = ['shield', 'bomb', 'score2x'];
-        const type = Phaser.Math.RND.pick(types);
-        const icons = { shield: '🛡️', bomb: '💣', score2x: '⭐' };
+        const type = forcedType || Phaser.Math.RND.pick(types);
+        const icons = { shield: '🛡️', bomb: '💣', score2x: '⭐', smartBomb: '💣' };
         
         const powerUp = this.add.text(x, y, icons[type], { fontSize: '24px' });
         powerUp.setDepth(10);
@@ -2485,6 +2488,12 @@ class GameScene extends Phaser.Scene {
                         this.onEnemyDestroyed(enemy);
                     }
                 });
+                break;
+            case 'smartBomb':
+                if (this.gameState.smartBombUses < (this.gameState.maxSmartBombs || 1)) {
+                    this.gameState.smartBombUses++;
+                }
+                if (this.ui && this.ui.update) this.ui.update(this.gameState);
                 break;
             case 'score2x':
                 this.gameState.scoreMultiplier = 2;

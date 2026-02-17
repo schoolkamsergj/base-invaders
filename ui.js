@@ -502,19 +502,21 @@ class UI {
         this.attachCheckInHandlers();
         this.updateCheckInButtonState();
 
-        // Ability buttons (right side vertical)
-        if (this.smartBombBtn && layout.abilityX !== undefined) {
-            this.smartBombBtn.setPosition(layout.abilityX, layout.abilityBombY);
-            this.smartBombBtn.setSize(layout.abilityBtnSize, layout.abilityBtnSize);
-            this.smartBombBtnText.setPosition(layout.abilityX, layout.abilityBombY);
-            this.smartBombBtnText.setFontSize(`${Math.min(24, layout.abilityBtnSize * 0.55)}px`);
-            this.smartBombBtn.setAlpha(this.gameState.smartBombUses > 0 ? 0.42 : 0.25);
-        }
+        // Ability buttons (right side vertical: laser зверху, bomb знизу)
         if (this.laserBtn && layout.abilityX !== undefined) {
             this.laserBtn.setPosition(layout.abilityX, layout.abilityLaserY);
             this.laserBtn.setSize(layout.abilityBtnSize, layout.abilityBtnSize);
             this.laserBtnText.setPosition(layout.abilityX, layout.abilityLaserY);
+            this.laserBtnText.setOrigin(0.5);
             this.laserBtnText.setFontSize(`${Math.min(26, layout.abilityBtnSize * 0.6)}px`);
+        }
+        if (this.smartBombBtn && layout.abilityX !== undefined) {
+            this.smartBombBtn.setPosition(layout.abilityX, layout.abilityBombY);
+            this.smartBombBtn.setSize(layout.abilityBtnSize, layout.abilityBtnSize);
+            this.smartBombBtnText.setPosition(layout.abilityX, layout.abilityBombY);
+            this.smartBombBtnText.setOrigin(0.5);
+            this.smartBombBtnText.setFontSize(`${Math.min(24, layout.abilityBtnSize * 0.55)}px`);
+            this.smartBombBtn.setAlpha(this.gameState.smartBombUses > 0 ? 0.42 : 0.25);
         }
         
         // Update mute button position after layout (if it exists)
