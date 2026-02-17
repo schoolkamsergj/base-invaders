@@ -959,7 +959,7 @@ class GameScene extends Phaser.Scene {
             this.bossActive = false;
             this.laserActive = false;
             this.laserBeamGraphic = null;
-            this.laserDuration = 8;
+            this.laserDuration = 3;
             this.laserEndTime = 0;
             this.laserCooldown = 15000;
             this.laserCooldownEnd = 0;
@@ -1819,15 +1819,12 @@ class GameScene extends Phaser.Scene {
                 console.warn('Error updating player:', e);
             }
 
-            // Auto-shoot (не стріляти кулями під час лазера)
+            // Auto-shoot (вимкнено під час лазера)
             try {
-                if (this.laserActive && this.time.now <= this.laserEndTime) {
-                    // НЕ стріляти кулями під час лазера
-                } else {
-                    if (time > this.shootTimer) {
-                        this.shootBullets();
-                        this.shootTimer = time + this.playerStats.fireRate;
-                    }
+                const laserOver = !this.laserActive || time >= this.laserEndTime;
+                if (laserOver && time > this.shootTimer) {
+                    this.shootBullets();
+                    this.shootTimer = time + this.playerStats.fireRate;
                 }
                 if (this.laserActive && time >= this.laserEndTime) {
                     this.setLaserActive(false);
@@ -2029,7 +2026,6 @@ class GameScene extends Phaser.Scene {
             if (t < this.laserCooldownEnd) return;
             this.laserEndTime = t + this.laserDuration * 1000;
             this.laserCooldownEnd = t + this.laserCooldown;
-            if (this.sounds?.explosion) this.sounds.explosion.play();
         }
         this.laserActive = !!active;
         if (!active && this.laserBeamGraphic) {
@@ -2042,7 +2038,7 @@ class GameScene extends Phaser.Scene {
         const px = this.player.x;
         const py = this.player.y - 25;
         const beamHalfW = 18;
-        const damagePerFrame = 4.5;
+        const damagePerFrame = 1.1;
         if (!this.laserBeamGraphic) {
             this.laserBeamGraphic = this.add.graphics();
             this.laserBeamGraphic.setScrollFactor(0);
@@ -3017,7 +3013,7 @@ class GameScene extends Phaser.Scene {
     }
 
     loadPlayerStats() {
-        this.laserDuration = 8;
+        this.laserDuration = 3 + (this.gameState.playerLevel || 1);
         const shopData = localStorage.getItem('baseInvadersShop');
         if (shopData) {
             const shop = JSON.parse(shopData);
@@ -3036,7 +3032,7 @@ class GameScene extends Phaser.Scene {
             if (this.gameState) {
                 this.gameState.hasLaserBeam = !!(up.laserBeam);
                 this.gameState.hasSmartBomb = !!(up.smartBomb);
-                this.laserDuration = 8 + (up.laserLevel || 0);
+                this.laserDuration += (up.laserLevel || 0);
                 this.gameState.maxSmartBombs = up.maxSmartBombs || 1;
                 if (up.smartBomb) this.gameState.smartBombUses = this.gameState.maxSmartBombs;
             }
