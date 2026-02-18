@@ -124,12 +124,12 @@
     <!-- Leaderboard Overlay (high z-index so game stays paused, blocks clicks) -->
     <div id="leaderboard-overlay" class="overlay hidden" style="z-index: 10005; pointer-events: auto;">
         <div class="leaderboard-container">
+            <button id="close-leaderboard" class="close-btn leaderboard-close-btn" type="button" aria-label="Close">✕</button>
             <div class="leaderboard-header">
                 <h2>🏆 LEADERBOARD</h2>
                 <div class="leaderboard-actions">
                     <button id="submit-my-score-btn" class="menu-btn small-btn">Submit my score</button>
                     <button id="refresh-leaderboard" class="menu-btn small-btn">Refresh</button>
-                    <button id="close-leaderboard" class="close-btn">✕</button>
                 </div>
             </div>
             <p id="leaderboard-submit-my-status" style="min-height: 1.2em; margin: 6px 0; color: #00ff88; font-size: 13px;"></p>

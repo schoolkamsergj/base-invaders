@@ -351,6 +351,7 @@ canvas {
 }
 
 .leaderboard-container {
+    position: relative;
     background: linear-gradient(135deg, #0f1a2e 0%, #152548 100%);
     border: 2px solid #00ffff;
     border-radius: 12px;
@@ -361,6 +362,35 @@ canvas {
     overflow-x: hidden;
     overflow-y: auto;
     box-shadow: 0 0 30px rgba(0, 255, 255, 0.4);
+}
+
+/* Leaderboard close button: top-right corner, square like Shop/Settings */
+#leaderboard-overlay .leaderboard-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    padding: 0;
+    border-radius: 4px;
+    background: #cc0000;
+    border: 2px solid #990000;
+    color: #fff;
+    font-size: 16px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+    z-index: 10;
+}
+#leaderboard-overlay .leaderboard-close-btn:hover {
+    background: #ee0000;
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(204, 0, 0, 0.5);
 }
 
 .leaderboard-table-wrap {
@@ -377,6 +407,7 @@ canvas {
     align-items: center;
     gap: 8px;
     margin-bottom: 10px;
+    padding-right: 44px;
     flex-wrap: wrap;
 }
 
