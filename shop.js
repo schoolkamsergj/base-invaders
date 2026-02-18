@@ -151,6 +151,7 @@ class ShopSystem {
     createShopItem(item) {
         const div = document.createElement('div');
         div.className = `shop-item ${item.owned ? 'owned' : ''}`;
+        div.setAttribute('onclick', 'event.stopPropagation()');
         
         // Determine price text based on currency type
         let priceText = '';
