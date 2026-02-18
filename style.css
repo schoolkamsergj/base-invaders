@@ -49,6 +49,7 @@ canvas {
 
 /* Shop Styles */
 .shop-container {
+    position: relative;
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
     border: 2px solid #0052FF;
     border-radius: 15px;
@@ -61,12 +62,42 @@ canvas {
     box-shadow: 0 0 30px rgba(0, 82, 255, 0.5);
 }
 
+/* Shop close button: top-right corner, square like Settings window */
+#shop-overlay .shop-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    padding: 0;
+    border-radius: 4px;
+    background: #cc0000;
+    border: 2px solid #990000;
+    color: #fff;
+    font-size: 16px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+    z-index: 10;
+}
+#shop-overlay .shop-close-btn:hover {
+    background: #ee0000;
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(204, 0, 0, 0.5);
+}
+
 .shop-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
     padding-bottom: 15px;
+    padding-right: 44px;
     border-bottom: 2px solid #0052FF;
     flex-wrap: wrap;
     gap: 10px;
