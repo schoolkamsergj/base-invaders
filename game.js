@@ -844,7 +844,7 @@ class MenuScene extends Phaser.Scene {
         const depthSet = 10000;
         const g = typeof getText === 'function' ? getText : (k) => k;
         const panelW = Math.min(320, width * 0.85);
-        const panelH = Math.min(380, height * 0.85);
+        const panelH = Math.min(320, height * 0.85);
         const panelX = width / 2 - panelW / 2;
         const panelY = height / 2 - panelH / 2;
         this.settingsOverlay = this.add.rectangle(0, 0, width * 2, height * 2, 0x000000, 0.9);
@@ -857,9 +857,9 @@ class MenuScene extends Phaser.Scene {
         this.settingsPanelBorder.lineStyle(3, 0x0052FF, 1);
         this.settingsPanelBorder.strokeRoundedRect(panelX, panelY, panelW, panelH, 10);
         this.settingsPanelBorder.setDepth(depthSet + 1);
-        const closeBtnSize = 28;
-        const closeBtnCenterX = panelX + panelW - 14 - closeBtnSize / 2;
-        const closeBtnCenterY = panelY + 14 + closeBtnSize / 2;
+        const closeBtnSize = 20;
+        const closeBtnCenterX = panelX + panelW - 10 - closeBtnSize / 2;
+        const closeBtnCenterY = panelY + 10 + closeBtnSize / 2;
         this.settingsCloseBtnRect = this.add.rectangle(closeBtnCenterX, closeBtnCenterY, closeBtnSize, closeBtnSize, 0xcc0000, 1);
         this.settingsCloseBtnRect.setDepth(depthSet + 2);
         this.settingsCloseBtnRect.setInteractive({ useHandCursor: true });
@@ -869,9 +869,9 @@ class MenuScene extends Phaser.Scene {
         });
         this.settingsCloseBtnBorder = this.add.graphics();
         this.settingsCloseBtnBorder.lineStyle(2, 0x990000, 1);
-        this.settingsCloseBtnBorder.strokeRoundedRect(closeBtnCenterX - closeBtnSize / 2, closeBtnCenterY - closeBtnSize / 2, closeBtnSize, closeBtnSize, 4);
+        this.settingsCloseBtnBorder.strokeRoundedRect(closeBtnCenterX - closeBtnSize / 2, closeBtnCenterY - closeBtnSize / 2, closeBtnSize, closeBtnSize, 3);
         this.settingsCloseBtnBorder.setDepth(depthSet + 2);
-        this.settingsCloseBtnXText = this.add.text(closeBtnCenterX, closeBtnCenterY, '✕', { fontSize: '18px', fontFamily: 'Arial', color: '#ffffff', resolution: 2 });
+        this.settingsCloseBtnXText = this.add.text(closeBtnCenterX, closeBtnCenterY, '✕', { fontSize: '14px', fontFamily: 'Arial', color: '#ffffff', resolution: 2 });
         this.settingsCloseBtnXText.setOrigin(0.5);
         this.settingsCloseBtnXText.setDepth(depthSet + 3);
         const textOffset = 24;
@@ -908,8 +908,8 @@ class MenuScene extends Phaser.Scene {
         this.settingsBtnShop.setOrigin(0, 0.5);
         this.settingsBtnShop.setDepth(depthSet + 2);
         this.settingsBtnShop.setInteractive({ useHandCursor: true });
-        this.settingsBtnShop.on('pointerover', () => { this.settingsBtnShop.setScale(1.05); this.settingsBtnShopBg.clear(); this.settingsBtnShopBg.fillStyle(0x0077ff, 0.9); this.settingsBtnShopBg.fillRoundedRect(btnBgX, rowY - btnH / 2, btnW, btnH, btnRadius); this.settingsBtnShopBg.lineStyle(2, 0x00ffff, 1); this.settingsBtnShopBg.strokeRoundedRect(btnBgX, rowY - btnH / 2, btnW, btnH, btnRadius); });
-        this.settingsBtnShop.on('pointerout', () => { this.settingsBtnShop.setScale(1); drawSettingsBtnBg(this.settingsBtnShopBg, btnBgX, rowY - btnH / 2, btnW, btnH); });
+        this.settingsBtnShop.on('pointerover', () => { this.settingsBtnShop.setScale(1.05); });
+        this.settingsBtnShop.on('pointerout', () => { this.settingsBtnShop.setScale(1); });
         this.settingsBtnShop.on('pointerdown', () => {
             if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
             this.closeSettingsOverlay();
@@ -926,8 +926,8 @@ class MenuScene extends Phaser.Scene {
         this.settingsVibText.setOrigin(0, 0.5);
         this.settingsVibText.setDepth(depthSet + 2);
         this.settingsVibText.setInteractive({ useHandCursor: true });
-        this.settingsVibText.on('pointerover', () => { this.settingsVibText.setScale(1.05); this.settingsVibBg.clear(); this.settingsVibBg.fillStyle(0x0077ff, 0.9); this.settingsVibBg.fillRoundedRect(btnBgX, rowY - btnH / 2, btnW, btnH, btnRadius); this.settingsVibBg.lineStyle(2, 0x00ffff, 1); this.settingsVibBg.strokeRoundedRect(btnBgX, rowY - btnH / 2, btnW, btnH, btnRadius); });
-        this.settingsVibText.on('pointerout', () => { this.settingsVibText.setScale(1); drawSettingsBtnBg(this.settingsVibBg, btnBgX, rowY - btnH / 2, btnW, btnH); });
+        this.settingsVibText.on('pointerover', () => { this.settingsVibText.setScale(1.05); });
+        this.settingsVibText.on('pointerout', () => { this.settingsVibText.setScale(1); });
         this.settingsVibText.on('pointerdown', () => {
             if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
             if (window.vibrationManager) {
@@ -946,8 +946,8 @@ class MenuScene extends Phaser.Scene {
         this.settingsMusicText.setOrigin(0, 0.5);
         this.settingsMusicText.setDepth(depthSet + 2);
         this.settingsMusicText.setInteractive({ useHandCursor: true });
-        this.settingsMusicText.on('pointerover', () => { this.settingsMusicText.setScale(1.05); this.settingsMusicBg.clear(); this.settingsMusicBg.fillStyle(0x0077ff, 0.9); this.settingsMusicBg.fillRoundedRect(btnBgX, rowY - btnH / 2, btnW, btnH, btnRadius); this.settingsMusicBg.lineStyle(2, 0x00ffff, 1); this.settingsMusicBg.strokeRoundedRect(btnBgX, rowY - btnH / 2, btnW, btnH, btnRadius); });
-        this.settingsMusicText.on('pointerout', () => { this.settingsMusicText.setScale(1); drawSettingsBtnBg(this.settingsMusicBg, btnBgX, rowY - btnH / 2, btnW, btnH); });
+        this.settingsMusicText.on('pointerover', () => { this.settingsMusicText.setScale(1.05); });
+        this.settingsMusicText.on('pointerout', () => { this.settingsMusicText.setScale(1); });
         this.settingsMusicText.on('pointerdown', () => {
             if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
             const newMuted = localStorage.getItem('musicMuted') !== 'true';
@@ -960,27 +960,13 @@ class MenuScene extends Phaser.Scene {
                 if (gs.bgMusic) { if (newMuted) gs.bgMusic.stop(); else gs.bgMusic.play(); }
             }
         });
-        rowY += rowH;
-        this.settingsBtnCloseBg = this.add.graphics();
-        this.settingsBtnCloseBg.setDepth(depthSet + 1);
-        drawSettingsBtnBg(this.settingsBtnCloseBg, btnBgX, rowY - btnH / 2, btnW, btnH);
-        this.settingsBtnClose = this.add.text(textX, rowY, g('settings.close'), btnStyle);
-        this.settingsBtnClose.setOrigin(0, 0.5);
-        this.settingsBtnClose.setDepth(depthSet + 2);
-        this.settingsBtnClose.setInteractive({ useHandCursor: true });
-        this.settingsBtnClose.on('pointerover', () => { this.settingsBtnClose.setScale(1.05); this.settingsBtnCloseBg.clear(); this.settingsBtnCloseBg.fillStyle(0x0077ff, 0.9); this.settingsBtnCloseBg.fillRoundedRect(btnBgX, rowY - btnH / 2, btnW, btnH, btnRadius); this.settingsBtnCloseBg.lineStyle(2, 0x00ffff, 1); this.settingsBtnCloseBg.strokeRoundedRect(btnBgX, rowY - btnH / 2, btnW, btnH, btnRadius); });
-        this.settingsBtnClose.on('pointerout', () => { this.settingsBtnClose.setScale(1); drawSettingsBtnBg(this.settingsBtnCloseBg, btnBgX, rowY - btnH / 2, btnW, btnH); });
-        this.settingsBtnClose.on('pointerdown', () => {
-            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
-            this.closeSettingsOverlay();
-        });
         console.log('UI FIXED: settings/shop no click through');
     }
 
     closeSettingsOverlay() {
-        const el = [this.settingsOverlay, this.settingsPanel, this.settingsPanelBorder, this.settingsCloseBtnRect, this.settingsCloseBtnBorder, this.settingsCloseBtnXText, this.settingsTitle, this.settingsBtnShopBg, this.settingsBtnShop, this.settingsVibBg, this.settingsVibText, this.settingsMusicBg, this.settingsMusicText, this.settingsBtnCloseBg, this.settingsBtnClose];
+        const el = [this.settingsOverlay, this.settingsPanel, this.settingsPanelBorder, this.settingsCloseBtnRect, this.settingsCloseBtnBorder, this.settingsCloseBtnXText, this.settingsTitle, this.settingsBtnShopBg, this.settingsBtnShop, this.settingsVibBg, this.settingsVibText, this.settingsMusicBg, this.settingsMusicText];
         el.forEach(o => { if (o && o.destroy) o.destroy(); });
-        this.settingsOverlay = this.settingsPanel = this.settingsPanelBorder = this.settingsCloseBtnRect = this.settingsCloseBtnBorder = this.settingsCloseBtnXText = this.settingsTitle = this.settingsBtnShopBg = this.settingsBtnShop = this.settingsVibBg = this.settingsVibText = this.settingsMusicBg = this.settingsMusicText = this.settingsBtnCloseBg = this.settingsBtnClose = null;
+        this.settingsOverlay = this.settingsPanel = this.settingsPanelBorder = this.settingsCloseBtnRect = this.settingsCloseBtnBorder = this.settingsCloseBtnXText = this.settingsTitle = this.settingsBtnShopBg = this.settingsBtnShop = this.settingsVibBg = this.settingsVibText = this.settingsMusicBg = this.settingsMusicText = null;
     }
 }
 
