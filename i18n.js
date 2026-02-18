@@ -227,7 +227,7 @@
         },
         "instructions": {
             "title": "📖 HOW TO PLAY",
-            "body": "🎮 CONTROLS\n← → or A/D - Move left/right\n↑ ↓ or W/S - Move up/down\nSPACE - Auto-shoot\nESC - Pause game\n\n🎯 OBJECTIVE\n-  Destroy enemies and bases\n-  Collect diamonds 💎\n-  Pick up power-ups ⚡\n-  Upgrade your ship in shop\n-  Complete missions and defeat bosses\n\n👾 ENEMIES\n🔴 Red spheres - Weak (fast)\n🔷 Hexagons - Medium (shows HP)\n🟦 Blue cubes - BASES (destroy these!)\n\n🛒 SHOP\n-  Buy new spaceships\n-  Upgrade weapons\n-  Improve stats\n-  Increase fire rate & damage\n\nGood luck, Commander! 🚀"
+            "body": "🎮 CONTROLS\n\n• Keyboard: Arrow keys or W/A/S/D — move ship left/right, up/down.\n• On mobile: Hold and drag your finger — ship follows.\n• Shooting is automatic (rate depends on shop upgrades).\n• ESC — Pause.\n\n🎯 OBJECTIVE\n\n• Destroy enemies and bases (blue cubes).\n• Collect coins (gold), lightning ⚡ and diamonds 💎 — they are used in the shop.\n• Pick up power-ups during battle (shield, bomb, 2× score, etc.).\n• Complete waves of enemies, defeat the boss and complete missions.\n• Upgrade your ship, weapons and abilities in the shop (Main menu → Settings → Shop).\n\n👾 ENEMIES\n\n• Enemy spaceships (red) — weak and strong variants; drop coins, sometimes diamond 💎.\n• Hexagons (🔷) — medium strength, show HP above; drop coins.\n• Blue cubes 🟦 — these are bases; destroy them. They drop lightning ⚡ (currency).\n• Boss 👹 — appears after all waves of a mission; gives lots of coins and diamonds.\n\n⚡ POWER-UPS (pick up on the field)\n\n• 🛡️ Shield — adds protection from hits.\n• 💣 Bomb — one-time clear of all enemies on screen (except boss).\n• ⭐ 2× Score — double score for 60 seconds.\n• ⚡ Lightning — +1 to lightning currency (for shop purchases).\n\n🛒 SHOP\n\nOpened from main menu: Settings → Shop.\n\n• Spaceships — different stats (HP, speed).\n• Weapons — fire rate, damage, multi-shot, laser.\n• Power-ups — shield, smart bomb, coin magnet, 2× score, extra life, etc.\n• Upgrades — more HP, faster movement, regeneration.\n\nGood luck, Commander! 🚀"
         },
         "ui": {
             "stage": "STAGE",
@@ -362,7 +362,7 @@
         },
         instructions: {
             title: "📖 कैसे खेलें",
-            body: "🎮 नियंत्रण\n← → या A/D - बाएं/दाएं चलें\n↑ ↓ या W/S - ऊपर/नीचे चलें\nSPACE - ऑटो शूट\nESC - गेम रोकें\n\n🎯 उद्देश्य\n-  दुश्मनों और बेस को नष्ट करें\n-  हीरे 💎 इकट्ठा करें\n-  पावर-अप ⚡ उठाएं\n-  दुकान में जहाज अपग्रेड करें\n-  मिशन पूरे करें और बॉस को हराएं\n\n👾 दुश्मन\n🔴 लाल गोले - कमजोर (तेज़)\n🔷 हेक्सागोन - मध्यम (HP दिखाता है)\n🟦 नीले क्यूब - बेस (इन्हें नष्ट करें!)\n\n🛒 दुकान\n-  नए स्पेसशिप खरीदें\n-  हथियार अपग्रेड करें\n-  स्टैट्स सुधारें\n-  फायर रेट और डैमेज बढ़ाएं\n\nशुभकामनाएं, कमांडर! 🚀"
+            body: "🎮 नियंत्रण\n\n• कीबोर्ड: ऐरो कीज़ या W/A/S/D — जहाज़ बाएं/दाएं, ऊपर/नीचे चलाएं।\n• मोबाइल: उंगली दबाकर खींचें — जहाज़ उंगली के साथ चलता है।\n• फायरिंग ऑटोमैटिक (दर दुकान अपग्रेड पर निर्भर)।\n• ESC — पॉज़।\n\n🎯 उद्देश्य\n\n• दुश्मनों और बेस (नीले क्यूब) को नष्ट करें।\n• सिक्के (गोल्ड), लाइटनिंग ⚡ और हीरे 💎 इकट्ठा करें — दुकान में काम आते हैं।\n• लड़ाई में पावर-अप उठाएं (शील्ड, बम, 2× स्कोर आदि)।\n• दुश्मनों की लहरें पूरी करें, बॉस को हराएं और मिशन पूरे करें।\n• दुकान में जहाज़, हथियार और अबिलिटी अपग्रेड करें (मुख्य मेनू → सेटिंग्स → दुकान)।\n\n👾 दुश्मन\n\n• दुश्मन जहाज (लाल) — कमजोर/मजबूत; सिक्के और कभी हीरा 💎 ड्रॉप।\n• हेक्सागोन (🔷) — मध्यम, ऊपर HP दिखता है; सिक्के ड्रॉप।\n• नीले क्यूब 🟦 — बेस; इन्हें नष्ट करें। लाइटनिंग ⚡ ड्रॉप (करेंसी)।\n• बॉस 👹 — मिशन की सारी लहरों के बाद; ज़्यादा सिक्के और हीरे।\n\n⚡ पावर-अप (मैदान पर उठाएं)\n\n• 🛡️ शील्ड — हिट से बचाव।\n• 💣 बम — एक बार स्क्रीन के सारे दुश्मन साफ (बॉस को छोड़)।\n• ⭐ 2× स्कोर — 60 सेकंड के लिए डबल स्कोर।\n• ⚡ लाइटनिंग — करेंसी +1 (दुकान खरीदारी)।\n\n🛒 दुकान\n\nमुख्य मेनू से: सेटिंग्स → दुकान।\n\n• स्पेसशिप — अलग स्टैट्स (HP, स्पीड)।\n• हथियार — फायर रेट, डैमेज, मल्टी-शॉट, लेजर।\n• पावर-अप — शील्ड, स्मार्ट बम, कॉइन मैग्नेट, 2× स्कोर, एक्स्ट्रा लाइफ आदि।\n• अपग्रेड — ज़्यादा HP, तेज़ मूवमेंट, रिजन।\n\nशुभकामनाएं, कमांडर! 🚀"
         },
         ui: {
             stage: "चरण",
@@ -494,8 +494,8 @@
             close: "Закрыть"
         },
         instructions: {
-            title: "КАК ИГРАТЬ",
-            body: "УПРАВЛЕНИЕ:\n← или A/D - Влево/вправо\n↑ или W/S - Вверх/вниз\nАвто-стрельба\n⏸ - Пауза\n\nЦЕЛЬ:\n- Уничтожай врагов и базы\n- Собирай алмазы 💎\n- Забирай усиления\n- Улучшай корабль в магазине\n- Побеждай боссов\n\nУдачи, Командир! 🚀"
+            title: "📖 КАК ИГРАТЬ",
+            body: "🎮 УПРАВЛЕНИЕ\n\n• Клавиатура: стрелки или W/A/S/D — движение корабля влево/вправо, вверх/вниз.\n• На телефоне: удерживай палец и веди по экрану — корабль следует за пальцем.\n• Стрельба автоматическая (скорость зависит от улучшений в магазине).\n• ESC — пауза.\n\n🎯 ЦЕЛЬ ИГРЫ\n\n• Уничтожай врагов и базы (синие кубы).\n• Собирай монеты (золото), молнии ⚡ и алмазы 💎 — они нужны для магазина.\n• Подбирай усиления в бою (щит, бомба, 2× очки и т.д.).\n• Проходи волны врагов, побеждай босса и выполняй миссии.\n• Улучшай корабль, оружие и способности в магазине (главное меню → Настройки → Магазин).\n\n👾 ВРАГИ\n\n• Корабли врагов (красные) — слабые и сильные; дропают монеты, иногда алмаз 💎.\n• Гексагоны (🔷) — средняя прочность, показывают HP; дропают монеты.\n• Синие кубы 🟦 — это базы; уничтожай их. Дропают молнии ⚡ (валюта).\n• Босс 👹 — появляется после всех волн миссии; даёт много монет и алмазов.\n\n⚡ УСИЛЕНИЯ (подбирай на поле)\n\n• 🛡️ Щит — защита от ударов.\n• 💣 Бомба — один раз уничтожает всех врагов на экране (кроме босса).\n• ⭐ 2× очки — удвоение очков на 60 секунд.\n• ⚡ Молния — +1 к валюте «молнии» (для покупок в магазине).\n\n🛒 МАГАЗИН\n\nОткрывается из главного меню: Настройки → Магазин.\n\n• Корабли — разные статы (HP, скорость).\n• Оружие — скорострельность, урон, мульти-выстрел, лазер.\n• Усиления — щит, умная бомба, магнит монет, 2× очки, доп. жизнь и т.д.\n• Улучшения — больше HP, быстрее движение, регенерация.\n\nУдачи, Командир! 🚀"
         },
         ui: {
             stage: "ЭТАП",
@@ -628,7 +628,7 @@
         },
         instructions: {
             title: "📖 ЯК ГРАТИ",
-            body: "🎮 КЕРУВАННЯ:\n← або A/D - Вліво/вправо\n↑ або W/S - Вгору/вниз\nSPACE - Авто-стрільба\nESC - Пауза\n\n🎯 МЕТА:\n- Знищуй ворогів та бази\n- Збирай діаманти 💎\n- Підбирай посилення ⚡\n- Покращуй корабель у магазині\n- Перемагай босів\n\n👾 ВОРОГИ\n🔴 Червоні сфери - Слабкі (швидкі)\n🔷 Гексагони - Середні (показує HP)\n🟦 Сині куби - БАЗИ (знищуй їх!)\n\n🛒 МАГАЗИН\n- Купуй кораблі, зброю, покращення\n\nУдачі, Командире! 🚀"
+            body: "🎮 КЕРУВАННЯ\n\n• Клавіатура: стрілки або W/A/S/D — рух корабля вліво/вправо, вгору/вниз.\n• На смартфоні: утримуй палець і водь по екрану — корабель рухається за пальцем.\n• Стрільба — автоматична (частота залежить від покращень у магазині).\n• ESC — пауза.\n\n🎯 МЕТА ГРИ\n\n• Знищуй ворогів і бази (сині куби).\n• Збирай монети (золото), блискавки ⚡ та діаманти 💎 — вони потрібні для магазину.\n• Підбирай посилення під час бою (щит, бомба, 2× очки тощо).\n• Проходь хвилі ворогів, перемагай боса й виконуй місії.\n• Покращуй корабель, зброю та здібності в магазині (головне меню → Налаштування → Магазин).\n\n👾 ВОРОГИ\n\n• Кораблі ворогів (червоні) — слабкі та сильні варіанти; дропають монети, іноді діамант 💎.\n• Гексагони (🔷) — середня міцність, над ними показується HP; дропають монети.\n• Сині куби 🟦 — це бази; їх треба знищувати. Дропають блискавки ⚡ (валюта).\n• Бос 👹 — з'являється після усіх хвиль місії; дає багато монет і діамантів.\n\n⚡ ПОСИЛЕННЯ (підбери на полі)\n\n• 🛡️ Щит — додає захист від ударів.\n• 💣 Бомба — одноразово знищує всіх ворогів на екрані (крім боса).\n• ⭐ 2× очки — подвоєння очок на 60 секунд.\n• ⚡ Блискавка — +1 до валюти «блискавки» (для покупок у магазині).\n\n🛒 МАГАЗИН\n\nВідкривається з головного меню: Налаштування → Магазин.\n\n• Кораблі — різні стати (HP, швидкість).\n• Зброя — швидкість стрільби, урон, мульти-постріл, лазер.\n• Посилення — щит, розумна бомба, магніт монет, 2× очки, додаткове життя тощо.\n• Покращення — більше HP, швидший рух, регенерація.\n\nУдачі, Командире! 🚀"
         },
         ui: {
             stage: "ЕТАП",
@@ -762,8 +762,8 @@
             close: "Isara"
         },
         instructions: {
-            title: "PAANO LARUIN",
-            body: "CONTROLS:\n← o A/D - Kaliwa/kanan\n↑ o W/S - Taas/baba\nAuto-shoot\n⏸ - Pause\n\nLAYUNIN:\n- Sirain ang mga kalaban at base\n- Kolektahin ang mga brilyante 💎\n- Kunin ang power-ups\n- I-upgrade ang spaceship sa tindahan\n- Talunin ang mga boss\n\nGood luck, Commander! 🚀"
+            title: "📖 PAANO LARUIN",
+            body: "🎮 KONTROL\n\n• Keyboard: Arrow keys o W/A/S/D — galaw ng sasakyan kaliwa/kanan, taas/baba.\n• Sa mobile: Hawakan at i-drag ang daliri — sumusunod ang sasakyan.\n• Awtomatiko ang putok (depende sa upgrade sa tindahan).\n• ESC — Pause.\n\n🎯 LAYUNIN\n\n• Sirain ang mga kalaban at base (asul na cubes).\n• Kolektahin ang mga barya (gold), kidlat ⚡ at brilyante 💎 — para sa tindahan.\n• Kunin ang power-ups sa laban (shield, bomb, 2× score, atbp.).\n• Tapusin ang mga wave ng kalaban, talunin ang boss at mga misyon.\n• I-upgrade ang sasakyan, armas at kakayahan sa tindahan (Main menu → Settings → Shop).\n\n👾 KALABAN\n\n• Mga sasakyang kalaban (pula) — mahina at malakas; nag-drop ng barya, minsan brilyante 💎.\n• Hexagons (🔷) — katamtaman, may HP sa itaas; nag-drop ng barya.\n• Asul na cubes 🟦 — mga base; sirain. Nag-drop ng kidlat ⚡ (currency).\n• Boss 👹 — lumalabas pagkatapos ng lahat ng wave; maraming barya at brilyante.\n\n⚡ POWER-UPS (kunin sa field)\n\n• 🛡️ Shield — proteksyon sa tama.\n• 💣 Bomb — isang beses na clear ng lahat ng kalaban (maliban sa boss).\n• ⭐ 2× Score — dobleng score sa 60 segundo.\n• ⚡ Lightning — +1 sa lightning currency (para sa tindahan).\n\n🛒 TINDAHAN\n\nBuksan mula sa main menu: Settings → Shop.\n\n• Spaceships — iba't ibang stats (HP, bilis).\n• Weapons — fire rate, damage, multi-shot, laser.\n• Power-ups — shield, smart bomb, coin magnet, 2× score, extra life, atbp.\n• Upgrades — mas maraming HP, mabilis na galaw, regeneration.\n\nGood luck, Commander! 🚀"
         },
         ui: {
             stage: "YUGTO",
@@ -896,8 +896,8 @@
             close: "Tutup"
         },
         instructions: {
-            title: "CARA BERMAIN",
-            body: "KONTROL:\n← atau A/D - Kiri/kanan\n↑ atau W/S - Atas/bawah\nTembak otomatis\n⏸ - Jeda\n\nTUJUAN:\n- Hancurkan musuh dan basis\n- Kumpulkan berlian 💎\n- Ambil power-up\n- Tingkatkan pesawat di toko\n- Kalahkan boss\n\nSemoga beruntung, Komandan! 🚀"
+            title: "📖 CARA BERMAIN",
+            body: "🎮 KONTROL\n\n• Keyboard: Tombol panah atau W/A/S/D — gerakkan kapal kiri/kanan, atas/bawah.\n• Di ponsel: Tahan dan geser jari — kapal mengikuti.\n• Tembakan otomatis (kecepatan dari upgrade toko).\n• ESC — Jeda.\n\n🎯 TUJUAN\n\n• Hancurkan musuh dan basis (kubus biru).\n• Kumpulkan koin (emas), petir ⚡ dan berlian 💎 — untuk toko.\n• Ambil power-up saat bertempur (perisai, bom, 2× skor, dll.).\n• Selesaikan gelombang musuh, kalahkan bos dan misi.\n• Tingkatkan kapal, senjata dan kemampuan di toko (Menu utama → Pengaturan → Toko).\n\n👾 MUSUH\n\n• Kapal musuh (merah) — varian lemah/kuat; drop koin, kadang berlian 💎.\n• Heksagon (🔷) — kekuatan sedang, tampilkan HP; drop koin.\n• Kubus biru 🟦 — basis; hancurkan. Drop petir ⚡ (mata uang).\n• Bos 👹 — muncul setelah semua gelombang misi; banyak koin dan berlian.\n\n⚡ POWER-UP (ambil di lapangan)\n\n• 🛡️ Perisai — proteksi dari pukulan.\n• 💣 Bom — sekali bersihkan semua musuh (kecuali bos).\n• ⭐ 2× Skor — skor ganda 60 detik.\n• ⚡ Petir — +1 mata uang petir (untuk belanja).\n\n🛒 TOKO\n\nDibuka dari menu utama: Pengaturan → Toko.\n\n• Kapal — stat berbeda (HP, kecepatan).\n• Senjata — fire rate, damage, multi-shot, laser.\n• Power-up — perisai, smart bomb, coin magnet, 2× skor, extra life, dll.\n• Upgrade — lebih banyak HP, gerakan lebih cepat, regenerasi.\n\nSemoga beruntung, Komandan! 🚀"
         },
         ui: {
             stage: "TAHAP",
@@ -1030,8 +1030,8 @@
             close: "Đóng"
         },
         instructions: {
-            title: "CÁCH CHƠI",
-            body: "ĐIỀU KHIỂN:\n← hoặc A/D - Trái/phải\n↑ hoặc W/S - Lên/xuống\nBắn tự động\n⏸ - Tạm dừng\n\nMỤC TIÊU:\n- Tiêu diệt kẻ địch và căn cứ\n- Thu thập kim cương 💎\n- Nhặt power-up\n- Nâng cấp tàu trong cửa hàng\n- Đánh bại các boss\n\nChúc may mắn, Chỉ huy! 🚀"
+            title: "📖 CÁCH CHƠI",
+            body: "🎮 ĐIỀU KHIỂN\n\n• Bàn phím: Phím mũi tên hoặc W/A/S/D — di chuyển tàu trái/phải, lên/xuống.\n• Trên điện thoại: Giữ và kéo ngón tay — tàu đi theo.\n• Bắn tự động (tốc độ phụ thuộc nâng cấp cửa hàng).\n• ESC — Tạm dừng.\n\n🎯 MỤC TIÊU\n\n• Tiêu diệt kẻ địch và căn cứ (khối xanh).\n• Thu thập xu (vàng), sét ⚡ và kim cương 💎 — dùng trong cửa hàng.\n• Nhặt power-up khi chiến đấu (khiên, bom, 2× điểm, v.v.).\n• Hoàn thành các đợt địch, đánh bại boss và nhiệm vụ.\n• Nâng cấp tàu, vũ khí và kỹ năng trong cửa hàng (Menu chính → Cài đặt → Cửa hàng).\n\n👾 KẺ ĐỊCH\n\n• Tàu địch (đỏ) — loại yếu/mạnh; rơi xu, đôi khi kim cương 💎.\n• Lục giác (🔷) — sức mạnh trung bình, hiển thị HP; rơi xu.\n• Khối xanh 🟦 — căn cứ; phá hủy. Rơi sét ⚡ (tiền tệ).\n• Boss 👹 — xuất hiện sau tất cả đợt nhiệm vụ; nhiều xu và kim cương.\n\n⚡ POWER-UP (nhặt trên sân)\n\n• 🛡️ Khiên — bảo vệ khỏi đòn.\n• 💣 Bom — một lần xóa sạch địch trên màn hình (trừ boss).\n• ⭐ 2× Điểm — gấp đôi điểm trong 60 giây.\n• ⚡ Sét — +1 tiền tệ sét (mua đồ trong cửa hàng).\n\n🛒 CỬA HÀNG\n\nMở từ menu chính: Cài đặt → Cửa hàng.\n\n• Tàu — chỉ số khác nhau (HP, tốc độ).\n• Vũ khí — tốc độ bắn, sát thương, multi-shot, laser.\n• Power-up — khiên, smart bomb, nam châm xu, 2× điểm, mạng thêm, v.v.\n• Nâng cấp — thêm HP, di chuyển nhanh, hồi máu.\n\nChúc may mắn, Chỉ huy! 🚀"
         },
         ui: {
             stage: "GIAI ĐOẠN",
@@ -1164,8 +1164,8 @@
             close: "Fechar"
         },
         instructions: {
-            title: "COMO JOGAR",
-            body: "CONTROLES:\n← ou A/D - Esquerda/direita\n↑ ou W/S - Cima/baixo\nDisparo automático\n⏸ - Pausar\n\nOBJETIVO:\n- Destrua inimigos e bases\n- Colete diamantes 💎\n- Pegue power-ups\n- Melhore sua nave na loja\n- Derrote os chefes\n\nBoa sorte, Comandante! 🚀"
+            title: "📖 COMO JOGAR",
+            body: "🎮 CONTROLES\n\n• Teclado: Setas ou W/A/S/D — mover nave esquerda/direita, cima/baixo.\n• No celular: Segure e arraste o dedo — a nave segue.\n• Tiro automático (velocidade depende dos upgrades na loja).\n• ESC — Pausar.\n\n🎯 OBJETIVO\n\n• Destrua inimigos e bases (cubos azuis).\n• Colete moedas (ouro), raios ⚡ e diamantes 💎 — usados na loja.\n• Pegue power-ups durante a batalha (escudo, bomba, 2× pontuação, etc.).\n• Complete ondas de inimigos, derrote o chefe e complete missões.\n• Melhore sua nave, armas e habilidades na loja (Menu principal → Configurações → Loja).\n\n👾 INIMIGOS\n\n• Naves inimigas (vermelhas) — variantes fracas/fortes; dropam moedas, às vezes diamante 💎.\n• Hexágonos (🔷) — força média, mostram HP; dropam moedas.\n• Cubos azuis 🟦 — são as bases; destrua. Dropam raios ⚡ (moeda).\n• Chefe 👹 — aparece após todas as ondas da missão; muitas moedas e diamantes.\n\n⚡ POWER-UPS (pegue no campo)\n\n• 🛡️ Escudo — proteção contra hits.\n• 💣 Bomba — uma vez limpa todos os inimigos (exceto chefe).\n• ⭐ 2× Pontuação — pontuação dupla por 60 segundos.\n• ⚡ Raio — +1 na moeda raio (para compras na loja).\n\n🛒 LOJA\n\nAbre pelo menu principal: Configurações → Loja.\n\n• Naves — estatísticas diferentes (HP, velocidade).\n• Armas — taxa de tiro, dano, multi-shot, laser.\n• Power-ups — escudo, smart bomb, imã de moedas, 2× pontuação, vida extra, etc.\n• Melhorias — mais HP, movimento mais rápido, regeneração.\n\nBoa sorte, Comandante! 🚀"
         },
         ui: {
             stage: "ESTÁGIO",
@@ -1298,8 +1298,8 @@
             close: "Fermer"
         },
         instructions: {
-            title: "COMMENT JOUER",
-            body: "CONTRÔLES :\n← ou A/D - Gauche/droite\n↑ ou W/S - Haut/bas\nTir automatique\n⏸ - Pause\n\nOBJECTIF :\n- Détruisez les ennemis et les bases\n- Collectez des diamants 💎\n- Ramassez les power-ups\n- Améliorez votre vaisseau dans la boutique\n- Battez les boss\n\nBonne chance, Commandant ! 🚀"
+            title: "📖 COMMENT JOUER",
+            body: "🎮 CONTRÔLES\n\n• Clavier : Flèches ou W/A/S/D — déplacer le vaisseau gauche/droite, haut/bas.\n• Sur mobile : Maintenir et glisser le doigt — le vaisseau suit.\n• Tir automatique (vitesse selon les améliorations en boutique).\n• ESC — Pause.\n\n🎯 OBJECTIF\n\n• Détruisez les ennemis et les bases (cubes bleus).\n• Collectez les pièces (or), éclairs ⚡ et diamants 💎 — pour la boutique.\n• Ramassez les power-ups en combat (bouclier, bombe, 2× score, etc.).\n• Complétez les vagues d'ennemis, battez le boss et les missions.\n• Améliorez votre vaisseau, armes et capacités (Menu principal → Paramètres → Boutique).\n\n👾 ENNEMIS\n\n• Vaisseaux ennemis (rouges) — variantes faibles/fortes ; dropent des pièces, parfois diamant 💎.\n• Hexagones (🔷) — force moyenne, affichent les PV ; dropent des pièces.\n• Cubes bleus 🟦 — ce sont les bases ; détruisez-les. Dropent des éclairs ⚡ (monnaie).\n• Boss 👹 — apparaît après toutes les vagues d'une mission ; beaucoup de pièces et diamants.\n\n⚡ POWER-UPS (à ramasser)\n\n• 🛡️ Bouclier — protection contre les coups.\n• 💣 Bombe — une fois efface tous les ennemis à l'écran (sauf le boss).\n• ⭐ 2× Score — score doublé pendant 60 secondes.\n• ⚡ Éclair — +1 à la monnaie éclair (pour la boutique).\n\n🛒 BOUTIQUE\n\nOuverte depuis le menu principal : Paramètres → Boutique.\n\n• Vaisseaux — différentes stats (PV, vitesse).\n• Armes — cadence, dégâts, multi-tir, laser.\n• Power-ups — bouclier, smart bomb, aimant à pièces, 2× score, vie extra, etc.\n• Améliorations — plus de PV, déplacement plus rapide, régénération.\n\nBonne chance, Commandant ! 🚀"
         },
         ui: {
             stage: "ÉTAPE",
@@ -1432,8 +1432,8 @@
             close: "Schließen"
         },
         instructions: {
-            title: "SPIELANLEITUNG",
-            body: "STEUERUNG:\n← oder A/D - Links/rechts\n↑ oder W/S - Hoch/runter\nAuto-Schuss\n⏸ - Pause\n\nZIEL:\n- Zerstöre Feinde und Basen\n- Sammle Diamanten 💎\n- Nimm Power-ups auf\n- Verbessere dein Schiff im Shop\n- Besiege die Bosse\n\nViel Glück, Commander! 🚀"
+            title: "📖 SPIELANLEITUNG",
+            body: "🎮 STEUERUNG\n\n• Tastatur: Pfeiltasten oder W/A/S/D — Schiff links/rechts, hoch/runter bewegen.\n• Auf dem Handy: Finger halten und ziehen — das Schiff folgt.\n• Schuss ist automatisch (Geschwindigkeit hängt von Shop-Upgrades ab).\n• ESC — Pause.\n\n🎯 ZIEL\n\n• Zerstöre Feinde und Basen (blaue Würfel).\n• Sammle Münzen (Gold), Blitze ⚡ und Diamanten 💎 — für den Shop.\n• Sammle Power-ups im Kampf (Schild, Bombe, 2× Punkte usw.).\n• Schließe Wellen ab, besiege den Boss und Missionen.\n• Verbessere Schiff, Waffen und Fähigkeiten im Shop (Hauptmenü → Einstellungen → Shop).\n\n👾 FEINDE\n\n• Feindliche Schiffe (rot) — schwache/starke Varianten; droppen Münzen, manchmal Diamant 💎.\n• Hexagone (🔷) — mittlere Stärke, zeigen HP; droppen Münzen.\n• Blaue Würfel 🟦 — das sind Basen; zerstöre sie. Droppen Blitze ⚡ (Währung).\n• Boss 👹 — erscheint nach allen Wellen einer Mission; viele Münzen und Diamanten.\n\n⚡ POWER-UPS (auf dem Feld aufheben)\n\n• 🛡️ Schild — Schutz vor Treffern.\n• 💣 Bombe — einmal alle Feinde auf dem Bildschirm weg (außer Boss).\n• ⭐ 2× Punkte — doppelte Punkte für 60 Sekunden.\n• ⚡ Blitz — +1 Blitz-Währung (für Shop-Einkäufe).\n\n🛒 SHOP\n\nÖffnen vom Hauptmenü: Einstellungen → Shop.\n\n• Schiffe — verschiedene Werte (HP, Geschwindigkeit).\n• Waffen — Feuerrate, Schaden, Multi-Shot, Laser.\n• Power-ups — Schild, Smart Bomb, Münzmagnet, 2× Punkte, Extra-Leben usw.\n• Upgrades — mehr HP, schnellere Bewegung, Regeneration.\n\nViel Glück, Commander! 🚀"
         },
         ui: {
             stage: "STUFE",
@@ -1566,8 +1566,8 @@
             close: "关闭"
         },
         instructions: {
-            title: "如何游玩",
-            body: "控制：\n← 或 A/D - 左/右\n↑ 或 W/S - 上/下\n自动射击\n⏸ - 暂停\n\n目标：\n- 摧毁敌人和基地\n- 收集钻石 💎\n- 拾取能量提升\n- 在商店升级飞船\n- 击败首领\n\n祝你好运，指挥官！🚀"
+            title: "📖 如何游玩",
+            body: "🎮 控制\n\n• 键盘：方向键或 W/A/S/D — 飞船左右、上下移动。\n• 手机：按住并拖动手指 — 飞船跟随。\n• 射击自动（速度取决于商店升级）。\n• ESC — 暂停。\n\n🎯 目标\n\n• 摧毁敌人和基地（蓝色方块）。\n• 收集金币、闪电 ⚡ 和钻石 💎 — 用于商店。\n• 战斗中拾取强化（护盾、炸弹、2× 分数等）。\n• 完成敌波、击败首领并完成使命。\n• 在主菜单 → 设置 → 商店中升级飞船、武器与能力。\n\n👾 敌人\n\n• 敌舰（红色）— 弱/强变体；掉落金币，有时钻石 💎。\n• 六边形 (🔷) — 中等强度，显示血量；掉落金币。\n• 蓝色方块 🟦 — 基地；摧毁它们。掉落闪电 ⚡（货币）。\n• 首领 👹 — 使命全部敌波后出现；大量金币和钻石。\n\n⚡ 强化（场上拾取）\n\n• 🛡️ 护盾 — 抵挡伤害。\n• 💣 炸弹 — 一次清除屏幕上所有敌人（首领除外）。\n• ⭐ 2× 分数 — 60 秒内分数加倍。\n• ⚡ 闪电 — 闪电货币 +1（用于商店购买）。\n\n🛒 商店\n\n从主菜单打开：设置 → 商店。\n\n• 飞船 — 不同属性（血量、速度）。\n• 武器 — 射速、伤害、多连射、激光。\n• 强化 — 护盾、智能炸弹、吸币、2× 分数、额外生命等。\n• 升级 — 更多血量、更快移动、回复。\n\n祝你好运，指挥官！🚀"
         },
         ui: {
             stage: "关卡",
@@ -1700,8 +1700,8 @@
             close: "Закрыць"
         },
         instructions: {
-            title: "ЯК ГУЛЯЦЬ",
-            body: "КІРАВАННЕ:\n← або A/D - Налева/направа\n↑ або W/S - Уверх/уніз\nАўта-стральба\n⏸ - Паўза\n\nМЭТА:\n- Знішчайце ворагаў і базы\n- Збірайце дыяменты 💎\n- Падбірайце паляпшэнні\n- Паляпшайце карабель у краме\n- Перамагайце босаў\n\nПоспехаў, Камандзір! 🚀"
+            title: "📖 ЯК ГУЛЯЦЬ",
+            body: "🎮 КІРАВАННЕ\n\n• Клавіятура: стрэлкі або W/A/S/D — рух карабля ўлева/ўправа, ўверх/ўніз.\n• На смартфоне: трымай палец і вядзі па экране — карабель рухаецца за пальцам.\n• Стральба аўтаматычная (частата залежыць ад паляпшэнняў у краме).\n• ESC — пауза.\n\n🎯 МЭТА ГУЛЬНІ\n\n• Знішчай ворагаў і базы (сінія кубы).\n• Збірай манеты (золата), маланкі ⚡ і дыяменты 💎 — яны для крамы.\n• Падбірай паляпшэнні падчас бою (шчыт, бомба, 2× ачкі і г.д.).\n• Праходзь хвалі ворагаў, перамагай боса і выконвай місіі.\n• Паляпшай карабель, зброю і здольнасці ў краме (галоўнае меню → Налады → Крама).\n\n👾 ВОРАГІ\n\n• Караблі ворагаў (чырвоныя) — слабыя і моцныя; дропаюць манеты, часам дыямант 💎.\n• Гексагоны (🔷) — сярэдняя моц, паказваюць HP; дропаюць манеты.\n• Сінія кубы 🟦 — гэта базы; знішчай іх. Дропаюць маланкі ⚡ (валюта).\n• Бос 👹 — з'яўляецца пасля ўсіх хваль місіі; шмат манет і дыяментаў.\n\n⚡ ПАЛЯПШЭННІ (падбяры на полі)\n\n• 🛡️ Шчыт — абарона ад удараў.\n• 💣 Бомба — адзін раз знішчае ўсіх ворагаў на экране (акрамя боса).\n• ⭐ 2× ачкі — падвоеныя ачкі на 60 секунд.\n• ⚡ Маланка — +1 да валюты «маланкі» (для пакупак у краме).\n\n🛒 КРАМА\n\nАдкрываецца з галоўнага меню: Налады → Крама.\n\n• Караблі — розныя статы (HP, хуткасць).\n• Зброя — хуткастрэльнасць, пашкоджанні, мульти-стрэл, лазер.\n• Паляпшэнні — шчыт, разумная бомба, магнит манет, 2× ачкі, дадатковае жыццё і г.д.\n• Узровень — больш HP, хуткі рух, рэгенерацыя.\n\nПоспехаў, Камандзір! 🚀"
         },
         ui: {
             stage: "ЭТАП",

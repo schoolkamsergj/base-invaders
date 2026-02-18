@@ -625,32 +625,24 @@ class MenuScene extends Phaser.Scene {
         this.overlay.setDepth(1000);
         this.overlay.setInteractive(); // Block clicks behind it
         
-        // Instructions panel (white box)
+        // Instructions panel (shop-style dark gradient, like shop-container)
         const panelWidth = Math.min(500, width * 0.9);
         const panelHeight = Math.min(650, height * 0.9);
         
-        this.instructionsPanel = this.add.rectangle(
-            width / 2,
-            height / 2,
-            panelWidth,
-            panelHeight,
-            0xffffff
-        );
+        this.instructionsPanel = this.add.graphics();
+        this.instructionsPanel.fillGradientStyle(0x1a1a2e, 0x1a1a2e, 0x16213e, 0x16213e, 1);
+        this.instructionsPanel.fillRoundedRect(-panelWidth / 2, -panelHeight / 2, panelWidth, panelHeight, 15);
+        this.instructionsPanel.setPosition(width / 2, height / 2);
         this.instructionsPanel.setDepth(1001);
         
-        // Panel border
+        // Panel border (shop-style #0052FF)
         this.instructionsPanelBorder = this.add.graphics();
-        this.instructionsPanelBorder.lineStyle(3, 0x2196F3, 1);
-        this.instructionsPanelBorder.strokeRoundedRect(
-            width / 2 - panelWidth / 2,
-            height / 2 - panelHeight / 2,
-            panelWidth,
-            panelHeight,
-            10
-        );
+        this.instructionsPanelBorder.lineStyle(2, 0x0052FF, 1);
+        this.instructionsPanelBorder.strokeRoundedRect(-panelWidth / 2, -panelHeight / 2, panelWidth, panelHeight, 15);
+        this.instructionsPanelBorder.setPosition(width / 2, height / 2);
         this.instructionsPanelBorder.setDepth(1001);
         
-        // Title - i18n
+        // Title - i18n (shop-style cyan)
         this.instructionsTitle = this.add.text(
             width / 2,
             height / 2 - panelHeight / 2 + 30,
@@ -659,7 +651,7 @@ class MenuScene extends Phaser.Scene {
                 fontSize: '28px',
                 fontFamily: 'Arial, sans-serif',
                 fontWeight: 'bold',
-                color: '#2196F3',
+                color: '#00ffff',
                 align: 'center',
                 resolution: 2
             }
@@ -667,8 +659,8 @@ class MenuScene extends Phaser.Scene {
         this.instructionsTitle.setOrigin(0.5);
         this.instructionsTitle.setDepth(1002);
         
-        // Full instructions text - i18n
-        const fullInstructions = typeof getText === 'function' ? getText('instructions.body') : '🎮 CONTROLS\n← → or A/D - Move left/right\n↑ ↓ or W/S - Move up/down\nSPACE - Auto-shoot\nESC - Pause game\n\n🎯 OBJECTIVE\n-  Destroy enemies and bases\n-  Collect diamonds 💎\n-  Pick up power-ups ⚡\n-  Upgrade your ship in shop\n-  Complete missions and defeat bosses\n\n👾 ENEMIES\n🔴 Red spheres - Weak (fast)\n🔷 Hexagons - Medium (shows HP)\n🟦 Blue cubes - BASES (destroy these!)\n\n🛒 SHOP\n-  Buy new spaceships\n-  Upgrade weapons\n-  Improve stats\n-  Increase fire rate & damage\n\nGood luck, Commander! 🚀';
+        // Full instructions text - i18n (light text on dark background)
+        const fullInstructions = typeof getText === 'function' ? getText('instructions.body') : '🎮 CONTROLS\n\n• Keyboard: Arrow keys or W/A/S/D — move ship left/right, up/down.\n• On mobile: Hold and drag your finger — ship follows.\n• Shooting is automatic (rate depends on shop upgrades).\n• ESC — Pause.\n\n🎯 OBJECTIVE\n\n• Destroy enemies and bases (blue cubes).\n• Collect coins (gold), lightning ⚡ and diamonds 💎 — they are used in the shop.\n• Pick up power-ups during battle (shield, bomb, 2× score, etc.).\n• Complete waves of enemies, defeat the boss and complete missions.\n• Upgrade your ship, weapons and abilities in the shop (Main menu → Settings → Shop).\n\n👾 ENEMIES\n\n• Enemy spaceships (red) — weak and strong variants; drop coins, sometimes diamond 💎.\n• Hexagons (🔷) — medium strength, show HP above; drop coins.\n• Blue cubes 🟦 — these are bases; destroy them. They drop lightning ⚡ (currency).\n• Boss 👹 — appears after all waves of a mission; gives lots of coins and diamonds.\n\n⚡ POWER-UPS (pick up on the field)\n\n• 🛡️ Shield — adds protection from hits.\n• 💣 Bomb — one-time clear of all enemies on screen (except boss).\n• ⭐ 2× Score — double score for 60 seconds.\n• ⚡ Lightning — +1 to lightning currency (for shop purchases).\n\n🛒 SHOP\n\nOpened from main menu: Settings → Shop.\n\n• Spaceships — different stats (HP, speed).\n• Weapons — fire rate, damage, multi-shot, laser.\n• Power-ups — shield, smart bomb, coin magnet, 2× score, extra life, etc.\n• Upgrades — more HP, faster movement, regeneration.\n\nGood luck, Commander! 🚀';
         
         this.instructionsContent = this.add.text(
             width / 2,
@@ -677,7 +669,7 @@ class MenuScene extends Phaser.Scene {
             {
                 fontSize: '16px',
                 fontFamily: 'Arial, sans-serif',
-                color: '#333333',
+                color: '#e0e0e0',
                 align: 'left',
                 lineSpacing: 6,
                 resolution: 2,
