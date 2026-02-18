@@ -611,137 +611,28 @@ class MenuScene extends Phaser.Scene {
     }
 
     showInstructionsOverlay() {
-        const width = this.scale.width;
-        const height = this.scale.height;
-        
-        // Semi-transparent black overlay (background)
-        this.overlay = this.add.rectangle(
-            0, 0,
-            width * 2, height * 2,
-            0x000000,
-            0.85
-        );
-        this.overlay.setOrigin(0, 0);
-        this.overlay.setDepth(1000);
-        this.overlay.setInteractive(); // Block clicks behind it
-        
-        // Instructions panel (shop-style dark gradient, like shop-container)
-        const panelWidth = Math.min(500, width * 0.9);
-        const panelHeight = Math.min(650, height * 0.9);
-        
-        this.instructionsPanel = this.add.graphics();
-        this.instructionsPanel.fillGradientStyle(0x1a1a2e, 0x1a1a2e, 0x16213e, 0x16213e, 1);
-        this.instructionsPanel.fillRoundedRect(-panelWidth / 2, -panelHeight / 2, panelWidth, panelHeight, 15);
-        this.instructionsPanel.setPosition(width / 2, height / 2);
-        this.instructionsPanel.setDepth(1001);
-        
-        // Panel border (shop-style #0052FF)
-        this.instructionsPanelBorder = this.add.graphics();
-        this.instructionsPanelBorder.lineStyle(2, 0x0052FF, 1);
-        this.instructionsPanelBorder.strokeRoundedRect(-panelWidth / 2, -panelHeight / 2, panelWidth, panelHeight, 15);
-        this.instructionsPanelBorder.setPosition(width / 2, height / 2);
-        this.instructionsPanelBorder.setDepth(1001);
-        
-        // Title - i18n (shop-style cyan)
-        this.instructionsTitle = this.add.text(
-            width / 2,
-            height / 2 - panelHeight / 2 + 30,
-            typeof getText === 'function' ? getText('instructions.title') : '📖 HOW TO PLAY',
-            {
-                fontSize: '28px',
-                fontFamily: 'Arial, sans-serif',
-                fontWeight: 'bold',
-                color: '#00ffff',
-                align: 'center',
-                resolution: 2
-            }
-        );
-        this.instructionsTitle.setOrigin(0.5);
-        this.instructionsTitle.setDepth(1002);
-        
-        // Full instructions text - i18n (light text on dark background)
-        const fullInstructions = typeof getText === 'function' ? getText('instructions.body') : '🎮 CONTROLS\n\n• Keyboard: Arrow keys or W/A/S/D — move ship left/right, up/down.\n• On mobile: Hold and drag your finger — ship follows.\n• Shooting is automatic (rate depends on shop upgrades).\n• ESC — Pause.\n\n🎯 OBJECTIVE\n\n• Destroy enemies and bases (blue cubes).\n• Collect coins (gold), lightning ⚡ and diamonds 💎 — they are used in the shop.\n• Pick up power-ups during battle (shield, bomb, 2× score, etc.).\n• Complete waves of enemies, defeat the boss and complete missions.\n• Upgrade your ship, weapons and abilities in the shop (Main menu → Settings → Shop).\n\n👾 ENEMIES\n\n• Enemy spaceships (red) — weak and strong variants; drop coins, sometimes diamond 💎.\n• Hexagons (🔷) — medium strength, show HP above; drop coins.\n• Blue cubes 🟦 — these are bases; destroy them. They drop lightning ⚡ (currency).\n• Boss 👹 — appears after all waves of a mission; gives lots of coins and diamonds.\n\n⚡ POWER-UPS (pick up on the field)\n\n• 🛡️ Shield — adds protection from hits.\n• 💣 Bomb — one-time clear of all enemies on screen (except boss).\n• ⭐ 2× Score — double score for 60 seconds.\n• ⚡ Lightning — +1 to lightning currency (for shop purchases).\n\n🛒 SHOP\n\nOpened from main menu: Settings → Shop.\n\n• Spaceships — different stats (HP, speed).\n• Weapons — fire rate, damage, multi-shot, laser.\n• Power-ups — shield, smart bomb, coin magnet, 2× score, extra life, etc.\n• Upgrades — more HP, faster movement, regeneration.\n\nGood luck, Commander! 🚀';
-        
-        this.instructionsContent = this.add.text(
-            width / 2,
-            height / 2 - panelHeight / 2 + 80,
-            fullInstructions,
-            {
-                fontSize: '16px',
-                fontFamily: 'Arial, sans-serif',
-                color: '#e0e0e0',
-                align: 'left',
-                lineSpacing: 6,
-                resolution: 2,
-                wordWrap: { width: panelWidth - 60 }
-            }
-        );
-        this.instructionsContent.setOrigin(0.5, 0);
-        this.instructionsContent.setDepth(1002);
-        
-        // Close on overlay click
-        this.overlay.on('pointerdown', () => {
-            this.closeInstructionsOverlay();
-        });
-        
-        // Fade in animation
-        this.overlay.setAlpha(0);
-        this.instructionsPanel.setScale(0.8);
-        this.instructionsPanelBorder.setAlpha(0);
-        this.instructionsTitle.setAlpha(0);
-        this.instructionsContent.setAlpha(0);
-        
-        this.tweens.add({
-            targets: this.overlay,
-            alpha: 1,
-            duration: 200
-        });
-        
-        this.tweens.add({
-            targets: [this.instructionsPanel, this.instructionsPanelBorder],
-            alpha: 1,
-            duration: 300,
-            delay: 100
-        });
-        
-        this.tweens.add({
-            targets: this.instructionsPanel,
-            scale: 1,
-            duration: 300,
-            delay: 100,
-            ease: 'Back.easeOut'
-        });
-        
-        this.tweens.add({
-            targets: [this.instructionsTitle, this.instructionsContent],
-            alpha: 1,
-            duration: 300,
-            delay: 250
-        });
+        const getTextFn = typeof getText === 'function' ? getText : function (k) { return k; };
+        const title = getTextFn('instructions.title') || '📖 HOW TO PLAY';
+        const body = getTextFn('instructions.body') || '';
+        const titleEl = document.getElementById('instructions-title');
+        const bodyEl = document.getElementById('instructions-body');
+        const overlayEl = document.getElementById('instructions-overlay');
+        const closeBtn = document.getElementById('close-instructions');
+        if (titleEl) titleEl.textContent = title;
+        if (bodyEl) bodyEl.textContent = body;
+        if (overlayEl) overlayEl.classList.remove('hidden');
+        if (closeBtn) {
+            closeBtn.onclick = () => {
+                this.closeInstructionsOverlay();
+            };
+        }
     }
 
     closeInstructionsOverlay() {
-        // Fade out and destroy
-        const elements = [
-            this.overlay,
-            this.instructionsPanel,
-            this.instructionsPanelBorder,
-            this.instructionsTitle,
-            this.instructionsContent
-        ];
-        
-        this.tweens.add({
-            targets: elements,
-            alpha: 0,
-            duration: 200,
-            onComplete: () => {
-                elements.forEach(el => {
-                    if (el && el.destroy) {
-                        el.destroy();
-                    }
-                });
-            }
-        });
+        const overlayEl = document.getElementById('instructions-overlay');
+        const closeBtn = document.getElementById('close-instructions');
+        if (overlayEl) overlayEl.classList.add('hidden');
+        if (closeBtn) closeBtn.onclick = null;
     }
 
     showLanguageOverlay() {

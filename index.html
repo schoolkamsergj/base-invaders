@@ -79,6 +79,19 @@
         </div>
     </div>
 
+    <!-- How to Play / Instructions Overlay (same style as shop: scroll + close X) -->
+    <div id="instructions-overlay" class="overlay hidden" style="z-index: 10001; pointer-events: auto;">
+        <div class="instructions-container">
+            <button id="close-instructions" class="close-btn instructions-close-btn" type="button" aria-label="Close">✕</button>
+            <div class="instructions-header">
+                <h2 id="instructions-title">📖 HOW TO PLAY</h2>
+            </div>
+            <div class="instructions-content" id="instructions-content">
+                <div id="instructions-body" class="instructions-body"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Pause Overlay (high z-index so clicks work in Farcaster/desktop) -->
     <div id="pause-overlay" class="overlay hidden" style="z-index: 10002; pointer-events: auto;">
         <div class="pause-container">
