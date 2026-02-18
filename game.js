@@ -843,8 +843,8 @@ class MenuScene extends Phaser.Scene {
         const height = this.scale.height;
         const depthSet = 10000;
         const g = typeof getText === 'function' ? getText : (k) => k;
-        const panelW = Math.min(320, width * 0.85);
-        const panelH = Math.min(320, height * 0.85);
+        const panelW = Math.min(380, width * 0.9);
+        const panelH = Math.min(340, height * 0.85);
         const panelX = width / 2 - panelW / 2;
         const panelY = height / 2 - panelH / 2;
         this.settingsOverlay = this.add.rectangle(0, 0, width * 2, height * 2, 0x000000, 0.9);
