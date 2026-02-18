@@ -401,6 +401,25 @@ canvas {
     border-radius: 8px;
 }
 
+/* Horizontal scrollbar – shop style, miniature (so users see they can scroll) */
+.leaderboard-table-wrap::-webkit-scrollbar {
+    height: 8px;
+}
+
+.leaderboard-table-wrap::-webkit-scrollbar-track {
+    background: #1a1a2e;
+    border-radius: 4px;
+}
+
+.leaderboard-table-wrap::-webkit-scrollbar-thumb {
+    background: #0052FF;
+    border-radius: 4px;
+}
+
+.leaderboard-table-wrap::-webkit-scrollbar-thumb:hover {
+    background: #0066ff;
+}
+
 .leaderboard-header {
     display: flex;
     justify-content: space-between;
