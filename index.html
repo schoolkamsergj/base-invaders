@@ -95,10 +95,17 @@
     <!-- Pause Overlay (high z-index so clicks work in Farcaster/desktop) -->
     <div id="pause-overlay" class="overlay hidden" style="z-index: 10002; pointer-events: auto;">
         <div class="pause-container">
-            <h2>⏸️ PAUSED</h2>
-            <button id="resume-btn" class="menu-btn">Resume</button>
-            <button id="reset-game-btn" class="menu-btn reset-btn">Reset Game</button>
-            <button id="exit-game-btn" class="menu-btn exit-btn">Main Menu</button>
+            <!-- Normal pause: Resume / Reset / Main Menu -->
+            <div id="pause-content-normal" class="pause-content-normal">
+                <h2>⏸️ PAUSED</h2>
+                <button id="resume-btn" class="menu-btn">Resume</button>
+                <button id="reset-game-btn" class="menu-btn reset-btn">Reset Game</button>
+                <button id="exit-game-btn" class="menu-btn exit-btn">Main Menu</button>
+            </div>
+            <!-- Check-in waiting: shown while wallet popup is pending (no action buttons to avoid confusion) -->
+            <div id="pause-content-checkin-waiting" class="pause-content-checkin-waiting hidden">
+                <p id="pause-checkin-waiting-text" class="pause-checkin-waiting-text"></p>
+            </div>
         </div>
     </div>
     <!-- Reset confirmation (replaces browser confirm() so it works in iframe/desktop) -->

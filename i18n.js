@@ -292,7 +292,8 @@
             "resume": "Resume",
             "mainMenu": "Main Menu",
             "resetGame": "Reset Game",
-            "exitGame": "Exit Game"
+            "exitGame": "Exit Game",
+            "checkinWaiting": "Please wait. A free transaction will be signed shortly. For this check-in you will receive {diamonds} 💎."
         },
         "resetConfirm": {
             "title": "Reset progress?",
@@ -559,7 +560,8 @@
             resume: "Продолжить",
             mainMenu: "Главное меню",
             resetGame: "Сбросить игру",
-            exitGame: "Выход"
+            exitGame: "Выход",
+            checkinWaiting: "Подождите, сейчас будет подписана бесплатная транзакция. За этот чекин вы получите {diamonds} 💎."
         },
         resetConfirm: {
             title: "Сбросить прогресс?",
@@ -693,7 +695,8 @@
             resume: "Продовжити",
             mainMenu: "Головне меню",
             resetGame: "Скинути гру",
-            exitGame: "Вихід"
+            exitGame: "Вихід",
+            checkinWaiting: "Чекайте, зараз буде підпис безкоштовної транзакції. За цей чекін ви отримаєте {diamonds} 💎."
         },
         resetConfirm: {
             title: "Скинути прогрес?",

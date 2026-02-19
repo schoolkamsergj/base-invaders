@@ -744,6 +744,10 @@ class UI {
             this.checkInButton.disableInteractive();
             this.checkInButtonText.disableInteractive();
 
+            // Show "waiting for signing" message in pause overlay instead of Resume/Reset/Menu so user does not click away
+            const rewardDiamonds = this.getCheckInRewardDiamonds();
+            this.showPauseOverlayCheckInWaiting(rewardDiamonds);
+
             try {
                 const result = await window.baseInvadersOnchainCheckIn();
                 console.log('[UI] Check-in tx success:', result);
@@ -815,6 +819,7 @@ class UI {
                 }
                 this.showNotification('⚠️ ' + errorMsg, notifyX, notifyY - 40);
             } finally {
+                this.restorePauseOverlayNormal();
                 if (!wasAlreadyPaused && this.scene.togglePause) {
                     this.scene.togglePause();
                 }
@@ -982,6 +987,40 @@ class UI {
         } catch (e) {
             return { totalDays: 0, nextMilestone: 7, isMilestone: false };
         }
+    }
+
+    /** Diamonds reward for the next check-in (same formula as success block). Used for "waiting for signing" message. */
+    getCheckInRewardDiamonds() {
+        const streakInfo = this.getCheckInStreak();
+        const totalDays = streakInfo.totalDays || 0;
+        const nextDay = totalDays + 1;
+        const dayInCycle = (nextDay % 7) || 7;
+        const baseRewards = [10, 15, 20, 25, 30, 35, 50];
+        let reward = baseRewards[dayInCycle - 1];
+        const isMilestone = (nextDay % 7 === 0 && nextDay >= 7);
+        if (isMilestone) reward += reward;
+        return reward;
+    }
+
+    /** Show pause overlay in "check-in waiting" mode (no Resume/Reset/Menu buttons) so user knows to wait for wallet popup. */
+    showPauseOverlayCheckInWaiting(diamonds) {
+        const normalEl = document.getElementById('pause-content-normal');
+        const waitingEl = document.getElementById('pause-content-checkin-waiting');
+        const textEl = document.getElementById('pause-checkin-waiting-text');
+        if (!normalEl || !waitingEl || !textEl) return;
+        const msg = typeof getText === 'function' ? getText('pause.checkinWaiting', { diamonds }) : 'Please wait. A free transaction will be signed shortly. For this check-in you will receive ' + diamonds + ' 💎.';
+        textEl.textContent = msg;
+        normalEl.classList.add('hidden');
+        waitingEl.classList.remove('hidden');
+    }
+
+    /** Restore normal pause overlay (Resume / Reset / Main Menu). */
+    restorePauseOverlayNormal() {
+        const normalEl = document.getElementById('pause-content-normal');
+        const waitingEl = document.getElementById('pause-content-checkin-waiting');
+        if (!normalEl || !waitingEl) return;
+        normalEl.classList.remove('hidden');
+        waitingEl.classList.add('hidden');
     }
     
 

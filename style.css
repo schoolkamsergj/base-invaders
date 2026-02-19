@@ -295,6 +295,28 @@ canvas {
     margin-bottom: 30px;
 }
 
+/* Pause overlay: switch between normal (Resume/Reset/Menu) and check-in waiting (no buttons) */
+.pause-content-normal.hidden,
+.pause-content-checkin-waiting.hidden {
+    display: none !important;
+}
+
+.pause-content-checkin-waiting {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.pause-checkin-waiting-text {
+    color: #00ffff;
+    font-size: 1.1em;
+    line-height: 1.5;
+    max-width: 320px;
+    margin: 0;
+}
+
 .menu-btn {
     background: #0052FF;
     border: 2px solid #00ffff;
