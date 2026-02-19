@@ -427,7 +427,8 @@
             resume: "जारी रखें",
             mainMenu: "मुख्य मेनू",
             resetGame: "गेम रीसेट",
-            exitGame: "गेम से बाहर"
+            exitGame: "गेम से बाहर",
+            checkinWaiting: "कृपया प्रतीक्षा करें। जल्द ही एक मुफ्त लेनदेन पर हस्ताक्षर किया जाएगा। इस चेक-इन के लिए आपको {diamonds} 💎 मिलेंगे।"
         },
         resetConfirm: {
             title: "प्रगति रीसेट करें?",
@@ -831,7 +832,8 @@
             resume: "Magpatuloy",
             mainMenu: "Pangunahing Menu",
             resetGame: "I-reset ang Laro",
-            exitGame: "Lumabas"
+            exitGame: "Lumabas",
+            checkinWaiting: "Maghintay. Malapit nang pirmahan ang libreng transaksyon. Para sa check-in na ito makakatanggap ka ng {diamonds} 💎."
         },
         resetConfirm: {
             title: "I-reset ang progress?",
@@ -965,7 +967,8 @@
             resume: "Lanjutkan",
             mainMenu: "Menu Utama",
             resetGame: "Reset Permainan",
-            exitGame: "Keluar"
+            exitGame: "Keluar",
+            checkinWaiting: "Harap tunggu. Transaksi gratis akan segera ditandatangani. Untuk check-in ini Anda akan menerima {diamonds} 💎."
         },
         resetConfirm: {
             title: "Reset progres?",
@@ -1099,7 +1102,8 @@
             resume: "Tiếp tục",
             mainMenu: "Menu Chính",
             resetGame: "Đặt lại Trò chơi",
-            exitGame: "Thoát"
+            exitGame: "Thoát",
+            checkinWaiting: "Vui lòng đợi. Giao dịch miễn phí sẽ được ký trong giây lát. Với lần check-in này bạn sẽ nhận được {diamonds} 💎."
         },
         resetConfirm: {
             title: "Đặt lại tiến trình?",
@@ -1233,7 +1237,8 @@
             resume: "Continuar",
             mainMenu: "Menu Principal",
             resetGame: "Resetar Jogo",
-            exitGame: "Sair"
+            exitGame: "Sair",
+            checkinWaiting: "Aguarde. Uma transação gratuita será assinada em breve. Por este check-in você receberá {diamonds} 💎."
         },
         resetConfirm: {
             title: "Resetar progresso?",
@@ -1367,7 +1372,8 @@
             resume: "Reprendre",
             mainMenu: "Menu Principal",
             resetGame: "Réinitialiser le Jeu",
-            exitGame: "Quitter"
+            exitGame: "Quitter",
+            checkinWaiting: "Veuillez patienter. Une transaction gratuite sera signée sous peu. Pour ce check-in vous recevrez {diamonds} 💎."
         },
         resetConfirm: {
             title: "Réinitialiser la progression ?",
@@ -1501,7 +1507,8 @@
             resume: "Fortsetzen",
             mainMenu: "Hauptmenü",
             resetGame: "Spiel zurücksetzen",
-            exitGame: "Beenden"
+            exitGame: "Beenden",
+            checkinWaiting: "Bitte warten. Eine kostenlose Transaktion wird gleich unterzeichnet. Für diesen Check-in erhalten Sie {diamonds} 💎."
         },
         resetConfirm: {
             title: "Fortschritt zurücksetzen?",
@@ -1635,7 +1642,8 @@
             resume: "继续",
             mainMenu: "主菜单",
             resetGame: "重置游戏",
-            exitGame: "退出"
+            exitGame: "退出",
+            checkinWaiting: "请稍候。即将签署免费交易。此次签到您将获得 {diamonds} 💎。"
         },
         resetConfirm: {
             title: "重置进度？",
@@ -1769,7 +1777,8 @@
             resume: "Працягнуць",
             mainMenu: "Галоўнае меню",
             resetGame: "Скінуць гульню",
-            exitGame: "Выхад"
+            exitGame: "Выхад",
+            checkinWaiting: "Пачакайце, зараз будзе подпісаная бясплатная транзакцыя. За гэты чэк-ін вы атрымаеце {diamonds} 💎."
         },
         resetConfirm: {
             title: "Скінуць прагрэс?",
