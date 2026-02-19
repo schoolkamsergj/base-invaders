@@ -292,14 +292,12 @@ class UI {
             this.scene.togglePause();
         });
 
-        // Ability buttons (right side, vertical): smart bomb and laser beam — only if owned
+        // Ability buttons (right side, vertical): smart bomb and laser — always visible; dim when no charge/not purchased
         this.smartBombBtn = null;
         this.smartBombBtnText = null;
         this.laserBtn = null;
         this.laserBtnText = null;
-        if (this.gameState.hasSmartBomb || this.gameState.hasLaserBeam) {
-            this.createAbilityButtons();
-        }
+        this.createAbilityButtons();
     }
 
     createAbilityButtons() {
@@ -308,7 +306,8 @@ class UI {
         const size = 44;
         const alpha = 0.42;
 
-        if (gs.hasSmartBomb && !this.smartBombBtn) {
+        // Smart bomb button — always show; click only works when hasSmartBomb and smartBombUses > 0
+        if (!this.smartBombBtn) {
             this.smartBombBtn = scene.add.rectangle(0, 0, size, size, 0x1a1a2e, alpha);
             this.smartBombBtn.setScrollFactor(0);
             this.smartBombBtn.setDepth(100);
@@ -322,7 +321,8 @@ class UI {
             });
         }
 
-        if (gs.hasLaserBeam && !this.laserBtn) {
+        // Laser button — always show; dim when not purchased or on cooldown
+        if (!this.laserBtn) {
             this.laserBtn = scene.add.rectangle(0, 0, size, size, 0x1a1a2e, alpha);
             this.laserBtn.setScrollFactor(0);
             this.laserBtn.setDepth(100);
@@ -530,6 +530,9 @@ class UI {
             this.laserBtnText.setPosition(layout.abilityX, layout.abilityLaserY);
             this.laserBtnText.setOrigin(0.5);
             this.laserBtnText.setFontSize(`${Math.min(26, layout.abilityBtnSize * 0.6)}px`);
+            const laserReady = (this.gameState.laserCooldownRemaining || 0) <= 0;
+            const laserHasCharge = this.gameState.hasLaserBeam && laserReady;
+            this.laserBtn.setAlpha(laserHasCharge ? 0.42 : 0.25);
         }
         if (this.smartBombBtn && layout.abilityX !== undefined) {
             this.smartBombBtn.setPosition(layout.abilityX, layout.abilityBombY);
@@ -537,7 +540,8 @@ class UI {
             this.smartBombBtnText.setPosition(layout.abilityX, layout.abilityBombY);
             this.smartBombBtnText.setOrigin(0.5);
             this.smartBombBtnText.setFontSize(`${Math.min(24, layout.abilityBtnSize * 0.55)}px`);
-            this.smartBombBtn.setAlpha(this.gameState.smartBombUses > 0 ? 0.42 : 0.25);
+            const bombActive = this.gameState.hasSmartBomb && (this.gameState.smartBombUses || 0) > 0;
+            this.smartBombBtn.setAlpha(bombActive ? 0.42 : 0.25);
         }
         
         // Update mute button position after layout (if it exists)
@@ -1247,12 +1251,18 @@ class UI {
 
         if (this.smartBombBtn) {
             this.smartBombBtnText.setText('💣 x' + (gameState.smartBombUses || 0));
-            this.smartBombBtn.setAlpha((gameState.smartBombUses || 0) > 0 ? 1 : 0.25);
+            // Яскраво, якщо куплено і є заряди; інакше тускло
+            const bombActive = gameState.hasSmartBomb && (gameState.smartBombUses || 0) > 0;
+            this.smartBombBtn.setAlpha(bombActive ? 1 : 0.25);
+            this.smartBombBtnText.setAlpha(bombActive ? 1 : 0.6);
         }
         if (this.laserBtn) {
             const laserRem = gameState.laserCooldownRemaining != null ? gameState.laserCooldownRemaining : 0;
             const laserReady = laserRem <= 0;
-            this.laserBtn.setAlpha(laserReady ? 1 : 0.42);
+            // Яскраво тільки якщо куплено і заряд готовий; інакше тускло
+            const laserHasCharge = gameState.hasLaserBeam && laserReady;
+            this.laserBtn.setAlpha(laserHasCharge ? 1 : 0.25);
+            this.laserBtnText.setAlpha(laserHasCharge ? 1 : 0.6);
             this.laserBtnText.setText(laserReady ? '⚡' : (Math.ceil(laserRem) + 's'));
         }
 
