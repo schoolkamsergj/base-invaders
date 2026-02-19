@@ -1004,6 +1004,7 @@ class UI {
 
     /** Show pause overlay in "check-in waiting" mode (no Resume/Reset/Menu buttons) so user knows to wait for wallet popup. */
     showPauseOverlayCheckInWaiting(diamonds) {
+        const overlayEl = document.getElementById('pause-overlay');
         const normalEl = document.getElementById('pause-content-normal');
         const waitingEl = document.getElementById('pause-content-checkin-waiting');
         const textEl = document.getElementById('pause-checkin-waiting-text');
@@ -1012,15 +1013,18 @@ class UI {
         textEl.textContent = msg;
         normalEl.classList.add('hidden');
         waitingEl.classList.remove('hidden');
+        if (overlayEl) overlayEl.classList.add('pause-checkin-waiting');
     }
 
     /** Restore normal pause overlay (Resume / Reset / Main Menu). */
     restorePauseOverlayNormal() {
+        const overlayEl = document.getElementById('pause-overlay');
         const normalEl = document.getElementById('pause-content-normal');
         const waitingEl = document.getElementById('pause-content-checkin-waiting');
         if (!normalEl || !waitingEl) return;
         normalEl.classList.remove('hidden');
         waitingEl.classList.add('hidden');
+        if (overlayEl) overlayEl.classList.remove('pause-checkin-waiting');
     }
     
 

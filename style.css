@@ -301,6 +301,16 @@ canvas {
     display: none !important;
 }
 
+/* When check-in waiting: push the message box to the top so it stays visible above the transaction signing popup */
+#pause-overlay.pause-checkin-waiting {
+    align-items: flex-start;
+    padding-top: 3vh;
+}
+#pause-overlay.pause-checkin-waiting .pause-container {
+    align-self: flex-start;
+    margin-top: 0;
+}
+
 .pause-content-checkin-waiting {
     display: flex;
     flex-direction: column;
