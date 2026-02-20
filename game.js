@@ -647,6 +647,10 @@ class MenuScene extends Phaser.Scene {
         this.langOverlay.setOrigin(0, 0);
         this.langOverlay.setDepth(depthLang);
         this.langOverlay.setInteractive();
+        // ВИПРАВЛЕНО: перехоплення pointer-подій щоб тапи не проходили крізь до меню
+        this.langOverlay.on('pointerdown', (pointer) => { pointer.stopPropagation?.(); }, this);
+        this.langOverlay.on('pointermove', () => {}, this);
+        this.langOverlay.on('pointerup', () => {}, this);
         // Do not close on tap on overlay — only the X button closes (user requested)
         const panelW = Math.min(340, width * 0.85);
         const panelH = Math.min(500, height * 0.85);
@@ -757,6 +761,10 @@ class MenuScene extends Phaser.Scene {
         this.settingsOverlay.setDepth(depthSet);
         // Full-screen hit area so touches never pass through to menu (fix tap-through on mobile)
         this.settingsOverlay.setInteractive();
+        // ВИПРАВЛЕНО: перехоплення pointer-подій щоб тапи не проходили крізь до меню
+        this.settingsOverlay.on('pointerdown', (pointer) => { pointer.stopPropagation?.(); }, this);
+        this.settingsOverlay.on('pointermove', () => {}, this);
+        this.settingsOverlay.on('pointerup', () => {}, this);
         this.settingsPanel = this.add.rectangle(width / 2, height / 2, panelW, panelH, 0x1a1a2e, 0.98);
         this.settingsPanel.setDepth(depthSet + 1);
         this.settingsPanelBorder = this.add.graphics();
@@ -819,10 +827,11 @@ class MenuScene extends Phaser.Scene {
         this.settingsBtnShop.on('pointerdown', () => {
             if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
             this.closeSettingsOverlay();
+            // ВИПРАВЛЕНО: оновити pointer-events перед відкриттям магазину
+            if (typeof window.baseInvadersUpdateOverlayPointerEvents === 'function') { window.baseInvadersUpdateOverlayPointerEvents(); }
             const shopEl = document.getElementById('shop-overlay');
             if (shopEl) {
                 shopEl.classList.remove('hidden');
-                if (typeof window.baseInvadersUpdateOverlayPointerEvents === 'function') window.baseInvadersUpdateOverlayPointerEvents();
             }
             if (typeof window.refreshHtmlOverlaysI18n === 'function') window.refreshHtmlOverlaysI18n();
             if (window.shopSystem && window.shopSystem.updateDisplay) window.shopSystem.updateDisplay();

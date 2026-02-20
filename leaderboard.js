@@ -210,13 +210,17 @@
                 }
             }
             overlay.classList.remove('hidden');
-            if (typeof window.baseInvadersUpdateOverlayPointerEvents === 'function') window.baseInvadersUpdateOverlayPointerEvents();
+            // ВИПРАВЛЕНО: блокування pointer-events на body щоб тапи не проходили крізь
+            if (typeof window.baseInvadersUpdateOverlayPointerEvents === 'function') { window.baseInvadersUpdateOverlayPointerEvents(); }
+            document.body.style.pointerEvents = 'none';
             loadGlobal();
             loadLocal();
         }
     }
 
     function close() {
+        // ВИПРАВЛЕНО: відновлення pointer-events при закритті
+        document.body.style.pointerEvents = 'auto';
         const overlay = getOverlay();
         if (overlay) overlay.classList.add('hidden');
         if (typeof window.baseInvadersUpdateOverlayPointerEvents === 'function') window.baseInvadersUpdateOverlayPointerEvents();
