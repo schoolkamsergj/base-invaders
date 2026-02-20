@@ -219,9 +219,6 @@
     function close() {
         const overlay = getOverlay();
         if (overlay) overlay.classList.add('hidden');
-        // ENABLE MENU: увімкнути кнопки меню при закритті лідерборду (getScene — надійно)
-        const menuScene = window.game?.scene?.getScene?.('MenuScene');
-        if (menuScene?.enableMenuButtons) menuScene.enableMenuButtons();
         if (typeof window.baseInvadersUpdateOverlayPointerEvents === 'function') window.baseInvadersUpdateOverlayPointerEvents();
         if (window.game && window.game.scene) {
             if (window.game.scene.isActive && window.game.scene.isActive('GameScene')) {

@@ -86,13 +86,11 @@ class MenuScene extends Phaser.Scene {
         // START button (менші кнопки, рівномірні відстані)
         const menuStartY = height * 0.40;
         const menuGap = 0.105;
-        this.menuButtons = [];  // Зберігаємо всі кнопки меню
         this.startBtnBg = this.add.graphics();
         this.startBtnBg.setDepth(1);
 
         this.startBtn = this.add.rectangle(width / 2, menuStartY, 220, 68, 0x0052FF, 0);
         this.startBtn.setInteractive({ useHandCursor: true });
-        this.menuButtons.push(this.startBtn);
         this.startBtn.setDepth(2);
         
         this.startText = this.add.text(width / 2, menuStartY, typeof getText === 'function' ? getText('menu.start') : 'START', {
@@ -155,7 +153,6 @@ class MenuScene extends Phaser.Scene {
         this.languageBtnBg.setDepth(1);
         this.languageBtn = this.add.rectangle(width / 2, languageBtnY, 200, 48, 0x2196F3, 0);
         this.languageBtn.setInteractive({ useHandCursor: true });
-        this.menuButtons.push(this.languageBtn);
         this.languageBtn.setDepth(2);
         this.languageText = this.add.text(width / 2, languageBtnY, typeof getText === 'function' ? getText('menu.language') : 'Language 🌐', {
             fontSize: '18px',
@@ -202,7 +199,6 @@ class MenuScene extends Phaser.Scene {
             0
         );
         this.instructionsBtn.setInteractive({ useHandCursor: true });
-        this.menuButtons.push(this.instructionsBtn);
         this.instructionsBtn.setDepth(2);
 
         this.instructionsBtnText = this.add.text(
@@ -262,7 +258,6 @@ class MenuScene extends Phaser.Scene {
         
         this.resetBtn = this.add.rectangle(width / 2, resetBtnY, 200, 48, 0xcc0000, 0);
         this.resetBtn.setInteractive({ useHandCursor: true });
-        this.menuButtons.push(this.resetBtn);
         this.resetBtn.setDepth(2);
         
         this.resetText = this.add.text(width / 2, resetBtnY, typeof getText === 'function' ? getText('menu.resetProgress') : 'Reset Progress', {
@@ -313,7 +308,6 @@ class MenuScene extends Phaser.Scene {
         
         this.leaderboardBtn = this.add.rectangle(width / 2, leaderboardBtnY, 200, 48, 0x0052FF, 0);
         this.leaderboardBtn.setInteractive({ useHandCursor: true });
-        this.menuButtons.push(this.leaderboardBtn);
         this.leaderboardBtn.setDepth(2);
         
         this.leaderboardText = this.add.text(width / 2, leaderboardBtnY, typeof getText === 'function' ? getText('menu.leaderboard') : 'Leaderboard', {
@@ -360,7 +354,6 @@ class MenuScene extends Phaser.Scene {
         this.settingsBtnBg.setDepth(1);
         this.settingsBtn = this.add.rectangle(width / 2, settingsBtnY, 200, 48, 0x0052FF, 0);
         this.settingsBtn.setInteractive({ useHandCursor: true });
-        this.menuButtons.push(this.settingsBtn);
         this.settingsBtn.setDepth(2);
         this.settingsText = this.add.text(width / 2, settingsBtnY, typeof getText === 'function' ? getText('menu.settings') : 'Settings', {
             fontSize: '17px',
@@ -654,8 +647,6 @@ class MenuScene extends Phaser.Scene {
         this.langOverlay.setOrigin(0, 0);
         this.langOverlay.setDepth(depthLang);
         this.langOverlay.setInteractive();
-        // ВИПРАВЛЕНО: disable меню під overlay
-        this.menuButtons.forEach(btn => btn.disableInteractive());
         // Do not close on tap on overlay — only the X button closes (user requested)
         const panelW = Math.min(340, width * 0.85);
         const panelH = Math.min(500, height * 0.85);
@@ -747,8 +738,6 @@ class MenuScene extends Phaser.Scene {
     }
 
     closeLanguageOverlay() {
-        // ВИПРАВЛЕНО: enable назад
-        this.menuButtons.forEach(btn => btn.setInteractive({ useHandCursor: true }));
         const el = [this.langOverlay, this.langPanel, this.langPanelBorder, this.langCloseBtnRect, this.langCloseBtnBorder, this.langCloseBtnXText, this.langTitle, this.langEn, this.langHi, this.langRu, this.langUk, this.langTg, this.langId, this.langVi, this.langPt, this.langFr, this.langDe, this.langZh, this.langBe];
         el.forEach(o => { if (o && o.destroy) o.destroy(); });
         this.langOverlay = this.langPanel = this.langPanelBorder = this.langCloseBtnRect = this.langCloseBtnBorder = this.langCloseBtnXText = this.langTitle = this.langEn = this.langHi = this.langRu = this.langUk = this.langTg = this.langId = this.langVi = this.langPt = this.langFr = this.langDe = this.langZh = this.langBe = null;
@@ -768,8 +757,6 @@ class MenuScene extends Phaser.Scene {
         this.settingsOverlay.setDepth(depthSet);
         // Full-screen hit area so touches never pass through to menu (fix tap-through on mobile)
         this.settingsOverlay.setInteractive();
-        // ВИПРАВЛЕНО: disable меню під overlay
-        this.menuButtons.forEach(btn => btn.disableInteractive());
         this.settingsPanel = this.add.rectangle(width / 2, height / 2, panelW, panelH, 0x1a1a2e, 0.98);
         this.settingsPanel.setDepth(depthSet + 1);
         this.settingsPanelBorder = this.add.graphics();
@@ -834,8 +821,6 @@ class MenuScene extends Phaser.Scene {
             this.closeSettingsOverlay();
             const shopEl = document.getElementById('shop-overlay');
             if (shopEl) {
-                // ВИПРАВЛЕНО: disable меню під магазином/лідербордом
-                this.menuButtons.forEach(btn => btn.disableInteractive());
                 shopEl.classList.remove('hidden');
                 if (typeof window.baseInvadersUpdateOverlayPointerEvents === 'function') window.baseInvadersUpdateOverlayPointerEvents();
             }
@@ -889,18 +874,9 @@ class MenuScene extends Phaser.Scene {
     }
 
     closeSettingsOverlay() {
-        // ВИПРАВЛЕНО: enable назад
-        this.menuButtons.forEach(btn => btn.setInteractive({ useHandCursor: true }));
         const el = [this.settingsOverlay, this.settingsPanel, this.settingsPanelBorder, this.settingsCloseBtnRect, this.settingsCloseBtnBorder, this.settingsCloseBtnXText, this.settingsTitle, this.settingsBtnShopBg, this.settingsBtnShop, this.settingsVibBg, this.settingsVibText, this.settingsMusicBg, this.settingsMusicText];
         el.forEach(o => { if (o && o.destroy) o.destroy(); });
         this.settingsOverlay = this.settingsPanel = this.settingsPanelBorder = this.settingsCloseBtnRect = this.settingsCloseBtnBorder = this.settingsCloseBtnXText = this.settingsTitle = this.settingsBtnShopBg = this.settingsBtnShop = this.settingsVibBg = this.settingsVibText = this.settingsMusicBg = this.settingsMusicText = null;
-    }
-
-    // ENABLE MENU: увімкнення кнопок меню при закритті магазину/лідерборду
-    enableMenuButtons() {
-        if (this.menuButtons) {
-            this.menuButtons.forEach(btn => btn.setInteractive({ useHandCursor: true }));
-        }
     }
 }
 
@@ -3298,9 +3274,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('close-shop')?.addEventListener('click', () => {
         document.getElementById('shop-overlay').classList.add('hidden');
-        // ENABLE MENU: увімкнути кнопки меню при закритті магазину (getScene — надійно отримати сцену)
-        const menuScene = window.game?.scene?.getScene?.('MenuScene');
-        if (menuScene?.enableMenuButtons) menuScene.enableMenuButtons();
         if (typeof window.baseInvadersUpdateOverlayPointerEvents === 'function') window.baseInvadersUpdateOverlayPointerEvents();
         if (window.game && window.game.scene) {
             // Always resume the scene when closing shop (CRITICAL to prevent freeze)
