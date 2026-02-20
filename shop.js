@@ -145,10 +145,12 @@ class ShopSystem {
         const g = typeof window !== 'undefined' && typeof window.getText === 'function' ? window.getText : function (k, r) { return k; };
         const powerUps = [
             { id: 'shield', name: g('shopItems.shieldGen.name'), icon: '🛡️', price: { diamonds: 10 }, stats: g('shopItems.shieldGen.stats'), owned: false },
+            { id: 'shieldLightning', name: g('shopItems.shieldLightning.name'), icon: '🛡️', price: { lightning: 15 }, stats: g('shopItems.shieldLightning.stats'), owned: false },
             { id: 'smartBomb', name: g('shopItems.smartBomb.name'), icon: '💣', price: { diamonds: 5 }, stats: g('shopItems.smartBomb.stats'), owned: (this.data.upgrades && this.data.upgrades.smartBomb) || false },
             { id: 'coinMagnet', name: g('shopItems.coinMagnet.name'), icon: '🧲', price: { gold: 100 }, stats: g('shopItems.coinMagnet.stats'), owned: (this.data.upgrades && this.data.upgrades.coinMagnet) || false },
             { id: 'score2x', name: g('shopItems.score2x.name'), icon: '⭐', price: { diamonds: 20 }, stats: g('shopItems.score2x.stats'), owned: false },
-            { id: 'extraLife', name: g('shopItems.extraLife.name'), icon: '❤️', price: { diamonds: 30 }, stats: g('shopItems.extraLife.stats'), owned: false }
+            { id: 'extraLife', name: g('shopItems.extraLife.name'), icon: '❤️', price: { diamonds: 30 }, stats: g('shopItems.extraLife.stats'), owned: false },
+            { id: 'extraLifeLightning', name: g('shopItems.extraLifeLightning.name'), icon: '❤️', price: { lightning: 25 }, stats: g('shopItems.extraLifeLightning.stats'), owned: false }
         ];
 
         powerUps.forEach(powerUp => {
@@ -376,6 +378,7 @@ class ShopSystem {
                 this.data.upgrades.laserBeam = true;
                 break;
             case 'shield':
+            case 'shieldLightning':
                 this.data.shield = (this.data.shield || 0) + 5;
                 if (gameScene && gameScene.playerStats) gameScene.playerStats.shield = (gameScene.playerStats.shield || 0) + 5;
                 if (gameScene && gameScene.player) gameScene.player.shield = (gameScene.playerStats?.shield || 0);
@@ -390,6 +393,7 @@ class ShopSystem {
                 }
                 break;
             case 'extraLife':
+            case 'extraLifeLightning':
                 this.data.extraLives = (this.data.extraLives || 0) + 1;
                 if (gameScene && gameScene.gameState) gameScene.gameState.extraLives = (gameScene.gameState.extraLives || 0) + 1;
                 break;
