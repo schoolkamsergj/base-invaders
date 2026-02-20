@@ -6,12 +6,35 @@ class ShopSystem {
         this.init();
     }
 
+    /** Відтворює звук кліку з GameScene або MenuScene (магазин відкрито з меню). */
+    playClickSound() {
+        if (!window.game?.scene) return;
+        const gameScene = window.game.scene.getScene('GameScene');
+        if (gameScene && typeof gameScene.playSound === 'function') {
+            gameScene.playSound('click');
+            return;
+        }
+        const menuScene = window.game.scene.getScene('MenuScene');
+        if (menuScene?.clickSound) try { menuScene.clickSound.play(); } catch (e) {}
+    }
+
+    /** Відтворює звук покупки з GameScene або MenuScene. */
+    playPurchaseSound() {
+        if (!window.game?.scene) return;
+        const gameScene = window.game.scene.getScene('GameScene');
+        if (gameScene && typeof gameScene.playSound === 'function') {
+            gameScene.playSound('purchase');
+            return;
+        }
+        const menuScene = window.game.scene.getScene('MenuScene');
+        if (menuScene?.clickSound) try { menuScene.clickSound.play(); } catch (e) {}
+    }
+
     init() {
         // Setup tab buttons (use currentTarget so click on button text still gives correct data-tab)
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const gameScene = window.game && window.game.scene && window.game.scene.getScene ? window.game.scene.getScene('GameScene') : null;
-                if (gameScene && typeof gameScene.playSound === 'function') gameScene.playSound('click');
+                this.playClickSound();
                 const tab = (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.tab) || e.target.dataset.tab;
                 if (tab) this.switchTab(tab);
             });
@@ -288,8 +311,10 @@ class ShopSystem {
             gameState.lightning -= item.price.lightning;
         }
         
-        // Play purchase sound effect
-        if (gameScene && gameScene.playSound) {
+        // Play purchase sound effect (з гри або з меню, якщо магазин відкрито з налаштувань)
+        if (window.shopSystem && typeof window.shopSystem.playPurchaseSound === 'function') {
+            window.shopSystem.playPurchaseSound();
+        } else if (gameScene && gameScene.playSound) {
             gameScene.playSound('purchase');
         }
         

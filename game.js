@@ -3298,8 +3298,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('close-shop')?.addEventListener('click', () => {
         document.getElementById('shop-overlay').classList.add('hidden');
-        // ENABLE MENU: увімкнути кнопки меню при закритті магазину
-        window.game?.scene?.scenes && window.game.scene.scenes.find(scene => scene.key === 'MenuScene')?.enableMenuButtons?.();
+        // ENABLE MENU: увімкнути кнопки меню при закритті магазину (getScene — надійно отримати сцену)
+        const menuScene = window.game?.scene?.getScene?.('MenuScene');
+        if (menuScene?.enableMenuButtons) menuScene.enableMenuButtons();
         if (typeof window.baseInvadersUpdateOverlayPointerEvents === 'function') window.baseInvadersUpdateOverlayPointerEvents();
         if (window.game && window.game.scene) {
             // Always resume the scene when closing shop (CRITICAL to prevent freeze)
