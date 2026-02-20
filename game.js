@@ -2361,7 +2361,7 @@ class GameScene extends Phaser.Scene {
             this.dropDiamond(x, y);
         }
         if (enemy.type === 'boss') {
-            this.dropCoins(x, y, 350);
+            this.dropCoins(x, y, 180);
             for (let i = 0; i < 10; i++) {
                 this.dropDiamond(x + Phaser.Math.Between(-50, 50), y + Phaser.Math.Between(-50, 50));
             }
@@ -2514,8 +2514,8 @@ class GameScene extends Phaser.Scene {
     }
 
     dropCoins(x, y, amount) {
-        const coinValue = 5;
-        const count = Math.min(Math.max(1, Math.floor(amount / 15)), 8);
+        const coinValue = 2;
+        const count = Math.min(Math.max(1, Math.floor(amount / 25)), 5);
         for (let i = 0; i < count; i++) {
             const coin = this.add.text(
                 x + Phaser.Math.Between(-30, 30),
@@ -2857,8 +2857,8 @@ class GameScene extends Phaser.Scene {
         if (this.syncProgress) this.syncProgress();
         console.log(`Mission ${this.missionSystem.currentMission} complete!`);
         
-        // Award mission rewards (золото знижено для балансу економіки)
-        const missionReward = this.missionSystem.currentMission * 50;
+        // Award mission rewards (золото ще знижено для балансу економіки)
+        const missionReward = this.missionSystem.currentMission * 25;
         this.gameState.gold += missionReward;
         this.gameState.diamonds += Math.floor(this.missionSystem.currentMission / 2) + 1;
         
@@ -2895,8 +2895,8 @@ class GameScene extends Phaser.Scene {
             this.gameState.xp -= this.gameState.xpToNext;
             this.gameState.playerLevel++;
             this.gameState.xpToNext = Math.floor(this.gameState.xpToNext * 1.5);
-            // Level up bonus (золото знижено для балансу економіки)
-            this.gameState.gold += this.gameState.playerLevel * 25;
+            // Level up bonus (золото ще знижено для балансу економіки)
+            this.gameState.gold += this.gameState.playerLevel * 12;
         }
     }
 

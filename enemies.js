@@ -76,9 +76,9 @@ class HexagonEnemy {
         scene.physics.add.existing(this.sprite);
         this.sprite.body.setVelocity(0, 50 + scene.gameState.stage * 5);
         
-        // Rewards (золото знижено для балансу економіки)
+        // Rewards (золото ще знижено для балансу економіки)
         this.rewards = {
-            gold: hp * 1,
+            gold: Math.max(1, Math.floor(hp * 0.5)),
             score: hp * 10,
             xp: hp
         };
@@ -217,10 +217,10 @@ class BaseCubeEnemy {
         scene.physics.add.existing(this.sprite);
         this.sprite.body.setVelocity(0, 60 + scene.gameState.stage * 5);
         
-        // Rewards (золото знижено для балансу економіки)
+        // Rewards (золото ще знижено для балансу економіки)
         this.rewards = {
             lightning: 1,
-            gold: 10,
+            gold: 5,
             score: 50,
             xp: 15
         };
@@ -343,9 +343,9 @@ class SpaceshipEnemy {
         scene.physics.add.existing(this.sprite);
         this.sprite.body.setVelocity(0, 40 + scene.gameState.stage * 3);
         
-        // Rewards (золото знижено для балансу економіки)
+        // Rewards (золото ще знижено для балансу економіки)
         this.rewards = {
-            gold: hp * (isBoss ? 2 : 1),
+            gold: Math.max(1, Math.floor(hp * (isBoss ? 0.8 : 0.5))),
             diamonds: isBoss ? Phaser.Math.Between(2, 4) : (Math.random() < 0.3 ? 1 : 0),
             score: hp * (isBoss ? 25 : 15),
             xp: hp * (isBoss ? 5 : 2)
@@ -536,9 +536,9 @@ class BossEnemy {
         scene.physics.add.existing(this.sprite);
         this.sprite.body.setVelocity(0, 0);
         
-        // Rewards (золото знижено для балансу економіки)
+        // Rewards (золото ще знижено для балансу економіки)
         this.rewards = {
-            gold: 400 + missionNumber * 80,
+            gold: 200 + missionNumber * 40,
             diamonds: Phaser.Math.Between(5, 10) + missionNumber,
             score: 5000 + missionNumber * 1000,
             xp: 500 + missionNumber * 100
