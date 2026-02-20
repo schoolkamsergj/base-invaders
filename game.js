@@ -895,6 +895,13 @@ class MenuScene extends Phaser.Scene {
         el.forEach(o => { if (o && o.destroy) o.destroy(); });
         this.settingsOverlay = this.settingsPanel = this.settingsPanelBorder = this.settingsCloseBtnRect = this.settingsCloseBtnBorder = this.settingsCloseBtnXText = this.settingsTitle = this.settingsBtnShopBg = this.settingsBtnShop = this.settingsVibBg = this.settingsVibText = this.settingsMusicBg = this.settingsMusicText = null;
     }
+
+    // ENABLE MENU: увімкнення кнопок меню при закритті магазину/лідерборду
+    enableMenuButtons() {
+        if (this.menuButtons) {
+            this.menuButtons.forEach(btn => btn.setInteractive({ useHandCursor: true }));
+        }
+    }
 }
 
 class GameScene extends Phaser.Scene {
@@ -3291,6 +3298,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('close-shop')?.addEventListener('click', () => {
         document.getElementById('shop-overlay').classList.add('hidden');
+        // ENABLE MENU: увімкнути кнопки меню при закритті магазину
+        window.game?.scene?.scenes && window.game.scene.scenes.find(scene => scene.key === 'MenuScene')?.enableMenuButtons?.();
         if (typeof window.baseInvadersUpdateOverlayPointerEvents === 'function') window.baseInvadersUpdateOverlayPointerEvents();
         if (window.game && window.game.scene) {
             // Always resume the scene when closing shop (CRITICAL to prevent freeze)
