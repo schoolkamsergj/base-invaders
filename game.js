@@ -2128,11 +2128,8 @@ class GameScene extends Phaser.Scene {
         list.forEach(enemySprite => {
             const enemy = enemySprite.enemyObject;
             if (!enemy) return;
-            if (enemy.type === 'boss') {
-                enemy.hp *= 0.35;
-            } else {
-                enemy.hp *= 0.1;
-            }
+            // Розумна бомба забирає 99% здоров'я (залишається 1%)
+            enemy.hp *= 0.01;
             if (enemy.numberText) enemy.numberText.setText(Math.max(0, Math.ceil(enemy.hp)));
             if (enemy.hp <= 0) {
                 this.onEnemyDestroyed(enemy);
