@@ -2380,15 +2380,7 @@ class GameScene extends Phaser.Scene {
     destroyEnemy(enemy, enemySprite) {
         if (!enemy || !enemySprite) return;
         
-        // CRITICAL: Remove from group FIRST before destroying
-        if (this.enemies.contains(enemySprite)) {
-            this.enemies.remove(enemySprite, true, true); // Remove and destroy
-        }
-        
-        // Destroy all visual components
-        if (enemy.sprite && enemy.sprite.active) {
-            enemy.sprite.destroy();
-        }
+        // Destroy all visual components FIRST so no artifacts remain (HP bars, number text, glows, etc.)
         if (enemy.letterB && enemy.letterB.active) {
             enemy.letterB.destroy();
         }
@@ -2410,26 +2402,23 @@ class GameScene extends Phaser.Scene {
         if (enemy.numberText && enemy.numberText.active) {
             enemy.numberText.destroy();
         }
-        
-        // Boss-specific components
-        if (enemy.type === 'boss') {
-            if (enemy.healthBar && enemy.healthBar.active) {
-                enemy.healthBar.destroy();
-            }
-            if (enemy.healthBarBg && enemy.healthBarBg.active) {
-                enemy.healthBarBg.destroy();
-            }
-            if (enemy.bossEmoji && enemy.bossEmoji.active) {
-                enemy.bossEmoji.destroy();
-            }
+        if (enemy.healthBar && enemy.healthBar.active) {
+            enemy.healthBar.destroy();
+        }
+        if (enemy.healthBarBg && enemy.healthBarBg.active) {
+            enemy.healthBarBg.destroy();
+        }
+        if (enemy.bossEmoji && enemy.bossEmoji.active) {
+            enemy.bossEmoji.destroy();
         }
         
-        // Destroy sprite separately if it still exists
-        if (enemySprite && enemySprite.active) {
+        // Then remove from group and destroy main sprite (single destroy via group)
+        if (this.enemies.contains(enemySprite)) {
+            this.enemies.remove(enemySprite, true, true);
+        } else if (enemySprite && enemySprite.active) {
             enemySprite.destroy();
         }
         
-        // Clear reference
         if (enemySprite) {
             enemySprite.enemyObject = null;
         }
@@ -2616,11 +2605,12 @@ class GameScene extends Phaser.Scene {
                 if (this.player) this.player.shield = this.playerStats.shield;
                 break;
             case 'bomb':
-                this.enemies.children.entries.forEach(enemy => {
-                    if (enemy.type !== 'boss') {
-                        enemy.destroy();
-                        this.onEnemyDestroyed(enemy);
-                    }
+                // Copy list: we destroy sprites and must use enemyObject for proper cleanup (no artifacts)
+                this.enemies.getChildren().slice().forEach(enemySprite => {
+                    const enemy = enemySprite.enemyObject;
+                    if (!enemy || enemy.type === 'boss') return;
+                    this.onEnemyDestroyed(enemy);
+                    this.destroyEnemy(enemy, enemySprite);
                 });
                 break;
             case 'smartBomb':
@@ -2830,6 +2820,12 @@ class GameScene extends Phaser.Scene {
     }
     
     completeMission() {
+        // Clear boss state first so spawn checks never see stale bossActive (fixes "no enemies after boss")
+        this.bossActive = false;
+        this._bossSpawnScheduled = false;
+        if (this.missionSystem) {
+            this.missionSystem.bossActive = false;
+        }
         if (!this.missionSystem) return;
         if (this.syncProgress) this.syncProgress();
         console.log(`Mission ${this.missionSystem.currentMission} complete!`);
