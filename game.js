@@ -647,7 +647,7 @@ class MenuScene extends Phaser.Scene {
         this.langOverlay.setOrigin(0, 0);
         this.langOverlay.setDepth(depthLang);
         this.langOverlay.setInteractive();
-        this.langOverlay.on('pointerdown', () => this.closeLanguageOverlay());
+        // Do not close on tap on overlay — only the X button closes (user requested)
         const panelW = Math.min(340, width * 0.85);
         const panelH = Math.min(500, height * 0.85);
         const panelX = width / 2 - panelW / 2;
