@@ -210,6 +210,7 @@
                 }
             }
             overlay.classList.remove('hidden');
+            if (typeof window.baseInvadersUpdateOverlayPointerEvents === 'function') window.baseInvadersUpdateOverlayPointerEvents();
             loadGlobal();
             loadLocal();
         }
@@ -218,6 +219,7 @@
     function close() {
         const overlay = getOverlay();
         if (overlay) overlay.classList.add('hidden');
+        if (typeof window.baseInvadersUpdateOverlayPointerEvents === 'function') window.baseInvadersUpdateOverlayPointerEvents();
         if (window.game && window.game.scene) {
             if (window.game.scene.isActive && window.game.scene.isActive('GameScene')) {
                 window.game.scene.stop('GameScene');

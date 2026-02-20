@@ -620,7 +620,10 @@ class MenuScene extends Phaser.Scene {
         const closeBtn = document.getElementById('close-instructions');
         if (titleEl) titleEl.textContent = title;
         if (bodyEl) bodyEl.textContent = body;
-        if (overlayEl) overlayEl.classList.remove('hidden');
+        if (overlayEl) {
+            overlayEl.classList.remove('hidden');
+            if (typeof window.baseInvadersUpdateOverlayPointerEvents === 'function') window.baseInvadersUpdateOverlayPointerEvents();
+        }
         if (closeBtn) {
             closeBtn.onclick = () => {
                 this.closeInstructionsOverlay();
@@ -633,6 +636,7 @@ class MenuScene extends Phaser.Scene {
         const closeBtn = document.getElementById('close-instructions');
         if (overlayEl) overlayEl.classList.add('hidden');
         if (closeBtn) closeBtn.onclick = null;
+        if (typeof window.baseInvadersUpdateOverlayPointerEvents === 'function') window.baseInvadersUpdateOverlayPointerEvents();
     }
 
     showLanguageOverlay() {
@@ -656,6 +660,24 @@ class MenuScene extends Phaser.Scene {
         this.langPanelBorder.lineStyle(3, 0x0052FF, 1);
         this.langPanelBorder.strokeRoundedRect(panelX, panelY, panelW, panelH, 10);
         this.langPanelBorder.setDepth(depthLang + 1);
+        // Close button (X) top-right, same style as Settings / Leaderboard
+        const closeBtnSize = 20;
+        const closeBtnCenterX = panelX + panelW - 10 - closeBtnSize / 2;
+        const closeBtnCenterY = panelY + 10 + closeBtnSize / 2;
+        this.langCloseBtnRect = this.add.rectangle(closeBtnCenterX, closeBtnCenterY, closeBtnSize, closeBtnSize, 0xcc0000, 1);
+        this.langCloseBtnRect.setDepth(depthLang + 2);
+        this.langCloseBtnRect.setInteractive({ useHandCursor: true });
+        this.langCloseBtnRect.on('pointerdown', () => {
+            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
+            this.closeLanguageOverlay();
+        });
+        this.langCloseBtnBorder = this.add.graphics();
+        this.langCloseBtnBorder.lineStyle(2, 0x990000, 1);
+        this.langCloseBtnBorder.strokeRoundedRect(closeBtnCenterX - closeBtnSize / 2, closeBtnCenterY - closeBtnSize / 2, closeBtnSize, closeBtnSize, 3);
+        this.langCloseBtnBorder.setDepth(depthLang + 2);
+        this.langCloseBtnXText = this.add.text(closeBtnCenterX, closeBtnCenterY, '✕', { fontSize: '14px', fontFamily: 'Arial', color: '#ffffff', resolution: 2 });
+        this.langCloseBtnXText.setOrigin(0.5);
+        this.langCloseBtnXText.setDepth(depthLang + 3);
         const titleStr = typeof getText === 'function' ? getText('menu.language') : 'Language 🌐';
         this.langTitle = this.add.text(textX, panelY + 26, titleStr, {
             fontSize: '20px',
@@ -716,9 +738,9 @@ class MenuScene extends Phaser.Scene {
     }
 
     closeLanguageOverlay() {
-        const el = [this.langOverlay, this.langPanel, this.langPanelBorder, this.langTitle, this.langEn, this.langHi, this.langRu, this.langUk, this.langTg, this.langId, this.langVi, this.langPt, this.langFr, this.langDe, this.langZh, this.langBe];
+        const el = [this.langOverlay, this.langPanel, this.langPanelBorder, this.langCloseBtnRect, this.langCloseBtnBorder, this.langCloseBtnXText, this.langTitle, this.langEn, this.langHi, this.langRu, this.langUk, this.langTg, this.langId, this.langVi, this.langPt, this.langFr, this.langDe, this.langZh, this.langBe];
         el.forEach(o => { if (o && o.destroy) o.destroy(); });
-        this.langOverlay = this.langPanel = this.langPanelBorder = this.langTitle = this.langEn = this.langHi = this.langRu = this.langUk = this.langTg = this.langId = this.langVi = this.langPt = this.langFr = this.langDe = this.langZh = this.langBe = null;
+        this.langOverlay = this.langPanel = this.langPanelBorder = this.langCloseBtnRect = this.langCloseBtnBorder = this.langCloseBtnXText = this.langTitle = this.langEn = this.langHi = this.langRu = this.langUk = this.langTg = this.langId = this.langVi = this.langPt = this.langFr = this.langDe = this.langZh = this.langBe = null;
     }
 
     showSettingsOverlay() {
@@ -733,7 +755,8 @@ class MenuScene extends Phaser.Scene {
         this.settingsOverlay = this.add.rectangle(0, 0, width * 2, height * 2, 0x000000, 0.9);
         this.settingsOverlay.setOrigin(0, 0);
         this.settingsOverlay.setDepth(depthSet);
-        this.settingsOverlay.setInteractive(new Phaser.Geom.Rectangle(panelX, panelY, panelW, panelH), Phaser.Geom.Rectangle.Contains);
+        // Full-screen hit area so touches never pass through to menu (fix tap-through on mobile)
+        this.settingsOverlay.setInteractive();
         this.settingsPanel = this.add.rectangle(width / 2, height / 2, panelW, panelH, 0x1a1a2e, 0.98);
         this.settingsPanel.setDepth(depthSet + 1);
         this.settingsPanelBorder = this.add.graphics();
@@ -796,7 +819,11 @@ class MenuScene extends Phaser.Scene {
         this.settingsBtnShop.on('pointerdown', () => {
             if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
             this.closeSettingsOverlay();
-            document.getElementById('shop-overlay').classList.remove('hidden');
+            const shopEl = document.getElementById('shop-overlay');
+            if (shopEl) {
+                shopEl.classList.remove('hidden');
+                if (typeof window.baseInvadersUpdateOverlayPointerEvents === 'function') window.baseInvadersUpdateOverlayPointerEvents();
+            }
             if (typeof window.refreshHtmlOverlaysI18n === 'function') window.refreshHtmlOverlaysI18n();
             if (window.shopSystem && window.shopSystem.updateDisplay) window.shopSystem.updateDisplay();
         });
@@ -3231,8 +3258,23 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('visibilitychange', onVisibilityOrFocus);
     window.addEventListener('focus', onVisibilityOrFocus);
 
+    // When any HTML overlay (shop, leaderboard, instructions) is visible, disable canvas pointer-events
+    // so touches cannot pass through to the menu/game (fix tap-through on mobile).
+    window.baseInvadersUpdateOverlayPointerEvents = function () {
+        const container = document.getElementById('game-container');
+        if (!container) return;
+        const shop = document.getElementById('shop-overlay');
+        const leaderboard = document.getElementById('leaderboard-overlay');
+        const instructions = document.getElementById('instructions-overlay');
+        const anyVisible = (shop && !shop.classList.contains('hidden')) ||
+            (leaderboard && !leaderboard.classList.contains('hidden')) ||
+            (instructions && !instructions.classList.contains('hidden'));
+        container.style.pointerEvents = anyVisible ? 'none' : 'auto';
+    };
+
     document.getElementById('close-shop')?.addEventListener('click', () => {
         document.getElementById('shop-overlay').classList.add('hidden');
+        if (typeof window.baseInvadersUpdateOverlayPointerEvents === 'function') window.baseInvadersUpdateOverlayPointerEvents();
         if (window.game && window.game.scene) {
             // Always resume the scene when closing shop (CRITICAL to prevent freeze)
             // Resume from scene manager level
