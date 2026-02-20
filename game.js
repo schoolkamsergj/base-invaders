@@ -2130,6 +2130,8 @@ class GameScene extends Phaser.Scene {
             if (!enemy) return;
             // Розумна бомба забирає 99% здоров'я (залишається 1%)
             enemy.hp *= 0.01;
+            // Якщо залишилось менше 1 HP — вважаємо ворога знищеним (друга бомба добиває останній 1%)
+            if (enemy.hp < 1) enemy.hp = 0;
             if (enemy.numberText) enemy.numberText.setText(Math.max(0, Math.ceil(enemy.hp)));
             if (enemy.hp <= 0) {
                 this.onEnemyDestroyed(enemy);
