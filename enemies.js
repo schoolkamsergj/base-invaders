@@ -76,9 +76,9 @@ class HexagonEnemy {
         scene.physics.add.existing(this.sprite);
         this.sprite.body.setVelocity(0, 50 + scene.gameState.stage * 5);
         
-        // Rewards
+        // Rewards (золото знижено для балансу економіки)
         this.rewards = {
-            gold: hp * 2,
+            gold: hp * 1,
             score: hp * 10,
             xp: hp
         };
@@ -217,10 +217,10 @@ class BaseCubeEnemy {
         scene.physics.add.existing(this.sprite);
         this.sprite.body.setVelocity(0, 60 + scene.gameState.stage * 5);
         
-        // Rewards
+        // Rewards (золото знижено для балансу економіки)
         this.rewards = {
             lightning: 1,
-            gold: 20,
+            gold: 10,
             score: 50,
             xp: 15
         };
@@ -343,9 +343,9 @@ class SpaceshipEnemy {
         scene.physics.add.existing(this.sprite);
         this.sprite.body.setVelocity(0, 40 + scene.gameState.stage * 3);
         
-        // Rewards
+        // Rewards (золото знижено для балансу економіки)
         this.rewards = {
-            gold: hp * (isBoss ? 5 : 3),
+            gold: hp * (isBoss ? 2 : 1),
             diamonds: isBoss ? Phaser.Math.Between(2, 4) : (Math.random() < 0.3 ? 1 : 0),
             score: hp * (isBoss ? 25 : 15),
             xp: hp * (isBoss ? 5 : 2)
@@ -536,9 +536,9 @@ class BossEnemy {
         scene.physics.add.existing(this.sprite);
         this.sprite.body.setVelocity(0, 0);
         
-        // Rewards
+        // Rewards (золото знижено для балансу економіки)
         this.rewards = {
-            gold: 1000 + missionNumber * 200,
+            gold: 400 + missionNumber * 80,
             diamonds: Phaser.Math.Between(5, 10) + missionNumber,
             score: 5000 + missionNumber * 1000,
             xp: 500 + missionNumber * 100
