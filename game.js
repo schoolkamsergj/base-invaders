@@ -251,58 +251,9 @@ class MenuScene extends Phaser.Scene {
                 }
             });
         });
-        
-        const resetBtnY = height * (menuStartY / height + menuGap * 3);
-        this.resetBtnBg = this.add.graphics();
-        this.resetBtnBg.setDepth(1);
-        
-        this.resetBtn = this.add.rectangle(width / 2, resetBtnY, 200, 48, 0xcc0000, 0);
-        this.resetBtn.setInteractive({ useHandCursor: true });
-        this.resetBtn.setDepth(2);
-        
-        this.resetText = this.add.text(width / 2, resetBtnY, typeof getText === 'function' ? getText('menu.resetProgress') : 'Reset Progress', {
-            fontSize: '17px',
-            fontFamily: 'Arial, sans-serif',
-            fontWeight: 'bold',
-            color: '#ffffff',
-            stroke: '#000000',
-            strokeThickness: 2,
-            resolution: 2
-        });
-        this.resetText.setOrigin(0.5);
-        this.resetText.setDepth(3);
-        
-        // Hover effect for reset button
-        this.resetBtn.on('pointerover', () => {
-            this.updateResetButtonStyle(true);
-            this.tweens.add({
-                targets: this.resetText,
-                scale: 1.1,
-                duration: 200,
-                ease: 'Back.easeOut'
-            });
-        });
-        
-        this.resetBtn.on('pointerout', () => {
-            this.updateResetButtonStyle(false);
-            this.tweens.add({
-                targets: this.resetText,
-                scale: 1,
-                duration: 200
-            });
-        });
-        
-        // Click handler: reset without confirmation (player knows the consequences)
-        this.resetBtn.on('pointerdown', () => {
-            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
-            localStorage.removeItem('baseInvadersData');
-            localStorage.removeItem('baseInvadersShop');
-            localStorage.removeItem('baseInvadersVibration');
-            location.reload();
-        });
 
         // LEADERBOARD button (рівномірна відстань від інших)
-        const leaderboardBtnY = height * (menuStartY / height + menuGap * 4);
+        const leaderboardBtnY = height * (menuStartY / height + menuGap * 3);
         this.leaderboardBtnBg = this.add.graphics();
         this.leaderboardBtnBg.setDepth(1);
         
@@ -349,7 +300,7 @@ class MenuScene extends Phaser.Scene {
         });
 
         // SETTINGS button (below leaderboard)
-        const settingsBtnY = height * (menuStartY / height + menuGap * 5);
+        const settingsBtnY = height * (menuStartY / height + menuGap * 4);
         this.settingsBtnBg = this.add.graphics();
         this.settingsBtnBg.setDepth(1);
         this.settingsBtn = this.add.rectangle(width / 2, settingsBtnY, 200, 48, 0x0052FF, 0);
@@ -416,7 +367,6 @@ class MenuScene extends Phaser.Scene {
         if (this.startText) this.startText.setText(g('menu.start'));
         if (this.languageText) this.languageText.setText(g('menu.language'));
         if (this.instructionsBtnText) this.instructionsBtnText.setText(g('menu.howToPlay'));
-        if (this.resetText) this.resetText.setText(g('menu.resetProgress'));
         if (this.leaderboardText) this.leaderboardText.setText(g('menu.leaderboard'));
         if (this.settingsText) this.settingsText.setText(g('menu.settings'));
     }
@@ -444,18 +394,6 @@ class MenuScene extends Phaser.Scene {
         buttonBg.fillRoundedRect(x, y, width, height, Math.min(15, height * 0.2));
         buttonBg.lineStyle(3, isHover ? 0x00ffff : 0x00d9ff, 1);
         buttonBg.strokeRoundedRect(x, y, width, height, Math.min(15, height * 0.2));
-    }
-
-    updateResetButtonStyle(isHover) {
-        const width = this.resetBtn.width;
-        const height = this.resetBtn.height;
-        const x = this.resetBtn.x - width / 2;
-        const y = this.resetBtn.y - height / 2;
-        this.resetBtnBg.clear();
-        this.resetBtnBg.fillStyle(isHover ? 0xff0000 : 0xcc0000, isHover ? 0.9 : 0.8);
-        this.resetBtnBg.fillRoundedRect(x, y, width, height, Math.min(10, height * 0.2));
-        this.resetBtnBg.lineStyle(2, isHover ? 0xff6666 : 0xff4444, 1);
-        this.resetBtnBg.strokeRoundedRect(x, y, width, height, Math.min(10, height * 0.2));
     }
 
     updateLeaderboardButtonStyle(isHover) {
@@ -507,9 +445,8 @@ class MenuScene extends Phaser.Scene {
         const startY = height * 0.40;
         const languageY = height * (0.40 + gap);
         const instructionsY = height * (0.40 + gap * 2);
-        const resetY = height * (0.40 + gap * 3);
-        const leaderboardY = height * (0.40 + gap * 4);
-        const settingsY = height * (0.40 + gap * 5);
+        const leaderboardY = height * (0.40 + gap * 3);
+        const settingsY = height * (0.40 + gap * 4);
 
         this.titleText.setPosition(width / 2, height * 0.08);
         this.titleText.setFontSize(`${titleSize}px`);
@@ -549,13 +486,6 @@ class MenuScene extends Phaser.Scene {
             this.instructionsBtnText.setFontSize('18px');
             this.updateInstructionsButtonStyle(false);
         }
-
-        // Reset button
-        this.resetBtn.setPosition(buttonX, resetY);
-        this.resetBtn.setSize(200, 48);
-        this.resetText.setPosition(buttonX, resetY);
-        this.resetText.setFontSize('17px');
-        this.updateResetButtonStyle(false);
 
         // Leaderboard button
         this.leaderboardBtn.setPosition(buttonX, leaderboardY);
