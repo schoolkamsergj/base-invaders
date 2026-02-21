@@ -682,16 +682,21 @@ class MenuScene extends Phaser.Scene {
         const panelH = Math.min(340, height * 0.85);
         const panelX = width / 2 - panelW / 2;
         const panelY = height / 2 - panelH / 2;
+        const panelRadius = 15;
         this.settingsOverlay = this.add.rectangle(0, 0, width * 2, height * 2, 0x000000, 0.9);
         this.settingsOverlay.setOrigin(0, 0);
         this.settingsOverlay.setDepth(depthSet);
-        // Full-screen hit area so touches never pass through to menu (fix tap-through on mobile)
         this.settingsOverlay.setInteractive();
-        this.settingsPanel = this.add.rectangle(width / 2, height / 2, panelW, panelH, 0x1a1a2e, 0.98);
+        // Panel: same style as pause-container — gradient, glow, cyan border
+        this.settingsPanel = this.add.graphics();
         this.settingsPanel.setDepth(depthSet + 1);
+        this.settingsPanel.fillStyle(0x00ffff, 0.15);
+        this.settingsPanel.fillRoundedRect(panelX - 4, panelY - 4, panelW + 8, panelH + 8, panelRadius + 4);
+        this.settingsPanel.fillGradientStyle(0x1a1a2e, 0x16213e, 0x16213e, 0x1a1a2e, 0.98);
+        this.settingsPanel.fillRoundedRect(panelX, panelY, panelW, panelH, panelRadius);
         this.settingsPanelBorder = this.add.graphics();
-        this.settingsPanelBorder.lineStyle(3, 0x0052FF, 1);
-        this.settingsPanelBorder.strokeRoundedRect(panelX, panelY, panelW, panelH, 10);
+        this.settingsPanelBorder.lineStyle(2, 0x00ffff, 1);
+        this.settingsPanelBorder.strokeRoundedRect(panelX, panelY, panelW, panelH, panelRadius);
         this.settingsPanelBorder.setDepth(depthSet + 1);
         const closeBtnSize = 20;
         const closeBtnCenterX = panelX + panelW - 10 - closeBtnSize / 2;
@@ -737,16 +742,20 @@ class MenuScene extends Phaser.Scene {
         const btnStyle = { fontSize: '18px', fontFamily: 'Arial, sans-serif', color: '#ffffff', align: 'left', resolution: 2 };
         let rowY = panelY + 58;
         const btnBgX = panelX + textOffset;
+        const btnCenterX = btnBgX + btnW / 2;
         this.settingsBtnShopBg = this.add.graphics();
         this.settingsBtnShopBg.setDepth(depthSet + 1);
         drawSettingsBtnBg(this.settingsBtnShopBg, btnBgX, rowY - btnH / 2, btnW, btnH);
         this.settingsBtnShop = this.add.text(textX, rowY, '🛒 ' + g('settings.shop'), btnStyle);
         this.settingsBtnShop.setOrigin(0, 0.5);
         this.settingsBtnShop.setDepth(depthSet + 2);
-        this.settingsBtnShop.setInteractive({ useHandCursor: true });
-        this.settingsBtnShop.on('pointerover', () => { this.settingsBtnShop.setScale(1.05); });
-        this.settingsBtnShop.on('pointerout', () => { this.settingsBtnShop.setScale(1); });
-        this.settingsBtnShop.on('pointerdown', () => {
+        this.settingsBtnShopHit = this.add.rectangle(btnCenterX, rowY, btnW, btnH);
+        this.settingsBtnShopHit.setVisible(false);
+        this.settingsBtnShopHit.setDepth(depthSet + 1.5);
+        this.settingsBtnShopHit.setInteractive({ useHandCursor: true });
+        this.settingsBtnShopHit.on('pointerover', () => { this.settingsBtnShop.setScale(1.05); });
+        this.settingsBtnShopHit.on('pointerout', () => { this.settingsBtnShop.setScale(1); });
+        this.settingsBtnShopHit.on('pointerdown', () => {
             if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
             this.closeSettingsOverlay();
             const shopEl = document.getElementById('shop-overlay');
@@ -765,10 +774,13 @@ class MenuScene extends Phaser.Scene {
         this.settingsVibText = this.add.text(textX, rowY, '📳 ' + g('settings.vibration') + ': ' + (vibEnabled ? g('shopItems.enabled') : g('shopItems.disabled')), btnStyle);
         this.settingsVibText.setOrigin(0, 0.5);
         this.settingsVibText.setDepth(depthSet + 2);
-        this.settingsVibText.setInteractive({ useHandCursor: true });
-        this.settingsVibText.on('pointerover', () => { this.settingsVibText.setScale(1.05); });
-        this.settingsVibText.on('pointerout', () => { this.settingsVibText.setScale(1); });
-        this.settingsVibText.on('pointerdown', () => {
+        this.settingsVibHit = this.add.rectangle(btnCenterX, rowY, btnW, btnH);
+        this.settingsVibHit.setVisible(false);
+        this.settingsVibHit.setDepth(depthSet + 1.5);
+        this.settingsVibHit.setInteractive({ useHandCursor: true });
+        this.settingsVibHit.on('pointerover', () => { this.settingsVibText.setScale(1.05); });
+        this.settingsVibHit.on('pointerout', () => { this.settingsVibText.setScale(1); });
+        this.settingsVibHit.on('pointerdown', () => {
             if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
             if (window.vibrationManager) {
                 const newState = !window.vibrationManager.enabled;
@@ -785,10 +797,13 @@ class MenuScene extends Phaser.Scene {
         this.settingsMusicText = this.add.text(textX, rowY, '🔊 ' + g('settings.music') + ': ' + (musicMuted ? g('shopItems.disabled') : g('shopItems.enabled')), btnStyle);
         this.settingsMusicText.setOrigin(0, 0.5);
         this.settingsMusicText.setDepth(depthSet + 2);
-        this.settingsMusicText.setInteractive({ useHandCursor: true });
-        this.settingsMusicText.on('pointerover', () => { this.settingsMusicText.setScale(1.05); });
-        this.settingsMusicText.on('pointerout', () => { this.settingsMusicText.setScale(1); });
-        this.settingsMusicText.on('pointerdown', () => {
+        this.settingsMusicHit = this.add.rectangle(btnCenterX, rowY, btnW, btnH);
+        this.settingsMusicHit.setVisible(false);
+        this.settingsMusicHit.setDepth(depthSet + 1.5);
+        this.settingsMusicHit.setInteractive({ useHandCursor: true });
+        this.settingsMusicHit.on('pointerover', () => { this.settingsMusicText.setScale(1.05); });
+        this.settingsMusicHit.on('pointerout', () => { this.settingsMusicText.setScale(1); });
+        this.settingsMusicHit.on('pointerdown', () => {
             if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
             const newMuted = localStorage.getItem('musicMuted') !== 'true';
             localStorage.setItem('musicMuted', String(newMuted));
@@ -815,10 +830,13 @@ class MenuScene extends Phaser.Scene {
         this.settingsResetText = this.add.text(textX, rowY, '🔄 ' + g('pause.resetGame'), btnStyle);
         this.settingsResetText.setOrigin(0, 0.5);
         this.settingsResetText.setDepth(depthSet + 2);
-        this.settingsResetText.setInteractive({ useHandCursor: true });
-        this.settingsResetText.on('pointerover', () => { this.settingsResetText.setScale(1.05); });
-        this.settingsResetText.on('pointerout', () => { this.settingsResetText.setScale(1); });
-        this.settingsResetText.on('pointerdown', () => {
+        this.settingsResetHit = this.add.rectangle(btnCenterX, rowY, btnW, btnH);
+        this.settingsResetHit.setVisible(false);
+        this.settingsResetHit.setDepth(depthSet + 1.5);
+        this.settingsResetHit.setInteractive({ useHandCursor: true });
+        this.settingsResetHit.on('pointerover', () => { this.settingsResetText.setScale(1.05); });
+        this.settingsResetHit.on('pointerout', () => { this.settingsResetText.setScale(1); });
+        this.settingsResetHit.on('pointerdown', () => {
             if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
             this.closeSettingsOverlay();
             const confirmEl = document.getElementById('reset-confirm-overlay');
@@ -829,9 +847,9 @@ class MenuScene extends Phaser.Scene {
     }
 
     closeSettingsOverlay() {
-        const el = [this.settingsOverlay, this.settingsPanel, this.settingsPanelBorder, this.settingsCloseBtnRect, this.settingsCloseBtnBorder, this.settingsCloseBtnXText, this.settingsTitle, this.settingsBtnShopBg, this.settingsBtnShop, this.settingsVibBg, this.settingsVibText, this.settingsMusicBg, this.settingsMusicText, this.settingsResetBg, this.settingsResetText];
+        const el = [this.settingsOverlay, this.settingsPanel, this.settingsPanelBorder, this.settingsCloseBtnRect, this.settingsCloseBtnBorder, this.settingsCloseBtnXText, this.settingsTitle, this.settingsBtnShopBg, this.settingsBtnShop, this.settingsBtnShopHit, this.settingsVibBg, this.settingsVibText, this.settingsVibHit, this.settingsMusicBg, this.settingsMusicText, this.settingsMusicHit, this.settingsResetBg, this.settingsResetText, this.settingsResetHit];
         el.forEach(o => { if (o && o.destroy) o.destroy(); });
-        this.settingsOverlay = this.settingsPanel = this.settingsPanelBorder = this.settingsCloseBtnRect = this.settingsCloseBtnBorder = this.settingsCloseBtnXText = this.settingsTitle = this.settingsBtnShopBg = this.settingsBtnShop = this.settingsVibBg = this.settingsVibText = this.settingsMusicBg = this.settingsMusicText = this.settingsResetBg = this.settingsResetText = null;
+        this.settingsOverlay = this.settingsPanel = this.settingsPanelBorder = this.settingsCloseBtnRect = this.settingsCloseBtnBorder = this.settingsCloseBtnXText = this.settingsTitle = this.settingsBtnShopBg = this.settingsBtnShop = this.settingsBtnShopHit = this.settingsVibBg = this.settingsVibText = this.settingsVibHit = this.settingsMusicBg = this.settingsMusicText = this.settingsMusicHit = this.settingsResetBg = this.settingsResetText = this.settingsResetHit = null;
     }
 }
 
