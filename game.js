@@ -800,13 +800,38 @@ class MenuScene extends Phaser.Scene {
                 if (gs.bgMusic) { if (newMuted) gs.bgMusic.stop(); else gs.bgMusic.play(); }
             }
         });
+        rowY += rowH;
+        // "Reset game" button — same logic as pause menu: show reset-confirm overlay
+        function drawSettingsResetBtnBg(gfx, x, y, w, h) {
+            gfx.clear();
+            gfx.fillStyle(0xcc0000, 0.8);
+            gfx.fillRoundedRect(x, y, w, h, btnRadius);
+            gfx.lineStyle(2, 0xff4444, 1);
+            gfx.strokeRoundedRect(x, y, w, h, btnRadius);
+        }
+        this.settingsResetBg = this.add.graphics();
+        this.settingsResetBg.setDepth(depthSet + 1);
+        drawSettingsResetBtnBg(this.settingsResetBg, btnBgX, rowY - btnH / 2, btnW, btnH);
+        this.settingsResetText = this.add.text(textX, rowY, '🔄 ' + g('pause.resetGame'), btnStyle);
+        this.settingsResetText.setOrigin(0, 0.5);
+        this.settingsResetText.setDepth(depthSet + 2);
+        this.settingsResetText.setInteractive({ useHandCursor: true });
+        this.settingsResetText.on('pointerover', () => { this.settingsResetText.setScale(1.05); });
+        this.settingsResetText.on('pointerout', () => { this.settingsResetText.setScale(1); });
+        this.settingsResetText.on('pointerdown', () => {
+            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
+            this.closeSettingsOverlay();
+            const confirmEl = document.getElementById('reset-confirm-overlay');
+            if (confirmEl) confirmEl.classList.remove('hidden');
+            if (typeof window.refreshHtmlOverlaysI18n === 'function') window.refreshHtmlOverlaysI18n();
+        });
         console.log('UI FIXED: settings/shop no click through');
     }
 
     closeSettingsOverlay() {
-        const el = [this.settingsOverlay, this.settingsPanel, this.settingsPanelBorder, this.settingsCloseBtnRect, this.settingsCloseBtnBorder, this.settingsCloseBtnXText, this.settingsTitle, this.settingsBtnShopBg, this.settingsBtnShop, this.settingsVibBg, this.settingsVibText, this.settingsMusicBg, this.settingsMusicText];
+        const el = [this.settingsOverlay, this.settingsPanel, this.settingsPanelBorder, this.settingsCloseBtnRect, this.settingsCloseBtnBorder, this.settingsCloseBtnXText, this.settingsTitle, this.settingsBtnShopBg, this.settingsBtnShop, this.settingsVibBg, this.settingsVibText, this.settingsMusicBg, this.settingsMusicText, this.settingsResetBg, this.settingsResetText];
         el.forEach(o => { if (o && o.destroy) o.destroy(); });
-        this.settingsOverlay = this.settingsPanel = this.settingsPanelBorder = this.settingsCloseBtnRect = this.settingsCloseBtnBorder = this.settingsCloseBtnXText = this.settingsTitle = this.settingsBtnShopBg = this.settingsBtnShop = this.settingsVibBg = this.settingsVibText = this.settingsMusicBg = this.settingsMusicText = null;
+        this.settingsOverlay = this.settingsPanel = this.settingsPanelBorder = this.settingsCloseBtnRect = this.settingsCloseBtnBorder = this.settingsCloseBtnXText = this.settingsTitle = this.settingsBtnShopBg = this.settingsBtnShop = this.settingsVibBg = this.settingsVibText = this.settingsMusicBg = this.settingsMusicText = this.settingsResetBg = this.settingsResetText = null;
     }
 }
 
