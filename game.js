@@ -689,12 +689,17 @@ class MenuScene extends Phaser.Scene {
         this.settingsOverlay.setInteractive();
         this.settingsPanel = this.add.rectangle(width / 2, height / 2, panelW, panelH, 0x1a1a2e, 0.98);
         this.settingsPanel.setDepth(depthSet + 1);
-        // Neon border like Pause: outer glow + sharp inner border
+        // Border + real glow like Pause (box-shadow: 0 0 30px rgba(0,255,255,0.5)) — soft layered strokes
         this.settingsPanelBorder = this.add.graphics();
         this.settingsPanelBorder.setDepth(depthSet + 1);
-        this.settingsPanelBorder.lineStyle(10, 0x00ffff, 0.35);
-        this.settingsPanelBorder.strokeRoundedRect(panelX - 4, panelY - 4, panelW + 8, panelH + 8, 14);
-        this.settingsPanelBorder.lineStyle(3, 0x00ffff, 1);
+        const glowR = 12;
+        this.settingsPanelBorder.lineStyle(24, 0x00ffff, 0.08);
+        this.settingsPanelBorder.strokeRoundedRect(panelX - glowR, panelY - glowR, panelW + glowR * 2, panelH + glowR * 2, 18);
+        this.settingsPanelBorder.lineStyle(18, 0x00ffff, 0.12);
+        this.settingsPanelBorder.strokeRoundedRect(panelX - 8, panelY - 8, panelW + 16, panelH + 16, 16);
+        this.settingsPanelBorder.lineStyle(10, 0x00ffff, 0.22);
+        this.settingsPanelBorder.strokeRoundedRect(panelX - 4, panelY - 4, panelW + 8, panelH + 8, 13);
+        this.settingsPanelBorder.lineStyle(2, 0x00ffff, 1);
         this.settingsPanelBorder.strokeRoundedRect(panelX, panelY, panelW, panelH, 10);
         const closeBtnSize = 20;
         const closeBtnCenterX = panelX + panelW - 10 - closeBtnSize / 2;
@@ -713,37 +718,38 @@ class MenuScene extends Phaser.Scene {
         this.settingsCloseBtnXText = this.add.text(closeBtnCenterX, closeBtnCenterY, '✕', { fontSize: '14px', fontFamily: 'Arial', color: '#ffffff', resolution: 2 });
         this.settingsCloseBtnXText.setOrigin(0.5);
         this.settingsCloseBtnXText.setDepth(depthSet + 3);
-        const textOffset = 24;
+        const textOffset = 28;
         const textX = panelX + textOffset;
-        const rowH = 44;
+        // Pause: padding 40px, h2 margin-bottom 30px, button margin 10px — match spacing
+        const rowH = 54;
         const btnW = panelW - 2 * textOffset;
-        const btnH = 36;
-        const btnRadius = Math.min(10, btnH * 0.2);
+        const btnH = 44;
+        const btnRadius = 8;
         function drawSettingsBtnBg(gfx, x, y, w, h) {
             gfx.clear();
-            gfx.fillStyle(0x0052FF, 0.9);
+            gfx.fillStyle(0x0052FF, 1);
             gfx.fillRoundedRect(x, y, w, h, btnRadius);
-            gfx.lineStyle(4, 0x00ffff, 0.4);
-            gfx.strokeRoundedRect(x - 1, y - 1, w + 2, h + 2, btnRadius + 1);
+            gfx.lineStyle(8, 0x00ffff, 0.25);
+            gfx.strokeRoundedRect(x - 2, y - 2, w + 4, h + 4, btnRadius + 2);
             gfx.lineStyle(2, 0x00ffff, 1);
             gfx.strokeRoundedRect(x, y, w, h, btnRadius);
         }
         const titleStr = g('menu.settings');
-        this.settingsTitle = this.add.text(textX, panelY + 22, '⚙️ ' + titleStr, {
-            fontSize: '24px',
+        // Title: like Pause — color #00ffff, text-shadow glow, no heavy stroke for clarity
+        this.settingsTitle = this.add.text(panelX + panelW / 2, panelY + 28, '⚙️ ' + titleStr, {
+            fontSize: '26px',
             fontFamily: 'Arial, sans-serif',
             fontWeight: 'bold',
             color: '#00ffff',
-            stroke: '#0088aa',
-            strokeThickness: 4,
-            align: 'left',
+            align: 'center',
             resolution: 2
         });
-        this.settingsTitle.setOrigin(0, 0.5);
+        this.settingsTitle.setOrigin(0.5, 0.5);
         this.settingsTitle.setDepth(depthSet + 2);
-        this.settingsTitle.setShadow(0, 0, '#00ffff', 12, true, true);
-        const btnStyle = { fontSize: '19px', fontFamily: 'Arial, sans-serif', fontWeight: 'bold', color: '#ffffff', stroke: '#000000', strokeThickness: 2, align: 'left', resolution: 2 };
-        let rowY = panelY + 58;
+        this.settingsTitle.setShadow(0, 0, '#00ffff', 10, true, true);
+        // First button lower under title — like Pause (margin-bottom 30px under h2)
+        const btnStyle = { fontSize: '18px', fontFamily: 'Arial, sans-serif', fontWeight: 'bold', color: '#ffffff', stroke: '#000000', strokeThickness: 1, align: 'left', resolution: 2 };
+        let rowY = panelY + 88;
         const btnBgX = panelX + textOffset;
         this.settingsBtnShopBg = this.add.graphics();
         this.settingsBtnShopBg.setDepth(depthSet + 1);
@@ -815,13 +821,13 @@ class MenuScene extends Phaser.Scene {
         this.settingsMusicText.setOrigin(0, 0.5);
         this.settingsMusicText.setDepth(depthSet + 3);
         rowY += rowH;
-        // "Reset game" button — same logic as pause menu: show reset-confirm overlay (red + glow like Pause)
+        // "Reset game" button — red + soft glow like Pause .reset-btn (box-shadow 0 0 15px)
         function drawSettingsResetBtnBg(gfx, x, y, w, h) {
             gfx.clear();
-            gfx.fillStyle(0xcc0000, 0.9);
+            gfx.fillStyle(0xcc0000, 1);
             gfx.fillRoundedRect(x, y, w, h, btnRadius);
-            gfx.lineStyle(4, 0xff4444, 0.5);
-            gfx.strokeRoundedRect(x - 1, y - 1, w + 2, h + 2, btnRadius + 1);
+            gfx.lineStyle(10, 0xff4444, 0.2);
+            gfx.strokeRoundedRect(x - 3, y - 3, w + 6, h + 6, btnRadius + 3);
             gfx.lineStyle(2, 0xff4444, 1);
             gfx.strokeRoundedRect(x, y, w, h, btnRadius);
         }
