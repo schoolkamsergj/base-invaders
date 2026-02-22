@@ -978,7 +978,7 @@ class GameScene extends Phaser.Scene {
         if (!localStorage.getItem('base_invaders_v2_migrated')) {
             console.log('🔄 Migrating to V2: Clearing old data...');
 
-            // Clear all old game data (including local leaderboard high score so first score after migration can фbe submitted)
+            // Clear all old game data (including local leaderboard high score so first score after migration can be submitted)
             localStorage.removeItem('baseInvadersData');
             localStorage.removeItem('baseInvadersShop');
             localStorage.removeItem('baseInvadersLeaderboard');
@@ -3187,12 +3187,6 @@ if (typeof Phaser === 'undefined') {
         width: window.innerWidth,
         height: window.innerHeight,
         parent: 'game-container',
-        resolution: Math.min(window.devicePixelRatio || 1, 2),
-        render: {
-            antialias: true,
-            pixelArt: false,
-            roundPixels: false
-        },
         physics: {
             default: 'arcade',
             arcade: {
@@ -3206,7 +3200,6 @@ if (typeof Phaser === 'undefined') {
             autoCenter: Phaser.Scale.CENTER_BOTH
         }
     };
-    
 
     console.log('Creating Phaser game (scale: RESIZE, CENTER_BOTH)', { w: config.width, h: config.height });
     const game = new Phaser.Game(config);
