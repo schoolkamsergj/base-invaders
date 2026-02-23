@@ -3187,7 +3187,6 @@ if (typeof Phaser === 'undefined') {
         width: window.innerWidth,
         height: window.innerHeight,
         parent: 'game-container',
-        resolution: window.devicePixelRatio || 1,
         physics: {
             default: 'arcade',
             arcade: {
