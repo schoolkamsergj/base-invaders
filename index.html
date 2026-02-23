@@ -111,20 +111,20 @@
     <!-- Settings Overlay (HTML, same style as pause / shop) -->
     <div id="settings-overlay" class="overlay hidden" style="z-index: 10002; pointer-events: auto;">
         <div class="pause-container" style="position: relative;">
-            <button id="close-settings" class="close-btn" type="button" aria-label="Close">✕</button>
+            <button id="close-settings" class="close-btn" type="button" aria-label="Close" style="position: absolute; top: 10px; right: 10px; width: 32px; height: 32px; min-width: 32px; min-height: 32px; padding: 0; border-radius: 4px; background: #cc0000; border: 2px solid #990000; color: #fff; font-size: 16px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer;">✕</button>
             <h2 id="settings-title">⚙️ SETTINGS</h2>
-            <button id="settings-shop-btn" class="menu-btn">Shop</button>
-            <button id="settings-vibration-btn" class="menu-btn">Vibration</button>
-            <button id="settings-music-btn" class="menu-btn">Music</button>
-            <button id="settings-reset-btn" class="menu-btn reset-btn">Reset Game</button>
+            <button id="settings-shop-btn" class="menu-btn" style="width: 100%; box-sizing: border-box;">Shop</button>
+            <button id="settings-vibration-btn" class="menu-btn" style="width: 100%; box-sizing: border-box;">Vibration</button>
+            <button id="settings-music-btn" class="menu-btn" style="width: 100%; box-sizing: border-box;">Music</button>
+            <button id="settings-reset-btn" class="menu-btn reset-btn" style="width: 100%; box-sizing: border-box;">Reset Game</button>
         </div>
     </div>
     <!-- Language Overlay (HTML, same style as pause / shop) -->
     <div id="language-overlay" class="overlay hidden" style="z-index: 10002; pointer-events: auto;">
         <div class="pause-container" style="position: relative;">
-            <button id="close-language" class="close-btn" type="button" aria-label="Close">✕</button>
+            <button id="close-language" class="close-btn" type="button" aria-label="Close" style="position: absolute; top: 10px; right: 10px; width: 32px; height: 32px; min-width: 32px; min-height: 32px; padding: 0; border-radius: 4px; background: #cc0000; border: 2px solid #990000; color: #fff; font-size: 16px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer;">✕</button>
             <h2 id="language-title">🌐 Language</h2>
-            <div id="language-buttons" style="display: flex; flex-direction: column; align-items: stretch; gap: 10px; margin-top: 10px;">
+            <div id="language-buttons" style="display: flex; flex-direction: column; align-items: stretch; gap: 10px; margin-top: 10px; max-height: 55vh; overflow-y: auto; -webkit-overflow-scrolling: touch;">
                 <button id="lang-btn-zh" class="menu-btn">Chinese</button>
                 <button id="lang-btn-be" class="menu-btn">Belarusian</button>
                 <button id="lang-btn-de" class="menu-btn">German</button>

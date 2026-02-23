@@ -28,7 +28,7 @@ class MenuScene extends Phaser.Scene {
             color: '#00d9ff',
             stroke: '#0088ff',
             strokeThickness: 4,
-            resolution: 2
+            resolution: window.devicePixelRatio || 2
         });
         this.titleText.setOrigin(0.5);
         this.titleText.setShadow(0, 0, '#00d9ff', 20, true, true);
@@ -52,7 +52,7 @@ class MenuScene extends Phaser.Scene {
             color: '#ffffff',
             align: 'center',
             lineSpacing: 8,
-            resolution: 2,
+            resolution: window.devicePixelRatio || 2,
             wordWrap: { width: Math.min(450, width * 0.85) }
         });
         this.welcomeText.setOrigin(0.5, 0);
@@ -66,7 +66,7 @@ class MenuScene extends Phaser.Scene {
             fontWeight: 'bold',
             color: '#ffd700',
             align: 'center',
-            resolution: 2
+            resolution: window.devicePixelRatio || 2
         });
         this.goodLuckText.setOrigin(0.5);
         this.goodLuckText.setDepth(2);
@@ -100,7 +100,7 @@ class MenuScene extends Phaser.Scene {
             color: '#00ff00',
             stroke: '#00aa00',
             strokeThickness: 3,
-            resolution: 2
+            resolution: window.devicePixelRatio || 2
         });
         this.startText.setOrigin(0.5);
         this.startText.setDepth(3);
@@ -161,7 +161,7 @@ class MenuScene extends Phaser.Scene {
             color: '#ffffff',
             stroke: '#0066cc',
             strokeThickness: 2,
-            resolution: 2
+            resolution: window.devicePixelRatio || 2
         });
         this.languageText.setOrigin(0.5);
         this.languageText.setDepth(3);
@@ -212,7 +212,7 @@ class MenuScene extends Phaser.Scene {
                 color: '#ffffff',
                 stroke: '#0066cc',
                 strokeThickness: 2,
-                resolution: 2
+                resolution: window.devicePixelRatio || 2
             }
         );
         this.instructionsBtnText.setOrigin(0.5);
@@ -268,7 +268,7 @@ class MenuScene extends Phaser.Scene {
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: 2,
-            resolution: 2
+            resolution: window.devicePixelRatio || 2
         });
         this.leaderboardText.setOrigin(0.5);
         this.leaderboardText.setDepth(3);
@@ -313,7 +313,7 @@ class MenuScene extends Phaser.Scene {
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: 2,
-            resolution: 2
+            resolution: window.devicePixelRatio || 2
         });
         this.settingsText.setOrigin(0.5);
         this.settingsText.setDepth(3);
@@ -450,16 +450,19 @@ class MenuScene extends Phaser.Scene {
 
         this.titleText.setPosition(width / 2, height * 0.08);
         this.titleText.setFontSize(`${titleSize}px`);
+        this.titleText.setResolution(window.devicePixelRatio || 2);
 
         if (this.welcomeText) {
             this.welcomeText.setPosition(width / 2, height * 0.14);
             this.welcomeText.setFontSize(`${textSize}px`);
             this.welcomeText.setWordWrapWidth(Math.min(450, width * 0.85), true);
+            this.welcomeText.setResolution(window.devicePixelRatio || 2);
         }
 
         if (this.goodLuckText) {
             this.goodLuckText.setPosition(width / 2, height * 0.30);
             this.goodLuckText.setFontSize(`${Math.max(16, Math.min(width * 0.035, 22))}px`);
+            this.goodLuckText.setResolution(window.devicePixelRatio || 2);
         }
 
         // START button (менші, рівномірні відстані)
@@ -467,6 +470,7 @@ class MenuScene extends Phaser.Scene {
         this.startBtn.setSize(220, 68);
         this.startText.setPosition(buttonX, startY);
         this.startText.setFontSize('30px');
+        this.startText.setResolution(window.devicePixelRatio || 2);
         this.updateMenuButtonStyle(this.startBtnBg, this.startBtn, false);
 
         // Language button
@@ -475,6 +479,7 @@ class MenuScene extends Phaser.Scene {
             this.languageBtn.setSize(200, 48);
             this.languageText.setPosition(buttonX, languageY);
             this.languageText.setFontSize('18px');
+            this.languageText.setResolution(window.devicePixelRatio || 2);
             this.updateLanguageButtonStyle(false);
         }
 
@@ -484,6 +489,7 @@ class MenuScene extends Phaser.Scene {
             this.instructionsBtn.setSize(200, 48);
             this.instructionsBtnText.setPosition(buttonX, instructionsY);
             this.instructionsBtnText.setFontSize('18px');
+            this.instructionsBtnText.setResolution(window.devicePixelRatio || 2);
             this.updateInstructionsButtonStyle(false);
         }
 
@@ -492,6 +498,7 @@ class MenuScene extends Phaser.Scene {
         this.leaderboardBtn.setSize(200, 48);
         this.leaderboardText.setPosition(buttonX, leaderboardY);
         this.leaderboardText.setFontSize('17px');
+        this.leaderboardText.setResolution(window.devicePixelRatio || 2);
         this.updateLeaderboardButtonStyle(false);
 
         // Settings button
@@ -500,6 +507,7 @@ class MenuScene extends Phaser.Scene {
             this.settingsBtn.setSize(200, 48);
             this.settingsText.setPosition(buttonX, settingsY);
             this.settingsText.setFontSize('17px');
+            this.settingsText.setResolution(window.devicePixelRatio || 2);
             this.updateSettingsButtonStyle(false);
         }
     }
