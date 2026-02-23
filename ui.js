@@ -67,7 +67,8 @@ class UI {
             fontWeight: 'bold',
             color: '#ffd700',
             stroke: '#000000',
-            strokeThickness: 4
+            strokeThickness: 4,
+            resolution: window.devicePixelRatio || 2
         });
         this.goldText.setShadow(3, 3, '#ffaa00', 3, true);
         
@@ -76,7 +77,8 @@ class UI {
             fontWeight: 'bold',
             color: '#00ffff',
             stroke: '#000000',
-            strokeThickness: 4
+            strokeThickness: 4,
+            resolution: window.devicePixelRatio || 2
         });
         this.lightningText.setShadow(3, 3, '#0088ff', 3, true);
         
@@ -85,7 +87,8 @@ class UI {
             fontWeight: 'bold',
             color: '#ff00ff',
             stroke: '#000000',
-            strokeThickness: 4
+            strokeThickness: 4,
+            resolution: window.devicePixelRatio || 2
         });
         this.diamondsText.setShadow(3, 3, '#ff0088', 3, true);
         
@@ -104,7 +107,8 @@ class UI {
                 color: '#00ffff',
                 align: 'center',
                 stroke: '#000000',
-                strokeThickness: 5
+                strokeThickness: 5,
+                resolution: window.devicePixelRatio || 2
             }
         );
         this.stageText.setOrigin(0.5, 0);
@@ -130,7 +134,8 @@ class UI {
                 fontSize: '20px',
                 fontWeight: 'bold',
                 color: '#ffff00',
-                align: 'right'
+                align: 'right',
+                resolution: window.devicePixelRatio || 2
             }
         );
         this.scoreText.setOrigin(1, 0);
@@ -146,7 +151,8 @@ class UI {
                 fontSize: '16px',
                 fontWeight: 'bold',
                 color: '#00ff00',
-                align: 'right'
+                align: 'right',
+                resolution: window.devicePixelRatio || 2
             }
         );
         this.levelText.setOrigin(1, 0);
@@ -200,7 +206,8 @@ class UI {
                 fontSize: '14px',
                 fontWeight: 'bold',
                 color: '#ffffff',
-                align: 'center'
+                align: 'center',
+                resolution: window.devicePixelRatio || 2
             }
         );
         this.healthText.setOrigin(0.5);
@@ -208,15 +215,15 @@ class UI {
         this.healthText.setDepth(102);
 
         // Extra lives (hearts), Shield, Score 2x - to the right of HP bar
-        this.extraLivesText = this.scene.add.text(0, 0, '', { fontSize: '14px', fontWeight: 'bold', color: '#ff69b4' });
+        this.extraLivesText = this.scene.add.text(0, 0, '', { fontSize: '14px', fontWeight: 'bold', color: '#ff69b4', resolution: window.devicePixelRatio || 2 });
         this.extraLivesText.setOrigin(0, 0.5);
         this.extraLivesText.setScrollFactor(0);
         this.extraLivesText.setDepth(102);
-        this.shieldText = this.scene.add.text(0, 0, '', { fontSize: '12px', fontWeight: 'bold', color: '#4488ff' });
+        this.shieldText = this.scene.add.text(0, 0, '', { fontSize: '12px', fontWeight: 'bold', color: '#4488ff', resolution: window.devicePixelRatio || 2 });
         this.shieldText.setOrigin(0, 0.5);
         this.shieldText.setScrollFactor(0);
         this.shieldText.setDepth(102);
-        this.score2xText = this.scene.add.text(0, 0, '', { fontSize: '12px', fontWeight: 'bold', color: '#ffd700' });
+        this.score2xText = this.scene.add.text(0, 0, '', { fontSize: '12px', fontWeight: 'bold', color: '#ffd700', resolution: window.devicePixelRatio || 2 });
         this.score2xText.setOrigin(0, 0.5);
         this.score2xText.setScrollFactor(0);
         this.score2xText.setDepth(102);
@@ -242,7 +249,8 @@ class UI {
                 fontSize: '14px',
                 fontWeight: 'bold',
                 color: '#ffffff',
-                align: 'center'
+                align: 'center',
+                resolution: window.devicePixelRatio || 2
             }
         );
         this.shopBtnText.setOrigin(0.5);
@@ -261,7 +269,7 @@ class UI {
         this.pauseBtn = this.scene.add.rectangle(
             0, 0, // Temporary - set by applyLayout
             60, 30,
-            0x666666,
+            0x0052FF,
             0.8
         );
         this.pauseBtn.setScrollFactor(0);
@@ -275,7 +283,8 @@ class UI {
             '⏸️',
             {
                 fontSize: '18px',
-                align: 'center'
+                align: 'center',
+                resolution: window.devicePixelRatio || 2
             }
         );
         this.pauseBtnText.setOrigin(0.5);
@@ -312,7 +321,7 @@ class UI {
             this.smartBombBtn.setScrollFactor(0);
             this.smartBombBtn.setDepth(100);
             this.smartBombBtn.setInteractive({ useHandCursor: true });
-            this.smartBombBtnText = scene.add.text(0, 0, '\u{1F4A3}', { fontSize: '24px', align: 'center' });
+            this.smartBombBtnText = scene.add.text(0, 0, '\u{1F4A3}', { fontSize: '24px', align: 'center', resolution: window.devicePixelRatio || 2 });
             this.smartBombBtnText.setOrigin(0.5);
             this.smartBombBtnText.setScrollFactor(0);
             this.smartBombBtnText.setDepth(101);
@@ -327,7 +336,7 @@ class UI {
             this.laserBtn.setScrollFactor(0);
             this.laserBtn.setDepth(100);
             this.laserBtn.setInteractive({ useHandCursor: true });
-            this.laserBtnText = scene.add.text(0, 0, '\u26A1', { fontSize: '26px', align: 'center' });
+            this.laserBtnText = scene.add.text(0, 0, '\u26A1', { fontSize: '26px', align: 'center', resolution: window.devicePixelRatio || 2 });
             this.laserBtnText.setOrigin(0.5);
             this.laserBtnText.setScrollFactor(0);
             this.laserBtnText.setDepth(101);

@@ -570,91 +570,46 @@ class MenuScene extends Phaser.Scene {
     }
 
     showLanguageOverlay() {
-        const width = this.scale.width;
-        const height = this.scale.height;
-        const depthLang = 10000;
-        this.langOverlay = this.add.rectangle(0, 0, width * 2, height * 2, 0x000000, 0.9);
-        this.langOverlay.setOrigin(0, 0);
-        this.langOverlay.setDepth(depthLang);
-        this.langOverlay.setInteractive();
-        // Do not close on tap on overlay — only the X button closes (user requested)
-        const panelW = Math.min(340, width * 0.85);
-        const panelH = Math.min(500, height * 0.85);
-        const panelX = width / 2 - panelW / 2;
-        const panelY = height / 2 - panelH / 2;
-        const textOffset = 40;
-        const textX = panelX + textOffset;
-        this.langPanel = this.add.rectangle(width / 2, height / 2, panelW, panelH, 0x1a1a2e, 0.98);
-        this.langPanel.setDepth(depthLang + 1);
-        this.langPanelBorder = this.add.graphics();
-        this.langPanelBorder.lineStyle(3, 0x0052FF, 1);
-        this.langPanelBorder.strokeRoundedRect(panelX, panelY, panelW, panelH, 10);
-        this.langPanelBorder.setDepth(depthLang + 1);
-        // Close button (X) top-right, same style as Settings / Leaderboard
-        const closeBtnSize = 20;
-        const closeBtnCenterX = panelX + panelW - 10 - closeBtnSize / 2;
-        const closeBtnCenterY = panelY + 10 + closeBtnSize / 2;
-        this.langCloseBtnRect = this.add.rectangle(closeBtnCenterX, closeBtnCenterY, closeBtnSize, closeBtnSize, 0xcc0000, 1);
-        this.langCloseBtnRect.setDepth(depthLang + 2);
-        this.langCloseBtnRect.setInteractive({ useHandCursor: true });
-        this.langCloseBtnRect.on('pointerdown', () => {
-            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
-            this.closeLanguageOverlay();
-        });
-        this.langCloseBtnBorder = this.add.graphics();
-        this.langCloseBtnBorder.lineStyle(2, 0x990000, 1);
-        this.langCloseBtnBorder.strokeRoundedRect(closeBtnCenterX - closeBtnSize / 2, closeBtnCenterY - closeBtnSize / 2, closeBtnSize, closeBtnSize, 3);
-        this.langCloseBtnBorder.setDepth(depthLang + 2);
-        this.langCloseBtnXText = this.add.text(closeBtnCenterX, closeBtnCenterY, '✕', { fontSize: '14px', fontFamily: 'Arial', color: '#ffffff', resolution: 2 });
-        this.langCloseBtnXText.setOrigin(0.5);
-        this.langCloseBtnXText.setDepth(depthLang + 3);
-        const titleStr = typeof getText === 'function' ? getText('menu.language') : 'Language 🌐';
-        this.langTitle = this.add.text(textX, panelY + 26, titleStr, {
-            fontSize: '20px',
-            fontFamily: 'Arial, sans-serif',
-            fontWeight: 'bold',
-            color: '#00ffff',
-            align: 'left',
-            resolution: 2
-        });
-        this.langTitle.setOrigin(0, 0.5);
-        this.langTitle.setDepth(depthLang + 2);
-        const g = typeof window !== 'undefined' && typeof window.getText === 'function' ? window.getText : (typeof getText === 'function' ? getText : function (k) { return k; });
-        const zhStr = g('lang.chinese');
-        const beStr = g('lang.belarusian');
-        const deStr = g('lang.german');
-        const enStr = g('lang.english');
-        const frStr = g('lang.french');
-        const hiStr = g('lang.hindi');
-        const idStr = g('lang.indonesian');
-        const ptStr = g('lang.portuguese');
-        const ruStr = g('lang.russian');
-        const tgStr = g('lang.tagalog');
-        const viStr = g('lang.vietnamese');
-        const ukStr = g('lang.ukrainian');
-        const rowH = 30;
-        const firstRowY = panelY + 66;
-        var textStyle = { fontSize: '18px', fontFamily: 'Arial, sans-serif', color: '#ffffff', align: 'left', resolution: 2 };
-        function addLangButton(y, str, langCode, logEmoji) {
-            const t = this.add.text(textX, y, str, textStyle);
-            t.setOrigin(0, 0.5);
-            t.setDepth(depthLang + 2);
-            t.setInteractive({ useHandCursor: true });
-            t.on('pointerdown', () => { console.log(logEmoji); this._applyLang(langCode); });
-            return t;
+        const overlayEl = document.getElementById('language-overlay');
+        if (!overlayEl) return;
+        const g = typeof window !== 'undefined' && typeof window.getText === 'function'
+            ? window.getText
+            : (typeof getText === 'function' ? getText : function (k) { return k; });
+        const titleEl = document.getElementById('language-title');
+        if (titleEl && g) {
+            titleEl.textContent = g('menu.language') || 'Language 🌐';
         }
-        this.langZh = addLangButton.call(this, firstRowY + rowH * 0, zhStr, 'zh', '🇨🇳 ZH CLICKED');
-        this.langBe = addLangButton.call(this, firstRowY + rowH * 1, beStr, 'be', '🇧🇾 BE CLICKED');
-        this.langDe = addLangButton.call(this, firstRowY + rowH * 2, deStr, 'de', '🇩🇪 DE CLICKED');
-        this.langEn = addLangButton.call(this, firstRowY + rowH * 3, enStr, 'en', '🇺🇸 EN CLICKED');
-        this.langFr = addLangButton.call(this, firstRowY + rowH * 4, frStr, 'fr', '🇫🇷 FR CLICKED');
-        this.langHi = addLangButton.call(this, firstRowY + rowH * 5, hiStr, 'hi', '🇮🇳 HI CLICKED');
-        this.langId = addLangButton.call(this, firstRowY + rowH * 6, idStr, 'id', '🇮🇩 ID CLICKED');
-        this.langPt = addLangButton.call(this, firstRowY + rowH * 7, ptStr, 'pt', '🇧🇷 PT CLICKED');
-        this.langRu = addLangButton.call(this, firstRowY + rowH * 8, ruStr, 'ru', '🇷🇺 RU CLICKED');
-        this.langTg = addLangButton.call(this, firstRowY + rowH * 9, tgStr, 'tg', '🇵🇭 TG CLICKED');
-        this.langVi = addLangButton.call(this, firstRowY + rowH * 10, viStr, 'vi', '🇻🇳 VI CLICKED');
-        this.langUk = addLangButton.call(this, firstRowY + rowH * 11, ukStr, 'uk', '🇺🇦 UK CLICKED');
+        const map = [
+            ['lang-btn-zh', 'zh', 'lang.chinese'],
+            ['lang-btn-be', 'be', 'lang.belarusian'],
+            ['lang-btn-de', 'de', 'lang.german'],
+            ['lang-btn-en', 'en', 'lang.english'],
+            ['lang-btn-fr', 'fr', 'lang.french'],
+            ['lang-btn-hi', 'hi', 'lang.hindi'],
+            ['lang-btn-id', 'id', 'lang.indonesian'],
+            ['lang-btn-pt', 'pt', 'lang.portuguese'],
+            ['lang-btn-ru', 'ru', 'lang.russian'],
+            ['lang-btn-tg', 'tg', 'lang.tagalog'],
+            ['lang-btn-vi', 'vi', 'lang.vietnamese'],
+            ['lang-btn-uk', 'uk', 'lang.ukrainian']
+        ];
+        map.forEach(([id, code, key]) => {
+            const btn = document.getElementById(id);
+            if (!btn) return;
+            if (g) btn.textContent = g(key);
+            btn.onclick = () => {
+                console.log('Language click', code);
+                this._applyLang(code);
+            };
+        });
+        const closeBtn = document.getElementById('close-language');
+        if (closeBtn) {
+            closeBtn.onclick = () => {
+                this.closeLanguageOverlay();
+            };
+        }
+        overlayEl.classList.remove('hidden');
+        if (typeof window.baseInvadersUpdateOverlayPointerEvents === 'function') window.baseInvadersUpdateOverlayPointerEvents();
     }
 
     /** Calls setLang(lang) then closes overlay and refreshMenuTexts. E.g. _applyLang('hi') -> setLang('hi'). */
@@ -668,194 +623,121 @@ class MenuScene extends Phaser.Scene {
     }
 
     closeLanguageOverlay() {
-        const el = [this.langOverlay, this.langPanel, this.langPanelBorder, this.langCloseBtnRect, this.langCloseBtnBorder, this.langCloseBtnXText, this.langTitle, this.langEn, this.langHi, this.langRu, this.langUk, this.langTg, this.langId, this.langVi, this.langPt, this.langFr, this.langDe, this.langZh, this.langBe];
-        el.forEach(o => { if (o && o.destroy) o.destroy(); });
-        this.langOverlay = this.langPanel = this.langPanelBorder = this.langCloseBtnRect = this.langCloseBtnBorder = this.langCloseBtnXText = this.langTitle = this.langEn = this.langHi = this.langRu = this.langUk = this.langTg = this.langId = this.langVi = this.langPt = this.langFr = this.langDe = this.langZh = this.langBe = null;
+        const overlayEl = document.getElementById('language-overlay');
+        const closeBtn = document.getElementById('close-language');
+        if (overlayEl) overlayEl.classList.add('hidden');
+        if (closeBtn) closeBtn.onclick = null;
+        if (typeof window.baseInvadersUpdateOverlayPointerEvents === 'function') window.baseInvadersUpdateOverlayPointerEvents();
     }
 
     showSettingsOverlay() {
-        const width = this.scale.width;
-        const height = this.scale.height;
-        const depthSet = 10000;
-        const g = typeof getText === 'function' ? getText : (k) => k;
-        const panelW = Math.min(380, width * 0.9);
-        const panelH = Math.min(390, height * 0.85);
-        const panelX = width / 2 - panelW / 2;
-        const panelY = height / 2 - panelH / 2;
-        this.settingsOverlay = this.add.rectangle(0, 0, width * 2, height * 2, 0x000000, 0.9);
-        this.settingsOverlay.setOrigin(0, 0);
-        this.settingsOverlay.setDepth(depthSet);
-        // Full-screen hit area so touches never pass through to menu (fix tap-through on mobile)
-        this.settingsOverlay.setInteractive();
-        this.settingsPanel = this.add.rectangle(width / 2, height / 2, panelW, panelH, 0x1a1a2e, 0.98);
-        this.settingsPanel.setDepth(depthSet + 1);
-        // Border + real glow like Pause (box-shadow: 0 0 30px rgba(0,255,255,0.5)) — soft layered strokes
-        this.settingsPanelBorder = this.add.graphics();
-        this.settingsPanelBorder.setDepth(depthSet + 1);
-        const glowR = 12;
-        this.settingsPanelBorder.lineStyle(24, 0x00ffff, 0.08);
-        this.settingsPanelBorder.strokeRoundedRect(panelX - glowR, panelY - glowR, panelW + glowR * 2, panelH + glowR * 2, 18);
-        this.settingsPanelBorder.lineStyle(18, 0x00ffff, 0.12);
-        this.settingsPanelBorder.strokeRoundedRect(panelX - 8, panelY - 8, panelW + 16, panelH + 16, 16);
-        this.settingsPanelBorder.lineStyle(10, 0x00ffff, 0.22);
-        this.settingsPanelBorder.strokeRoundedRect(panelX - 4, panelY - 4, panelW + 8, panelH + 8, 13);
-        this.settingsPanelBorder.lineStyle(2, 0x00ffff, 1);
-        this.settingsPanelBorder.strokeRoundedRect(panelX, panelY, panelW, panelH, 10);
-        const closeBtnSize = 20;
-        const closeBtnCenterX = panelX + panelW - 10 - closeBtnSize / 2;
-        const closeBtnCenterY = panelY + 10 + closeBtnSize / 2;
-        this.settingsCloseBtnRect = this.add.rectangle(closeBtnCenterX, closeBtnCenterY, closeBtnSize, closeBtnSize, 0xcc0000, 1);
-        this.settingsCloseBtnRect.setDepth(depthSet + 2);
-        this.settingsCloseBtnRect.setInteractive({ useHandCursor: true });
-        this.settingsCloseBtnRect.on('pointerdown', () => {
-            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
-            this.closeSettingsOverlay();
-        });
-        this.settingsCloseBtnBorder = this.add.graphics();
-        this.settingsCloseBtnBorder.lineStyle(2, 0x990000, 1);
-        this.settingsCloseBtnBorder.strokeRoundedRect(closeBtnCenterX - closeBtnSize / 2, closeBtnCenterY - closeBtnSize / 2, closeBtnSize, closeBtnSize, 3);
-        this.settingsCloseBtnBorder.setDepth(depthSet + 2);
-        this.settingsCloseBtnXText = this.add.text(closeBtnCenterX, closeBtnCenterY, '✕', { fontSize: '14px', fontFamily: 'Arial', color: '#ffffff', resolution: 2 });
-        this.settingsCloseBtnXText.setOrigin(0.5);
-        this.settingsCloseBtnXText.setDepth(depthSet + 3);
-        const textOffset = 28;
-        const textX = panelX + textOffset;
-        // Pause: padding 40px, h2 margin-bottom 30px, button margin 10px — match spacing
-        const rowH = 54;
-        const btnW = panelW - 2 * textOffset;
-        const btnH = 44;
-        const btnRadius = 8;
-        function drawSettingsBtnBg(gfx, x, y, w, h) {
-            gfx.clear();
-            gfx.fillStyle(0x0052FF, 1);
-            gfx.fillRoundedRect(x, y, w, h, btnRadius);
-            gfx.lineStyle(8, 0x00ffff, 0.25);
-            gfx.strokeRoundedRect(x - 2, y - 2, w + 4, h + 4, btnRadius + 2);
-            gfx.lineStyle(2, 0x00ffff, 1);
-            gfx.strokeRoundedRect(x, y, w, h, btnRadius);
+        const overlayEl = document.getElementById('settings-overlay');
+        if (!overlayEl) return;
+        const g = typeof window !== 'undefined' && typeof window.getText === 'function'
+            ? window.getText
+            : (typeof getText === 'function' ? getText : function (k) { return k; });
+        const titleEl = document.getElementById('settings-title');
+        const shopBtn = document.getElementById('settings-shop-btn');
+        const vibBtn = document.getElementById('settings-vibration-btn');
+        const musicBtn = document.getElementById('settings-music-btn');
+        const resetBtn = document.getElementById('settings-reset-btn');
+        const closeBtn = document.getElementById('close-settings');
+        if (titleEl && g) {
+            titleEl.textContent = '⚙️ ' + g('menu.settings');
         }
-        const titleStr = g('menu.settings');
-        // Title: like Pause — color #00ffff, text-shadow glow, no heavy stroke for clarity
-        this.settingsTitle = this.add.text(panelX + panelW / 2, panelY + 28, '⚙️ ' + titleStr, {
-            fontSize: '26px',
-            fontFamily: 'Arial, sans-serif',
-            fontWeight: 'bold',
-            color: '#00ffff',
-            align: 'center',
-            resolution: 2
-        });
-        this.settingsTitle.setOrigin(0.5, 0.5);
-        this.settingsTitle.setDepth(depthSet + 2);
-        this.settingsTitle.setShadow(0, 0, '#00ffff', 10, true, true);
-        // First button lower under title — like Pause (margin-bottom 30px under h2)
-        const btnStyle = { fontSize: '18px', fontFamily: 'Arial, sans-serif', fontWeight: 'bold', color: '#ffffff', stroke: '#000000', strokeThickness: 1, align: 'left', resolution: 2 };
-        let rowY = panelY + 88;
-        const btnBgX = panelX + textOffset;
-        this.settingsBtnShopBg = this.add.graphics();
-        this.settingsBtnShopBg.setDepth(depthSet + 1);
-        drawSettingsBtnBg(this.settingsBtnShopBg, btnBgX, rowY - btnH / 2, btnW, btnH);
-        this.settingsBtnShopRect = this.add.rectangle(btnBgX + btnW / 2, rowY, btnW, btnH, 0x000000, 0);
-        this.settingsBtnShopRect.setDepth(depthSet + 2);
-        this.settingsBtnShopRect.setInteractive({ useHandCursor: true });
-        this.settingsBtnShopRect.on('pointerover', () => { this.settingsBtnShop.setScale(1.05); });
-        this.settingsBtnShopRect.on('pointerout', () => { this.settingsBtnShop.setScale(1); });
-        this.settingsBtnShopRect.on('pointerdown', () => {
-            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
-            this.closeSettingsOverlay();
-            const shopEl = document.getElementById('shop-overlay');
-            if (shopEl) {
-                shopEl.classList.remove('hidden');
-                if (typeof window.baseInvadersUpdateOverlayPointerEvents === 'function') window.baseInvadersUpdateOverlayPointerEvents();
-            }
-            if (typeof window.refreshHtmlOverlaysI18n === 'function') window.refreshHtmlOverlaysI18n();
-            if (window.shopSystem && window.shopSystem.updateDisplay) window.shopSystem.updateDisplay();
-        });
-        this.settingsBtnShop = this.add.text(textX, rowY, '🛒 ' + g('settings.shop'), btnStyle);
-        this.settingsBtnShop.setOrigin(0, 0.5);
-        this.settingsBtnShop.setDepth(depthSet + 3);
-        rowY += rowH;
-        const vibEnabled = window.vibrationManager && window.vibrationManager.isEnabled && window.vibrationManager.isEnabled();
-        this.settingsVibBg = this.add.graphics();
-        this.settingsVibBg.setDepth(depthSet + 1);
-        drawSettingsBtnBg(this.settingsVibBg, btnBgX, rowY - btnH / 2, btnW, btnH);
-        this.settingsVibRect = this.add.rectangle(btnBgX + btnW / 2, rowY, btnW, btnH, 0x000000, 0);
-        this.settingsVibRect.setDepth(depthSet + 2);
-        this.settingsVibRect.setInteractive({ useHandCursor: true });
-        this.settingsVibRect.on('pointerover', () => { this.settingsVibText.setScale(1.05); });
-        this.settingsVibRect.on('pointerout', () => { this.settingsVibText.setScale(1); });
-        this.settingsVibRect.on('pointerdown', () => {
-            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
-            if (window.vibrationManager) {
-                const newState = !window.vibrationManager.enabled;
-                window.vibrationManager.setEnabled(newState);
-                this.settingsVibText.setText('📳 ' + g('settings.vibration') + ': ' + (newState ? g('shopItems.enabled') : g('shopItems.disabled')));
-                if (newState && window.vibrationManager.vibrate) window.vibrationManager.vibrate(50);
-            }
-        });
-        this.settingsVibText = this.add.text(textX, rowY, '📳 ' + g('settings.vibration') + ': ' + (vibEnabled ? g('shopItems.enabled') : g('shopItems.disabled')), btnStyle);
-        this.settingsVibText.setOrigin(0, 0.5);
-        this.settingsVibText.setDepth(depthSet + 3);
-        rowY += rowH;
-        const musicMuted = localStorage.getItem('musicMuted') === 'true';
-        this.settingsMusicBg = this.add.graphics();
-        this.settingsMusicBg.setDepth(depthSet + 1);
-        drawSettingsBtnBg(this.settingsMusicBg, btnBgX, rowY - btnH / 2, btnW, btnH);
-        this.settingsMusicRect = this.add.rectangle(btnBgX + btnW / 2, rowY, btnW, btnH, 0x000000, 0);
-        this.settingsMusicRect.setDepth(depthSet + 2);
-        this.settingsMusicRect.setInteractive({ useHandCursor: true });
-        this.settingsMusicRect.on('pointerover', () => { this.settingsMusicText.setScale(1.05); });
-        this.settingsMusicRect.on('pointerout', () => { this.settingsMusicText.setScale(1); });
-        this.settingsMusicRect.on('pointerdown', () => {
-            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
-            const newMuted = localStorage.getItem('musicMuted') !== 'true';
-            localStorage.setItem('musicMuted', String(newMuted));
-            this.settingsMusicText.setText('🔊 ' + g('settings.music') + ': ' + (newMuted ? g('shopItems.disabled') : g('shopItems.enabled')));
-            const gs = window.game && window.game.scene ? window.game.scene.getScene('GameScene') : null;
-            if (gs) {
-                gs.isMuted = newMuted;
-                if (gs.updateMuteButtonVisual) gs.updateMuteButtonVisual();
-                if (gs.bgMusic) { if (newMuted) gs.bgMusic.stop(); else gs.bgMusic.play(); }
-            }
-        });
-        this.settingsMusicText = this.add.text(textX, rowY, '🔊 ' + g('settings.music') + ': ' + (musicMuted ? g('shopItems.disabled') : g('shopItems.enabled')), btnStyle);
-        this.settingsMusicText.setOrigin(0, 0.5);
-        this.settingsMusicText.setDepth(depthSet + 3);
-        rowY += rowH;
-        // "Reset game" button — red + soft glow like Pause .reset-btn (box-shadow 0 0 15px)
-        function drawSettingsResetBtnBg(gfx, x, y, w, h) {
-            gfx.clear();
-            gfx.fillStyle(0xcc0000, 1);
-            gfx.fillRoundedRect(x, y, w, h, btnRadius);
-            gfx.lineStyle(10, 0xff4444, 0.2);
-            gfx.strokeRoundedRect(x - 3, y - 3, w + 6, h + 6, btnRadius + 3);
-            gfx.lineStyle(2, 0xff4444, 1);
-            gfx.strokeRoundedRect(x, y, w, h, btnRadius);
+        if (shopBtn && g) {
+            shopBtn.textContent = '🛒 ' + g('settings.shop');
         }
-        this.settingsResetBg = this.add.graphics();
-        this.settingsResetBg.setDepth(depthSet + 1);
-        drawSettingsResetBtnBg(this.settingsResetBg, btnBgX, rowY - btnH / 2, btnW, btnH);
-        this.settingsResetRect = this.add.rectangle(btnBgX + btnW / 2, rowY, btnW, btnH, 0x000000, 0);
-        this.settingsResetRect.setDepth(depthSet + 2);
-        this.settingsResetRect.setInteractive({ useHandCursor: true });
-        this.settingsResetRect.on('pointerover', () => { this.settingsResetText.setScale(1.05); });
-        this.settingsResetRect.on('pointerout', () => { this.settingsResetText.setScale(1); });
-        this.settingsResetRect.on('pointerdown', () => {
-            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
-            this.closeSettingsOverlay();
-            const confirmEl = document.getElementById('reset-confirm-overlay');
-            if (confirmEl) confirmEl.classList.remove('hidden');
-            if (typeof window.refreshHtmlOverlaysI18n === 'function') window.refreshHtmlOverlaysI18n();
-        });
-        this.settingsResetText = this.add.text(textX, rowY, '🔄 ' + g('pause.resetGame'), btnStyle);
-        this.settingsResetText.setOrigin(0, 0.5);
-        this.settingsResetText.setDepth(depthSet + 3);
-        console.log('UI FIXED: settings/shop no click through');
+
+        function updateVibrationLabel() {
+            if (!vibBtn || !g) return;
+            const vibEnabled = window.vibrationManager && window.vibrationManager.isEnabled && window.vibrationManager.isEnabled();
+            vibBtn.textContent = '📳 ' + g('settings.vibration') + ': ' + (vibEnabled ? g('shopItems.enabled') : g('shopItems.disabled'));
+        }
+
+        function updateMusicLabel() {
+            if (!musicBtn || !g) return;
+            const musicMuted = localStorage.getItem('musicMuted') === 'true';
+            musicBtn.textContent = '🔊 ' + g('settings.music') + ': ' + (musicMuted ? g('shopItems.disabled') : g('shopItems.enabled'));
+        }
+
+        if (shopBtn) {
+            shopBtn.onclick = () => {
+                if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
+                this.closeSettingsOverlay();
+                const shopEl = document.getElementById('shop-overlay');
+                if (shopEl) {
+                    shopEl.classList.remove('hidden');
+                    if (typeof window.baseInvadersUpdateOverlayPointerEvents === 'function') window.baseInvadersUpdateOverlayPointerEvents();
+                }
+                if (typeof window.refreshHtmlOverlaysI18n === 'function') window.refreshHtmlOverlaysI18n();
+                if (window.shopSystem && window.shopSystem.updateDisplay) window.shopSystem.updateDisplay();
+            };
+        }
+
+        if (vibBtn) {
+            vibBtn.onclick = () => {
+                if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
+                if (window.vibrationManager) {
+                    const newState = !window.vibrationManager.enabled;
+                    window.vibrationManager.setEnabled(newState);
+                    if (newState && window.vibrationManager.vibrate) window.vibrationManager.vibrate(50);
+                }
+                updateVibrationLabel();
+            };
+        }
+
+        if (musicBtn && g) {
+            musicBtn.textContent = '🔊 ' + g('settings.music');
+        }
+
+        if (resetBtn && g) {
+            resetBtn.textContent = '🔄 ' + g('pause.resetGame');
+        }
+
+        if (musicBtn) {
+            musicBtn.onclick = () => {
+                if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
+                const newMuted = localStorage.getItem('musicMuted') !== 'true';
+                localStorage.setItem('musicMuted', String(newMuted));
+                const gs = window.game && window.game.scene ? window.game.scene.getScene('GameScene') : null;
+                if (gs) {
+                    gs.isMuted = newMuted;
+                    if (gs.updateMuteButtonVisual) gs.updateMuteButtonVisual();
+                    if (gs.bgMusic) { if (newMuted) gs.bgMusic.stop(); else gs.bgMusic.play(); }
+                }
+                updateMusicLabel();
+            };
+        }
+        if (resetBtn) {
+            resetBtn.onclick = () => {
+                if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
+                this.closeSettingsOverlay();
+                const confirmEl = document.getElementById('reset-confirm-overlay');
+                if (confirmEl) confirmEl.classList.remove('hidden');
+                if (typeof window.refreshHtmlOverlaysI18n === 'function') window.refreshHtmlOverlaysI18n();
+            };
+        }
+
+        if (closeBtn) {
+            closeBtn.onclick = () => {
+                this.closeSettingsOverlay();
+            };
+        }
+
+        updateVibrationLabel();
+        updateMusicLabel();
+
+        overlayEl.classList.remove('hidden');
+        if (typeof window.baseInvadersUpdateOverlayPointerEvents === 'function') window.baseInvadersUpdateOverlayPointerEvents();
     }
 
     closeSettingsOverlay() {
-        const el = [this.settingsOverlay, this.settingsPanel, this.settingsPanelBorder, this.settingsCloseBtnRect, this.settingsCloseBtnBorder, this.settingsCloseBtnXText, this.settingsTitle, this.settingsBtnShopBg, this.settingsBtnShopRect, this.settingsBtnShop, this.settingsVibBg, this.settingsVibRect, this.settingsVibText, this.settingsMusicBg, this.settingsMusicRect, this.settingsMusicText, this.settingsResetBg, this.settingsResetRect, this.settingsResetText];
-        el.forEach(o => { if (o && o.destroy) o.destroy(); });
-        this.settingsOverlay = this.settingsPanel = this.settingsPanelBorder = this.settingsCloseBtnRect = this.settingsCloseBtnBorder = this.settingsCloseBtnXText = this.settingsTitle = this.settingsBtnShopBg = this.settingsBtnShopRect = this.settingsBtnShop = this.settingsVibBg = this.settingsVibRect = this.settingsVibText = this.settingsMusicBg = this.settingsMusicRect = this.settingsMusicText = this.settingsResetBg = this.settingsResetRect = this.settingsResetText = null;
+        const overlayEl = document.getElementById('settings-overlay');
+        const closeBtn = document.getElementById('close-settings');
+        if (overlayEl) overlayEl.classList.add('hidden');
+        if (closeBtn) closeBtn.onclick = null;
+        if (typeof window.baseInvadersUpdateOverlayPointerEvents === 'function') window.baseInvadersUpdateOverlayPointerEvents();
     }
 }
 
@@ -3245,9 +3127,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const shop = document.getElementById('shop-overlay');
         const leaderboard = document.getElementById('leaderboard-overlay');
         const instructions = document.getElementById('instructions-overlay');
+        const settings = document.getElementById('settings-overlay');
+        const language = document.getElementById('language-overlay');
         const anyVisible = (shop && !shop.classList.contains('hidden')) ||
             (leaderboard && !leaderboard.classList.contains('hidden')) ||
-            (instructions && !instructions.classList.contains('hidden'));
+            (instructions && !instructions.classList.contains('hidden')) ||
+            (settings && !settings.classList.contains('hidden')) ||
+            (language && !language.classList.contains('hidden'));
         container.style.pointerEvents = anyVisible ? 'none' : 'auto';
     };
 
