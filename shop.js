@@ -27,7 +27,7 @@ class ShopSystem {
             return;
         }
         const menuScene = window.game.scene.getScene('MenuScene');
-        if (menuScene?.clickSound) try { menuScene.clickSound.play(); } catch (e) {}
+        if (menuScene?.purchaseSound) try { menuScene.purchaseSound.play(); } catch (e) {}
     }
 
     init() {

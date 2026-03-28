@@ -11,15 +11,22 @@ class MenuScene extends Phaser.Scene {
 
     preload() {
         this.load.audio('click', 'assets/sounds/click.mp3');
+        this.load.audio('purchase', 'assets/sounds/purchase.mp3');
     }
 
     create() {
         this.createBackground();
 
         this.clickSound = null;
+        this.purchaseSound = null;
         try {
             if (this.cache.audio && this.cache.audio.exists('click')) {
                 this.clickSound = this.sound.add('click', { volume: 0.5 });
+            }
+        } catch (e) {}
+        try {
+            if (this.cache.audio && this.cache.audio.exists('purchase')) {
+                this.purchaseSound = this.sound.add('purchase', { volume: 0.5 });
             }
         } catch (e) {}
 
@@ -314,10 +321,6 @@ class MenuScene extends Phaser.Scene {
             };
         }
 
-        if (musicBtn && g) {
-            musicBtn.textContent = '🔊 ' + g('settings.music');
-        }
-
         if (resetBtn && g) {
             resetBtn.textContent = '🔄 ' + g('pause.resetGame');
         }
@@ -327,12 +330,14 @@ class MenuScene extends Phaser.Scene {
                 if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
                 const newMuted = localStorage.getItem('musicMuted') !== 'true';
                 localStorage.setItem('musicMuted', String(newMuted));
-                const gs = window.game && window.game.scene ? window.game.scene.getScene('GameScene') : null;
-                if (gs) {
-                    gs.isMuted = newMuted;
-                    if (gs.updateMuteButtonVisual) gs.updateMuteButtonVisual();
-                    if (gs.bgMusic) { if (newMuted) gs.bgMusic.stop(); else gs.bgMusic.play(); }
-                }
+                try {
+                    const gs = window.game && window.game.scene ? window.game.scene.getScene('GameScene') : null;
+                    if (gs) {
+                        gs.isMuted = newMuted;
+                        if (gs.updateMuteButtonVisual) gs.updateMuteButtonVisual();
+                        if (gs.bgMusic) { if (newMuted) gs.bgMusic.stop(); else gs.bgMusic.play(); }
+                    }
+                } catch (e) { /* still update label */ }
                 updateMusicLabel();
             };
         }
@@ -562,10 +567,7 @@ class GameScene extends Phaser.Scene {
             };
             this.gameState.missionSystem = this.missionSystem;
 
-            // Leaderboard: high score at run start (for "new record during play" dialog, like check-in)
-            this._highScoreAtRunStart = (window.baseInvadersLeaderboard && typeof window.baseInvadersLeaderboard.getLocalHighScore === 'function')
-                ? (window.baseInvadersLeaderboard.getLocalHighScore()?.score ?? 0)
-                : 0;
+            // Leaderboard on-chain submit prompt: at most once per run (see gameOver)
             this._leaderboardSubmitShownThisRun = false;
 
             // Player stats (from shop) - load before creating player
@@ -1818,21 +1820,6 @@ class GameScene extends Phaser.Scene {
             const baseScore = enemy.rewards.score || 0;
             this.gameState.score += Math.floor(baseScore * (this.gameState.scoreMultiplier || 1));
             this.gameState.xp += enemy.rewards.xp || 0;
-            // New record during play (like check-in): pause, show submit overlay, after sign → resume
-            if (this.gameState.score > this._highScoreAtRunStart && !this._leaderboardSubmitShownThisRun) {
-                this._leaderboardSubmitShownThisRun = true;
-                const waveLevel = this.missionSystem ? this.missionSystem.currentWave : this.gameState.stage;
-                const streak = window.baseInvadersLeaderboard?.getCurrentStreak ? window.baseInvadersLeaderboard.getCurrentStreak() : 0;
-                window.__baseInvadersLeaderboardSubmitDuringPlay = true;
-                window.__baseInvadersPendingLeaderboardSubmit = { score: this.gameState.score, wave: waveLevel, streak };
-                this.scene.pause();
-                this.gameState.paused = true;
-                const overlay = document.getElementById('leaderboard-submit-overlay');
-                const statusEl = document.getElementById('leaderboard-submit-status');
-                if (statusEl) statusEl.textContent = '';
-                if (overlay) overlay.classList.remove('hidden');
-                console.log('[leaderboard] New record during play — pause, show submit overlay');
-            }
         }
 
         // Create explosion
@@ -2519,8 +2506,9 @@ class GameScene extends Phaser.Scene {
             <p>${fs('gameover.stageReached')}: ${this.gameState.stage}</p>
             <p>${fs('gameover.level')}: ${this.gameState.playerLevel}</p>
         `;
-        // If new high and user didn't submit during play, show submit overlay after game over so they can submit
-        if (isNewHigh && !window.__baseInvadersPendingLeaderboardSubmit && typeof window.baseInvadersSubmitScore === 'function') {
+        // New high: prompt for on-chain submit at most once per run (game over only)
+        if (isNewHigh && !this._leaderboardSubmitShownThisRun && typeof window.baseInvadersSubmitScore === 'function') {
+            this._leaderboardSubmitShownThisRun = true;
             const waveLevel = this.missionSystem ? this.missionSystem.currentWave : this.gameState.stage;
             const streak = window.baseInvadersLeaderboard?.getCurrentStreak ? window.baseInvadersLeaderboard.getCurrentStreak() : 0;
             window.__baseInvadersPendingLeaderboardSubmit = { score: this.gameState.score, wave: waveLevel, streak };
