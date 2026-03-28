@@ -14,323 +14,8 @@ class MenuScene extends Phaser.Scene {
     }
 
     create() {
-        const width = this.scale.width;
-        const height = this.scale.height;
-
-        // Create starry background
         this.createBackground();
 
-        // Title - i18n (підсунуто до верху)
-        this.titleText = this.add.text(width / 2, height * 0.08, typeof getText === 'function' ? getText('menu.title') : 'BASE DESTROYER', {
-            fontSize: '64px',
-            fontFamily: 'Arial, sans-serif',
-            fontWeight: 'bold',
-            color: '#00d9ff',
-            stroke: '#0088ff',
-            strokeThickness: 4,
-            resolution: window.devicePixelRatio || 2
-        });
-        this.titleText.setOrigin(0.5);
-        this.titleText.setShadow(0, 0, '#00d9ff', 20, true, true);
-
-        // Animated glow effect on title
-        this.tweens.add({
-            targets: this.titleText,
-            alpha: { from: 0.8, to: 1 },
-            scale: { from: 0.98, to: 1.02 },
-            duration: 2000,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut'
-        });
-
-        // Welcome message - i18n (Defend the Base, alien invaders, Good luck)
-        const welcomeText = typeof getText === 'function' ? getText('menu.welcome') : 'Welcome, Commander! 🚀\n\nDefend the Base from alien invaders.\nCollect diamonds and upgrade your ship.';
-        this.welcomeText = this.add.text(width / 2, height * 0.14, welcomeText, {
-            fontSize: '18px',
-            fontFamily: 'Arial, sans-serif',
-            color: '#ffffff',
-            align: 'center',
-            lineSpacing: 8,
-            resolution: window.devicePixelRatio || 2,
-            wordWrap: { width: Math.min(450, width * 0.85) }
-        });
-        this.welcomeText.setOrigin(0.5, 0);
-        this.welcomeText.setDepth(2);
-        this.welcomeText.setShadow(2, 2, '#000000', 3, true);
-
-        // Good luck - i18n
-        this.goodLuckText = this.add.text(width / 2, height * 0.30, typeof getText === 'function' ? getText('menu.goodLuck') : 'Good luck! ⭐', {
-            fontSize: '22px',
-            fontFamily: 'Arial, sans-serif',
-            fontWeight: 'bold',
-            color: '#ffd700',
-            align: 'center',
-            resolution: window.devicePixelRatio || 2
-        });
-        this.goodLuckText.setOrigin(0.5);
-        this.goodLuckText.setDepth(2);
-        this.goodLuckText.setShadow(0, 0, '#ffd700', 10, true, true);
-
-        // Анімація для goodLuckText
-        this.tweens.add({
-            targets: this.goodLuckText,
-            alpha: { from: 0.7, to: 1 },
-            scale: { from: 0.95, to: 1.05 },
-            duration: 1500,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut'
-        });
-
-        // START button (менші кнопки, рівномірні відстані)
-        const menuStartY = height * 0.40;
-        const menuGap = 0.105;
-        this.startBtnBg = this.add.graphics();
-        this.startBtnBg.setDepth(1);
-
-        this.startBtn = this.add.rectangle(width / 2, menuStartY, 220, 68, 0x0052FF, 0);
-        this.startBtn.setInteractive({ useHandCursor: true });
-        this.startBtn.setDepth(2);
-        
-        this.startText = this.add.text(width / 2, menuStartY, typeof getText === 'function' ? getText('menu.start') : 'START', {
-            fontSize: '30px',
-            fontFamily: 'Arial, sans-serif',
-            fontWeight: 'bold',
-            color: '#00ff00',
-            stroke: '#00aa00',
-            strokeThickness: 3,
-            resolution: window.devicePixelRatio || 2
-        });
-        this.startText.setOrigin(0.5);
-        this.startText.setDepth(3);
-        this.startText.setShadow(0, 0, '#00ff00', 15, true, true);
-
-        // Hover effect
-        this.startBtn.on('pointerover', () => {
-            this.updateMenuButtonStyle(this.startBtnBg, this.startBtn, true);
-            this.startText.setScale(1.1);
-            this.tweens.add({
-                targets: this.startText,
-                scale: 1.15,
-                duration: 200,
-                ease: 'Back.easeOut'
-            });
-        });
-
-        this.startBtn.on('pointerout', () => {
-            this.updateMenuButtonStyle(this.startBtnBg, this.startBtn, false);
-            this.tweens.add({
-                targets: this.startText,
-                scale: 1,
-                duration: 200
-            });
-        });
-
-        // Click to start game (this.scene.start auto-stops current scene)
-        this.startBtn.on('pointerdown', () => {
-            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
-            this.tweens.add({
-                targets: [this.startBtn, this.startText],
-                scale: 0.95,
-                duration: 100,
-                yoyo: true,
-                onComplete: () => {
-                    this.scene.start('GameScene');
-                }
-            });
-        });
-
-        this.input.keyboard.on('keydown-SPACE', () => {
-            this.scene.start('GameScene');
-        });
-        this.input.keyboard.on('keydown-ENTER', () => {
-            this.scene.start('GameScene');
-        });
-        
-        const languageBtnY = height * (menuStartY / height + menuGap);
-        this.languageBtnBg = this.add.graphics();
-        this.languageBtnBg.setDepth(1);
-        this.languageBtn = this.add.rectangle(width / 2, languageBtnY, 200, 48, 0x2196F3, 0);
-        this.languageBtn.setInteractive({ useHandCursor: true });
-        this.languageBtn.setDepth(2);
-        this.languageText = this.add.text(width / 2, languageBtnY, typeof getText === 'function' ? getText('menu.language') : 'Language 🌐', {
-            fontSize: '18px',
-            fontFamily: 'Arial, sans-serif',
-            fontWeight: 'bold',
-            color: '#ffffff',
-            stroke: '#0066cc',
-            strokeThickness: 2,
-            resolution: window.devicePixelRatio || 2
-        });
-        this.languageText.setOrigin(0.5);
-        this.languageText.setDepth(3);
-        this.languageBtn.on('pointerover', () => {
-            this.updateLanguageButtonStyle(true);
-            this.tweens.add({ targets: this.languageText, scale: 1.1, duration: 200, ease: 'Back.easeOut' });
-        });
-        this.languageBtn.on('pointerout', () => {
-            this.updateLanguageButtonStyle(false);
-            this.tweens.add({ targets: this.languageText, scale: 1, duration: 200 });
-        });
-        this.languageBtn.on('pointerdown', () => {
-            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
-            console.log('LANGUAGE BUTTON CLICKED!');
-            this.tweens.add({
-                targets: [this.languageBtn, this.languageText],
-                scale: 0.95,
-                duration: 100,
-                yoyo: true,
-                onComplete: () => { this.showLanguageOverlay(); }
-            });
-        });
-        
-        const instructionsBtnY = height * (menuStartY / height + menuGap * 2);
-
-        this.instructionsBtnBg = this.add.graphics();
-        this.instructionsBtnBg.setDepth(1);
-
-        this.instructionsBtn = this.add.rectangle(
-            width / 2,
-            instructionsBtnY,
-            200,
-            48,
-            0x2196F3,
-            0
-        );
-        this.instructionsBtn.setInteractive({ useHandCursor: true });
-        this.instructionsBtn.setDepth(2);
-
-        this.instructionsBtnText = this.add.text(
-            width / 2,
-            instructionsBtnY,
-            typeof getText === 'function' ? getText('menu.howToPlay') : 'How to Play',
-            {
-                fontSize: '18px',
-                fontFamily: 'Arial, sans-serif',
-                fontWeight: 'bold',
-                color: '#ffffff',
-                stroke: '#0066cc',
-                strokeThickness: 2,
-                resolution: window.devicePixelRatio || 2
-            }
-        );
-        this.instructionsBtnText.setOrigin(0.5);
-        this.instructionsBtnText.setDepth(3);
-
-        // Hover effect
-        this.instructionsBtn.on('pointerover', () => {
-            this.updateInstructionsButtonStyle(true);
-            this.tweens.add({
-                targets: this.instructionsBtnText,
-                scale: 1.1,
-                duration: 200,
-                ease: 'Back.easeOut'
-            });
-        });
-
-        this.instructionsBtn.on('pointerout', () => {
-            this.updateInstructionsButtonStyle(false);
-            this.tweens.add({
-                targets: this.instructionsBtnText,
-                scale: 1,
-                duration: 200
-            });
-        });
-
-        // Click to show instructions overlay
-        this.instructionsBtn.on('pointerdown', () => {
-            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
-            this.tweens.add({
-                targets: [this.instructionsBtn, this.instructionsBtnText],
-                scale: 0.95,
-                duration: 100,
-                yoyo: true,
-                onComplete: () => {
-                    this.showInstructionsOverlay();
-                }
-            });
-        });
-
-        // LEADERBOARD button (рівномірна відстань від інших)
-        const leaderboardBtnY = height * (menuStartY / height + menuGap * 3);
-        this.leaderboardBtnBg = this.add.graphics();
-        this.leaderboardBtnBg.setDepth(1);
-        
-        this.leaderboardBtn = this.add.rectangle(width / 2, leaderboardBtnY, 200, 48, 0x0052FF, 0);
-        this.leaderboardBtn.setInteractive({ useHandCursor: true });
-        this.leaderboardBtn.setDepth(2);
-        
-        this.leaderboardText = this.add.text(width / 2, leaderboardBtnY, typeof getText === 'function' ? getText('menu.leaderboard') : 'Leaderboard', {
-            fontSize: '17px',
-            fontFamily: 'Arial, sans-serif',
-            fontWeight: 'bold',
-            color: '#ffffff',
-            stroke: '#000000',
-            strokeThickness: 2,
-            resolution: window.devicePixelRatio || 2
-        });
-        this.leaderboardText.setOrigin(0.5);
-        this.leaderboardText.setDepth(3);
-        
-        this.leaderboardBtn.on('pointerover', () => {
-            this.updateLeaderboardButtonStyle(true);
-            this.tweens.add({
-                targets: this.leaderboardText,
-                scale: 1.05,
-                duration: 150,
-                ease: 'Back.easeOut'
-            });
-        });
-        
-        this.leaderboardBtn.on('pointerout', () => {
-            this.updateLeaderboardButtonStyle(false);
-            this.tweens.add({
-                targets: this.leaderboardText,
-                scale: 1,
-                duration: 150
-            });
-        });
-        
-        this.leaderboardBtn.on('pointerdown', () => {
-            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
-            if (window.baseInvadersLeaderboard && window.baseInvadersLeaderboard.open) {
-                window.baseInvadersLeaderboard.open();
-            }
-        });
-
-        // SETTINGS button (below leaderboard)
-        const settingsBtnY = height * (menuStartY / height + menuGap * 4);
-        this.settingsBtnBg = this.add.graphics();
-        this.settingsBtnBg.setDepth(1);
-        this.settingsBtn = this.add.rectangle(width / 2, settingsBtnY, 200, 48, 0x0052FF, 0);
-        this.settingsBtn.setInteractive({ useHandCursor: true });
-        this.settingsBtn.setDepth(2);
-        this.settingsText = this.add.text(width / 2, settingsBtnY, typeof getText === 'function' ? getText('menu.settings') : 'Settings', {
-            fontSize: '17px',
-            fontFamily: 'Arial, sans-serif',
-            fontWeight: 'bold',
-            color: '#ffffff',
-            stroke: '#000000',
-            strokeThickness: 2,
-            resolution: window.devicePixelRatio || 2
-        });
-        this.settingsText.setOrigin(0.5);
-        this.settingsText.setDepth(3);
-        this.settingsBtn.on('pointerover', () => {
-            this.updateSettingsButtonStyle(true);
-            this.tweens.add({ targets: this.settingsText, scale: 1.05, duration: 150, ease: 'Back.easeOut' });
-        });
-        this.settingsBtn.on('pointerout', () => {
-            this.updateSettingsButtonStyle(false);
-            this.tweens.add({ targets: this.settingsText, scale: 1, duration: 150 });
-        });
-        this.settingsBtn.on('pointerdown', () => {
-            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
-            this.showSettingsOverlay();
-        });
-
-        // Init click sound for menu buttons (same as pause menu)
         this.clickSound = null;
         try {
             if (this.cache.audio && this.cache.audio.exists('click')) {
@@ -338,13 +23,66 @@ class MenuScene extends Phaser.Scene {
             }
         } catch (e) {}
 
-        this.updateMenuLayout(width, height);
-        this.scale.on('resize', (gameSize) => {
-            this.updateMenuLayout(gameSize.width, gameSize.height);
-        });
+        const canvas = document.querySelector('#game-container canvas');
+        if (canvas) canvas.style.pointerEvents = 'none';
+
+        const mainMenu = document.getElementById('main-menu-html');
+        if (mainMenu) mainMenu.style.display = 'flex';
+
+        this._menuLangChanged = () => this.refreshMenuTexts();
+        window.addEventListener('base-invaders:lang-changed', this._menuLangChanged);
+
+        this._startGameFromMenu = () => {
+            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
+            const menuEl = document.getElementById('main-menu-html');
+            if (menuEl) menuEl.style.display = 'none';
+            const c = document.querySelector('#game-container canvas');
+            if (c) c.style.pointerEvents = 'auto';
+            this.scene.start('GameScene');
+        };
+
+        this._onMenuStartClick = (ev) => {
+            ev.preventDefault();
+            this._startGameFromMenu();
+        };
+        this._onMenuLanguageClick = (ev) => {
+            ev.preventDefault();
+            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
+            this.showLanguageOverlay();
+        };
+        this._onMenuHowToPlayClick = (ev) => {
+            ev.preventDefault();
+            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
+            this.showInstructionsOverlay();
+        };
+        this._onMenuLeaderboardClick = (ev) => {
+            ev.preventDefault();
+            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
+            if (window.baseInvadersLeaderboard?.open) window.baseInvadersLeaderboard.open();
+        };
+        this._onMenuSettingsClick = (ev) => {
+            ev.preventDefault();
+            if (this.clickSound) try { this.clickSound.play(); } catch (e) {}
+            this.showSettingsOverlay();
+        };
+
+        document.getElementById('menu-start-btn')?.addEventListener('click', this._onMenuStartClick);
+        document.getElementById('menu-language-btn')?.addEventListener('click', this._onMenuLanguageClick);
+        document.getElementById('menu-howtoplay-btn')?.addEventListener('click', this._onMenuHowToPlayClick);
+        document.getElementById('menu-leaderboard-btn')?.addEventListener('click', this._onMenuLeaderboardClick);
+        document.getElementById('menu-settings-btn')?.addEventListener('click', this._onMenuSettingsClick);
+
+        this._onMenuKeyStart = () => {
+            if (!this.scene || !this.scene.isActive('MenuScene')) return;
+            this._startGameFromMenu();
+        };
+        this.input.keyboard?.on('keydown-SPACE', this._onMenuKeyStart);
+        this.input.keyboard?.on('keydown-ENTER', this._onMenuKeyStart);
 
         this.refreshMenuTexts();
-        window.addEventListener('base-invaders:lang-changed', () => this.refreshMenuTexts());
+        if (typeof window.baseInvadersUpdateOverlayPointerEvents === 'function') {
+            window.baseInvadersUpdateOverlayPointerEvents();
+        }
 
         // Farcaster Mini App: hide splash and show canvas when menu is ready
         window.dispatchEvent(new Event('base-invaders:game-ready'));
@@ -356,160 +94,41 @@ class MenuScene extends Phaser.Scene {
         }
     }
 
+    shutdown() {
+        const menuEl = document.getElementById('main-menu-html');
+        if (menuEl) menuEl.style.display = 'none';
+        if (this._menuLangChanged) {
+            window.removeEventListener('base-invaders:lang-changed', this._menuLangChanged);
+            this._menuLangChanged = null;
+        }
+        document.getElementById('menu-start-btn')?.removeEventListener('click', this._onMenuStartClick);
+        document.getElementById('menu-language-btn')?.removeEventListener('click', this._onMenuLanguageClick);
+        document.getElementById('menu-howtoplay-btn')?.removeEventListener('click', this._onMenuHowToPlayClick);
+        document.getElementById('menu-leaderboard-btn')?.removeEventListener('click', this._onMenuLeaderboardClick);
+        document.getElementById('menu-settings-btn')?.removeEventListener('click', this._onMenuSettingsClick);
+        this.input.keyboard?.off('keydown-SPACE', this._onMenuKeyStart);
+        this.input.keyboard?.off('keydown-ENTER', this._onMenuKeyStart);
+    }
+
     refreshMenuTexts() {
         var g = typeof window !== 'undefined' && typeof window.getText === 'function' ? window.getText : (typeof getText === 'function' ? getText : null);
         if (!g) { console.warn('refreshMenuTexts: getText not found'); return; }
-        var title = g('menu.title');
-        console.log('refreshMenuTexts getLang:', typeof window.getLang === 'function' ? window.getLang() : 'N/A', 'menu.title:', title);
-        if (this.titleText) this.titleText.setText(title);
-        if (this.welcomeText) this.welcomeText.setText(g('menu.welcome'));
-        if (this.goodLuckText) this.goodLuckText.setText(g('menu.goodLuck'));
-        if (this.startText) this.startText.setText(g('menu.start'));
-        if (this.languageText) this.languageText.setText(g('menu.language'));
-        if (this.instructionsBtnText) this.instructionsBtnText.setText(g('menu.howToPlay'));
-        if (this.leaderboardText) this.leaderboardText.setText(g('menu.leaderboard'));
-        if (this.settingsText) this.settingsText.setText(g('menu.settings'));
-    }
-
-    updateSettingsButtonStyle(isHover) {
-        if (!this.settingsBtn || !this.settingsBtnBg) return;
-        const width = this.settingsBtn.width;
-        const height = this.settingsBtn.height;
-        const x = this.settingsBtn.x - width / 2;
-        const y = this.settingsBtn.y - height / 2;
-        this.settingsBtnBg.clear();
-        this.settingsBtnBg.fillStyle(isHover ? 0x0077ff : 0x0052FF, isHover ? 0.9 : 0.8);
-        this.settingsBtnBg.fillRoundedRect(x, y, width, height, Math.min(10, height * 0.2));
-        this.settingsBtnBg.lineStyle(2, 0x00ffff, 1);
-        this.settingsBtnBg.strokeRoundedRect(x, y, width, height, Math.min(10, height * 0.2));
-    }
-
-    updateMenuButtonStyle(buttonBg, buttonRect, isHover) {
-        const width = buttonRect.width;
-        const height = buttonRect.height;
-        const x = buttonRect.x - width / 2;
-        const y = buttonRect.y - height / 2;
-        buttonBg.clear();
-        buttonBg.fillStyle(isHover ? 0x0088ff : 0x0052FF, isHover ? 0.9 : 0.8);
-        buttonBg.fillRoundedRect(x, y, width, height, Math.min(15, height * 0.2));
-        buttonBg.lineStyle(3, isHover ? 0x00ffff : 0x00d9ff, 1);
-        buttonBg.strokeRoundedRect(x, y, width, height, Math.min(15, height * 0.2));
-    }
-
-    updateLeaderboardButtonStyle(isHover) {
-        const width = this.leaderboardBtn.width;
-        const height = this.leaderboardBtn.height;
-        const x = this.leaderboardBtn.x - width / 2;
-        const y = this.leaderboardBtn.y - height / 2;
-        this.leaderboardBtnBg.clear();
-        this.leaderboardBtnBg.fillStyle(isHover ? 0x0077ff : 0x0052FF, isHover ? 0.9 : 0.8);
-        this.leaderboardBtnBg.fillRoundedRect(x, y, width, height, Math.min(10, height * 0.2));
-        this.leaderboardBtnBg.lineStyle(2, 0x00ffff, 1);
-        this.leaderboardBtnBg.strokeRoundedRect(x, y, width, height, Math.min(10, height * 0.2));
-    }
-
-    updateInstructionsButtonStyle(isHover) {
-        const width = this.instructionsBtn.width;
-        const height = this.instructionsBtn.height;
-        const x = this.instructionsBtn.x - width / 2;
-        const y = this.instructionsBtn.y - height / 2;
-        
-        this.instructionsBtnBg.clear();
-        this.instructionsBtnBg.fillStyle(
-            isHover ? 0x42a5f5 : 0x2196F3, 
-            isHover ? 0.9 : 0.8
-        );
-        this.instructionsBtnBg.fillRoundedRect(x, y, width, height, Math.min(15, height * 0.2));
-        this.instructionsBtnBg.lineStyle(3, isHover ? 0x90caf9 : 0x64b5f6, 1);
-        this.instructionsBtnBg.strokeRoundedRect(x, y, width, height, Math.min(15, height * 0.2));
-    }
-
-    updateLanguageButtonStyle(isHover) {
-        if (!this.languageBtn || !this.languageBtnBg) return;
-        const w = this.languageBtn.width;
-        const h = this.languageBtn.height;
-        const x = this.languageBtn.x - w / 2;
-        const y = this.languageBtn.y - h / 2;
-        this.languageBtnBg.clear();
-        this.languageBtnBg.fillStyle(isHover ? 0x42a5f5 : 0x2196F3, isHover ? 0.9 : 0.8);
-        this.languageBtnBg.fillRoundedRect(x, y, w, h, Math.min(15, h * 0.2));
-        this.languageBtnBg.lineStyle(3, isHover ? 0x90caf9 : 0x64b5f6, 1);
-        this.languageBtnBg.strokeRoundedRect(x, y, w, h, Math.min(15, h * 0.2));
-    }
-
-    updateMenuLayout(width, height) {
-        const titleSize = Math.max(28, Math.min(width * 0.07, 56));
-        const textSize = Math.max(14, Math.min(width * 0.022, 18));
-        const buttonX = width * 0.5;
-        const gap = 0.105;
-        const startY = height * 0.40;
-        const languageY = height * (0.40 + gap);
-        const instructionsY = height * (0.40 + gap * 2);
-        const leaderboardY = height * (0.40 + gap * 3);
-        const settingsY = height * (0.40 + gap * 4);
-
-        this.titleText.setPosition(width / 2, height * 0.08);
-        this.titleText.setFontSize(`${titleSize}px`);
-        this.titleText.setResolution(window.devicePixelRatio || 2);
-
-        if (this.welcomeText) {
-            this.welcomeText.setPosition(width / 2, height * 0.14);
-            this.welcomeText.setFontSize(`${textSize}px`);
-            this.welcomeText.setWordWrapWidth(Math.min(450, width * 0.85), true);
-            this.welcomeText.setResolution(window.devicePixelRatio || 2);
-        }
-
-        if (this.goodLuckText) {
-            this.goodLuckText.setPosition(width / 2, height * 0.30);
-            this.goodLuckText.setFontSize(`${Math.max(16, Math.min(width * 0.035, 22))}px`);
-            this.goodLuckText.setResolution(window.devicePixelRatio || 2);
-        }
-
-        // START button (менші, рівномірні відстані)
-        this.startBtn.setPosition(buttonX, startY);
-        this.startBtn.setSize(220, 68);
-        this.startText.setPosition(buttonX, startY);
-        this.startText.setFontSize('30px');
-        this.startText.setResolution(window.devicePixelRatio || 2);
-        this.updateMenuButtonStyle(this.startBtnBg, this.startBtn, false);
-
-        // Language button
-        if (this.languageBtn) {
-            this.languageBtn.setPosition(buttonX, languageY);
-            this.languageBtn.setSize(200, 48);
-            this.languageText.setPosition(buttonX, languageY);
-            this.languageText.setFontSize('18px');
-            this.languageText.setResolution(window.devicePixelRatio || 2);
-            this.updateLanguageButtonStyle(false);
-        }
-
-        // Instructions button
-        if (this.instructionsBtn) {
-            this.instructionsBtn.setPosition(buttonX, instructionsY);
-            this.instructionsBtn.setSize(200, 48);
-            this.instructionsBtnText.setPosition(buttonX, instructionsY);
-            this.instructionsBtnText.setFontSize('18px');
-            this.instructionsBtnText.setResolution(window.devicePixelRatio || 2);
-            this.updateInstructionsButtonStyle(false);
-        }
-
-        // Leaderboard button
-        this.leaderboardBtn.setPosition(buttonX, leaderboardY);
-        this.leaderboardBtn.setSize(200, 48);
-        this.leaderboardText.setPosition(buttonX, leaderboardY);
-        this.leaderboardText.setFontSize('17px');
-        this.leaderboardText.setResolution(window.devicePixelRatio || 2);
-        this.updateLeaderboardButtonStyle(false);
-
-        // Settings button
-        if (this.settingsBtn) {
-            this.settingsBtn.setPosition(buttonX, settingsY);
-            this.settingsBtn.setSize(200, 48);
-            this.settingsText.setPosition(buttonX, settingsY);
-            this.settingsText.setFontSize('17px');
-            this.settingsText.setResolution(window.devicePixelRatio || 2);
-            this.updateSettingsButtonStyle(false);
-        }
+        var t1 = document.getElementById('menu-title');
+        if (t1) t1.textContent = g('menu.title');
+        var t2 = document.getElementById('menu-welcome');
+        if (t2) t2.textContent = g('menu.welcome');
+        var t3 = document.getElementById('menu-goodluck');
+        if (t3) t3.textContent = g('menu.goodLuck');
+        var b0 = document.getElementById('menu-start-btn');
+        if (b0) b0.textContent = g('menu.start');
+        var b1 = document.getElementById('menu-language-btn');
+        if (b1) b1.textContent = g('menu.language');
+        var b2 = document.getElementById('menu-howtoplay-btn');
+        if (b2) b2.textContent = g('menu.howToPlay');
+        var b3 = document.getElementById('menu-leaderboard-btn');
+        if (b3) b3.textContent = g('menu.leaderboard');
+        var b4 = document.getElementById('menu-settings-btn');
+        if (b4) b4.textContent = g('menu.settings');
     }
 
     createBackground() {
@@ -3132,6 +2751,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.baseInvadersUpdateOverlayPointerEvents = function () {
         const container = document.getElementById('game-container');
         if (!container) return;
+        const canvas = container.querySelector('canvas');
         const shop = document.getElementById('shop-overlay');
         const leaderboard = document.getElementById('leaderboard-overlay');
         const instructions = document.getElementById('instructions-overlay');
@@ -3142,8 +2762,20 @@ document.addEventListener('DOMContentLoaded', () => {
             (instructions && !instructions.classList.contains('hidden')) ||
             (settings && !settings.classList.contains('hidden')) ||
             (language && !language.classList.contains('hidden'));
+        const menuActive = window.game && window.game.scene && window.game.scene.isActive('MenuScene');
+        if (canvas) {
+            if (anyVisible) {
+                canvas.style.pointerEvents = 'none';
+            } else if (menuActive) {
+                canvas.style.pointerEvents = 'none';
+            } else {
+                canvas.style.pointerEvents = 'auto';
+            }
+        }
         container.style.pointerEvents = anyVisible ? 'none' : 'auto';
     };
+
+    window.baseInvadersUpdateOverlayPointerEvents();
 
     document.getElementById('close-shop')?.addEventListener('click', () => {
         document.getElementById('shop-overlay').classList.add('hidden');

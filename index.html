@@ -41,7 +41,116 @@
     <link rel="stylesheet" href="style.css">
     <style>
         html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; }
+        #game-container { position: relative; z-index: 0; }
         canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+        @keyframes menu-title-glow-pulse {
+            0%, 100% { opacity: 0.85; transform: scale(0.98); }
+            50% { opacity: 1; transform: scale(1.02); }
+        }
+        @keyframes menu-goodluck-pulse {
+            0%, 100% { opacity: 0.7; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+        #main-menu-html {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            pointer-events: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            box-sizing: border-box;
+            padding: 12px;
+            gap: clamp(8px, 2.5vh, 14px);
+        }
+        #menu-title {
+            font-size: clamp(28px, 7vw, 56px);
+            color: #00d9ff;
+            font-weight: bold;
+            text-shadow: 0 0 20px #00d9ff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: inline-block;
+            text-align: center;
+            animation: menu-title-glow-pulse 2s ease-in-out infinite;
+        }
+        #menu-welcome {
+            font-size: clamp(14px, 2.2vw, 18px);
+            color: #ffffff;
+            text-align: center;
+            max-width: min(450px, 85vw);
+            line-height: 1.5;
+            margin: 0 0 8px;
+            font-family: Arial, sans-serif;
+            white-space: pre-line;
+        }
+        #menu-goodluck {
+            font-size: clamp(16px, 3.5vw, 22px);
+            color: #ffd700;
+            font-weight: bold;
+            text-shadow: 0 0 10px #ffd700;
+            margin: 0 0 16px;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            display: inline-block;
+            animation: menu-goodluck-pulse 1.5s ease-in-out infinite;
+        }
+        #menu-start-btn {
+            background: #0052FF;
+            color: #00ff00;
+            font-size: 30px;
+            font-weight: bold;
+            width: 220px;
+            height: 68px;
+            border: 2px solid #00d9ff;
+            border-radius: 10px;
+            text-shadow: 0 0 15px #00ff00;
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+            box-sizing: border-box;
+        }
+        #main-menu-html .main-menu-btn-row {
+            background: #0052FF;
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: bold;
+            width: 200px;
+            height: 48px;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 4px 0;
+            font-family: Arial, sans-serif;
+            box-sizing: border-box;
+        }
+        #language-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+            margin-top: 10px;
+            max-height: 55vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            scrollbar-color: #00ffff #1a1a2e;
+        }
+        #language-buttons::-webkit-scrollbar {
+            width: 4px;
+        }
+        #language-buttons::-webkit-scrollbar-track {
+            background: #1a1a2e;
+            border-radius: 2px;
+        }
+        #language-buttons::-webkit-scrollbar-thumb {
+            background: #00ffff;
+            border-radius: 2px;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js" crossorigin="anonymous"></script>
     <!-- Farcaster Mini App SDK (UMD for WebView compatibility) -->
@@ -51,6 +160,19 @@
          miniapp.js handles ready() + wallet flow using the UMD SDK. -->
 </head>
 <body>
+    <div id="main-menu-html" aria-label="Main menu">
+        <h1 id="menu-title">BASE DESTROYER</h1>
+        <p id="menu-welcome">Welcome, Commander! 🚀
+
+Defend the Base from alien invaders.
+Collect diamonds and upgrade your ship.</p>
+        <p id="menu-goodluck">Good luck! ⭐</p>
+        <button type="button" id="menu-start-btn">START</button>
+        <button type="button" id="menu-language-btn" class="main-menu-btn-row">Language 🌐</button>
+        <button type="button" id="menu-howtoplay-btn" class="main-menu-btn-row">How to Play</button>
+        <button type="button" id="menu-leaderboard-btn" class="main-menu-btn-row">Leaderboard</button>
+        <button type="button" id="menu-settings-btn" class="main-menu-btn-row">Settings</button>
+    </div>
     <div id="game-container">
         <!-- Game canvas will be inserted here by Phaser -->
     </div>
@@ -124,7 +246,7 @@
         <div class="pause-container" style="position: relative;">
             <button id="close-language" class="close-btn" type="button" aria-label="Close" style="position: absolute; top: 10px; right: 10px; width: 32px; height: 32px; min-width: 32px; min-height: 32px; padding: 0; border-radius: 4px; background: #cc0000; border: 2px solid #990000; color: #fff; font-size: 16px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer;">✕</button>
             <h2 id="language-title">🌐 Language</h2>
-            <div id="language-buttons" style="display: flex; flex-direction: column; align-items: stretch; gap: 10px; margin-top: 10px; max-height: 55vh; overflow-y: auto; -webkit-overflow-scrolling: touch;">
+            <div id="language-buttons">
                 <button id="lang-btn-zh" class="menu-btn">Chinese</button>
                 <button id="lang-btn-be" class="menu-btn">Belarusian</button>
                 <button id="lang-btn-de" class="menu-btn">German</button>
