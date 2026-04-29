@@ -1,72 +1,99 @@
-# Base Invaders - Space Shooter Game
+# 🚀 Base Invaders
 
-A space shooter game with Base blockchain theme, featuring multiple enemy types, shop system, and progression mechanics.
+A space shooter game built as a **Base Mini App** on Base mainnet.
+Destroy enemies, earn crypto rewards, and compete on an onchain leaderboard.
+
+🎮 **Play now:** https://base-invaders.vercel.app
+
+---
+
+## Built on Base
+
+This game is deployed on [Base](https://base.org) mainnet (Ethereum L2)
+and built using the [Base Mini Apps SDK](https://github.com/coinbase/onchainkit).
+
+| | |
+|---|---|
+| ⛓️ **Network** | Base Mainnet |
+| 📜 **Leaderboard Contract** | [0xAC89DA9d8508d0865c55083552da91894537aC89](https://basescan.org/address/0xAC89DA9d8508d0865c55083552da91894537aC89) |
+| ✅ **Check-In Contract** | [0x709Ef1bc52a302206E1244Df92Ae0329a9d3C736](https://basescan.org/address/0x709Ef1bc52a302206E1244Df92Ae0329a9d3C736) |
+| 🎮 **Platform** | Base Mini App (Farcaster / Coinbase Wallet) |
+| 🔧 **Engine** | Phaser 3 |
+
+---
 
 ## Features
 
-- **Player Spaceship**: Auto-shooting green lasers, drag to move (mobile + desktop)
-- **4 Enemy Types**:
-  - Hexagon Enemies: Numbers show hits needed, drop gold
-  - Base Cubes: Blue cubic obstacles with Base logo, drop lightning bolts
-  - Enemy Spaceships: Red/orange ships that shoot back, drop gold and diamonds
-  - Boss Enemies: Huge motherships every 10 stages with massive rewards
+- **Onchain Leaderboard** — scores saved to Base mainnet smart contract (`BaseInvadersLeaderboardV2`)
+- **Daily Check-in** — onchain check-in system via `BaseInvadersCheckIn` contract (resets at 00:00 UTC)
+- **Mini App** — playable directly inside Farcaster / Coinbase Wallet
+- **4 Enemy Types** — Hexagons, Base Cubes, Enemy Ships, Boss Motherships
+- **Shop System** — 8 ships, weapons, power-ups, upgrades
+- **3 Currencies** — Gold 🪙, Lightning ⚡, Diamonds 💎
+- **Multilingual** — i18n support for multiple languages
+- **Mobile + Desktop** — drag/touch + keyboard controls
 
-- **Shop System**:
-  - Spaceships: 8 different ships with unique stats
-  - Weapons: Fire rate, damage, multi-shot upgrades
-  - Power-ups: Shields, bombs, score multipliers
-  - Upgrades: HP, regeneration, movement speed
+---
 
-- **Progression**:
-  - Score system with multipliers
-  - Stage progression (increases difficulty)
-  - Level system with XP
-  - 3 currencies: Gold 🪙, Lightning ⚡, Diamonds 💎
+## Tech Stack
+
+- [Phaser 3](https://phaser.io) — game engine
+- [Base Mini Apps SDK / MiniKit](https://github.com/coinbase/onchainkit) — wallet & onchain integration
+- [Base Mainnet](https://github.com/base/base) — smart contract deployment
+- [viem](https://viem.sh) — onchain interactions
+- Solidity — `BaseInvadersLeaderboardV2.sol`, `BaseInvadersCheckIn.sol`
+
+---
 
 ## How to Play
 
-1. Open `index.html` in a web browser
-2. Drag left/right to move your spaceship
-3. Your ship auto-shoots green lasers upward
-4. Destroy enemies to earn rewards
-5. Collect coins, lightning bolts, and diamonds
-6. Visit the shop to upgrade your ship and weapons
-7. Survive as long as possible and reach higher stages!
+1. Open in [Base Mini App](https://base-invaders.vercel.app) or browser
+2. Drag/swipe to move your spaceship
+3. Auto-shoot enemies to earn rewards
+4. Visit the shop to upgrade your arsenal
+5. Submit your score to the onchain leaderboard!
 
 ## Controls
 
-- **Mouse/Touch**: Drag to move left/right
-- **Keyboard**: Arrow keys or WASD to move
-- **ESC**: Pause game
-- **Shop Button**: Bottom-left corner to open shop
+| Input | Action |
+|---|---|
+| Mouse/Touch drag | Move left/right |
+| Arrow keys / WASD | Move |
+| ESC | Pause |
 
-## Technical Details
+---
 
-- Built with Phaser.js 3 game engine
-- Responsive design (mobile + desktop)
-- LocalStorage for saving progress
-- No external assets required (all graphics generated programmatically)
+## Smart Contracts
+
+| Contract | Address | Description |
+|---|---|---|
+| `BaseInvadersLeaderboardV2` | [0xAC89DA9d...](https://basescan.org/address/0xAC89DA9d8508d0865c55083552da91894537aC89) | Onchain leaderboard — stores top 100 scores on Base |
+| `BaseInvadersCheckIn` | [0x709Ef1bc...](https://basescan.org/address/0x709Ef1bc52a302206E1244Df92Ae0329a9d3C736) | Daily check-in (one per UTC day) |
+
+---
 
 ## File Structure
 
 ```
 base-invaders/
-├── index.html      # Main HTML file
-├── style.css       # Styling
-├── game.js         # Core game loop
-├── player.js       # Player ship logic
-├── enemies.js      # All enemy types
-├── shop.js         # Shop system
-├── ui.js           # HUD and menus
-└── assets/         # Folder for future images
+├── index.html          # Main HTML file
+├── style.css           # Styling
+├── game.js             # Core game loop
+├── player.js           # Player ship logic
+├── enemies.js          # All enemy types
+├── shop.js             # Shop system
+├── ui.js               # HUD and menus
+├── miniapp.js          # Base Mini App / wallet integration
+├── leaderboard.js      # Leaderboard UI
+├── i18n.js             # Multilingual support
+├── vibration.js        # Mobile haptics
+├── minikit.config.ts   # MiniKit configuration
+└── contracts/          # Solidity smart contracts
 ```
 
-## Future Enhancements
+---
 
-- Sound effects and background music
-- More enemy types and patterns
-- Achievement system
-- Leaderboard
-- More power-ups and upgrades
+## Contributing
 
-Enjoy the game!
+Issues and PRs welcome! If you find bugs or have ideas for new features,
+open an issue — especially around Base Mini App integration or onchain mechanics.
