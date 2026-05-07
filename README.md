@@ -97,3 +97,4 @@ base-invaders/
 
 Issues and PRs welcome! If you find bugs or have ideas for new features,
 open an issue — especially around Base Mini App integration or onchain mechanics.
+<!-- GPG test -->
