@@ -5,7 +5,7 @@
         "signature": "Sl77bav7oIREPhbA0OghgsPFjyaNKd3kYFwCHgCE0+R7uvme2M4FJ6ymH5YksrD2wVecn5BzmPHSJZICJhYt7xw="
     },
     "miniapp": {
-        "version": "1",
+        "version": "next",
         "name": "Base Invaders",
         "homeUrl": "https://base-invaders-nine.vercel.app",
         "iconUrl": "https://base-invaders-nine.vercel.app/icon.png",
