@@ -23,6 +23,83 @@ function getSdk() {
     return sdk;
 }
 
+/** Base App (2026+) runs mini-apps as a normal in-app browser; host does not drive Farcaster comlink — ready() / SDK wallet can hang. */
+const MINIAPP_READY_TIMEOUT_MS = 5000;
+const REQUEST_ACCOUNTS_TIMEOUT_MS = 120000;
+
+async function callMiniAppReady(sdk) {
+    if (!sdk) return;
+    const invoke =
+        typeof sdk.ready === 'function'
+            ? () => sdk.ready()
+            : sdk.actions && typeof sdk.actions.ready === 'function'
+                ? () => sdk.actions.ready({ disableNativeGestures: false })
+                : null;
+    if (!invoke) return;
+    try {
+        await Promise.race([
+            invoke(),
+            new Promise((_, rej) =>
+                setTimeout(() => rej(new Error('miniapp ready timeout')), MINIAPP_READY_TIMEOUT_MS)
+            ),
+        ]);
+    } catch (e) {
+        console.warn('[miniapp] ready() finished with timeout or error (expected in Base App browser):', e?.message || e);
+    }
+}
+
+/** EIP-1193 provider injected by Base App / Coinbase / extensions (not the Farcaster bridge). */
+function pickInjectedEvmProvider() {
+    if (typeof window === 'undefined') return null;
+    const cw = window.coinbaseWalletExtension;
+    if (cw && typeof cw.request === 'function') return cw;
+    const eth = window.ethereum;
+    if (!eth) return null;
+    if (eth.providers && Array.isArray(eth.providers) && eth.providers.length > 0) {
+        const preferred =
+            eth.providers.find((p) => p && (p.isCoinbaseWallet || p.isBase)) ||
+            eth.providers.find((p) => p && typeof p.request === 'function') ||
+            eth.providers[0];
+        if (preferred && typeof preferred.request === 'function') return preferred;
+    }
+    if (typeof eth.request === 'function') return eth;
+    return null;
+}
+
+async function requestAccountsWithTimeout(provider, ms) {
+    return Promise.race([
+        provider.request({ method: 'eth_requestAccounts', params: [] }),
+        new Promise((_, rej) =>
+            setTimeout(() => rej(new Error('Wallet connection timed out')), ms)
+        ),
+    ]);
+}
+
+async function isHostMiniApp(sdk) {
+    if (!sdk || typeof sdk.isInMiniApp !== 'function') return false;
+    try {
+        return await sdk.isInMiniApp(2000);
+    } catch (e) {
+        console.warn('[miniapp] isInMiniApp failed:', e?.message || e);
+        return false;
+    }
+}
+
+/** Provider for read-only eth_accounts (no popup). Uses SDK path only when embedded in a Farcaster-style mini-app host. */
+async function getEthereumProviderForRead(sdk) {
+    const s = sdk || getSdk();
+    const inHost = await isHostMiniApp(s);
+    if (!inHost) {
+        return pickInjectedEvmProvider() || window.farcasterProvider || null;
+    }
+    try {
+        const p = s?.wallet?.getEthereumProvider?.();
+        const provider = p && typeof p.then === 'function' ? await p : p;
+        if (provider && typeof provider.request === 'function') return provider;
+    } catch (_) { /* ignore */ }
+    return window.farcasterProvider || pickInjectedEvmProvider() || null;
+}
+
 /** Get context (sdk.context can be a Promise in some SDK builds). */
 async function getContext(sdk) {
     if (!sdk) return null;
@@ -41,12 +118,7 @@ function getUserFromContext(ctx) {
 window.baseInvadersGetUserName = async function () {
     const sdk = getSdk();
     if (!sdk) return '';
-    try {
-        if (typeof sdk.ready === 'function') await sdk.ready();
-        else if (sdk.actions && typeof sdk.actions.ready === 'function') await sdk.actions.ready({ disableNativeGestures: false });
-    } catch (e) {
-        // ignore
-    }
+    await callMiniAppReady(sdk);
     let ctx = await getContext(sdk);
     let user = getUserFromContext(ctx);
     if (!user) {
@@ -72,10 +144,7 @@ window.baseInvadersGetUserName = async function () {
 window.baseInvadersGetUserContext = async function () {
     const sdk = getSdk();
     if (!sdk) return null;
-    try {
-        if (typeof sdk.ready === 'function') await sdk.ready();
-        else if (sdk.actions && typeof sdk.actions.ready === 'function') await sdk.actions.ready({ disableNativeGestures: false });
-    } catch (e) { /* ignore */ }
+    await callMiniAppReady(sdk);
     return getContext(sdk);
 };
 
@@ -180,7 +249,23 @@ function truncateNameTo32Bytes(name) {
 }
 
 async function ensureWalletProvider(sdk) {
-    // 1) Request wallet capability
+    if (!sdk) throw new Error('Farcaster SDK not loaded');
+
+    const inHost = await isHostMiniApp(sdk);
+    if (!inHost) {
+        console.log('[miniapp] Standard web / Base App in-app browser — using injected wallet (not Farcaster comlink)');
+        const injected = pickInjectedEvmProvider();
+        if (!injected || typeof injected.request !== 'function') {
+            console.error('[miniapp] No injected EIP-1193 provider (window.ethereum)');
+            throw new Error('No wallet — open in Base App or connect a browser wallet');
+        }
+        const accounts = await requestAccountsWithTimeout(injected, REQUEST_ACCOUNTS_TIMEOUT_MS);
+        const address = accounts?.[0];
+        if (!address) throw new Error('Wallet not connected');
+        return { provider: injected, account: address, error: null };
+    }
+
+    // Embedded Farcaster / Warpcast mini-app host: SDK bridge + optional farcasterProvider
     let capabilities = null;
     try {
         if (typeof sdk.requestCapabilities === 'function') {
@@ -193,13 +278,11 @@ async function ensureWalletProvider(sdk) {
     }
     console.log('[miniapp] Capabilities:', capabilities);
 
-    // 2) Retry provider up to 3 times with 1s delay
     let provider = null;
     for (let attempt = 1; attempt <= 3; attempt++) {
         try {
             if (sdk?.wallet?.getEthereumProvider) {
                 const maybeProvider = sdk.wallet.getEthereumProvider();
-                // Some SDK builds return a Promise here
                 provider =
                     maybeProvider && typeof maybeProvider.then === 'function'
                         ? await maybeProvider
@@ -215,19 +298,25 @@ async function ensureWalletProvider(sdk) {
         await sleep(1000);
     }
 
-    // 3) Fallback ONLY to Farcaster-injected provider (do NOT use window.ethereum = Rabby/MetaMask)
     if (!provider) {
         provider = window.farcasterProvider || null;
-        console.log('[miniapp] Provider fallback (window.farcasterProvider only, not Rabby):', !!provider);
+        console.log('[miniapp] Provider fallback (window.farcasterProvider):', !!provider);
     }
 
     if (!provider || typeof provider.request !== 'function') {
+        const injected = pickInjectedEvmProvider();
+        if (injected) {
+            console.warn('[miniapp] SDK provider missing; last resort injected wallet inside mini-app shell');
+            const accounts = await requestAccountsWithTimeout(injected, REQUEST_ACCOUNTS_TIMEOUT_MS);
+            const address = accounts?.[0];
+            if (!address) throw new Error('Wallet not connected');
+            return { provider: injected, account: address, error: null };
+        }
         console.error('[miniapp] ❌ Provider is null/invalid after retries + fallbacks');
-        throw new Error('No wallet - open in Warpcast');
+        throw new Error('No wallet — open in Warpcast or Base App');
     }
 
-    // 5) Manual connect: request accounts (throw if no address)
-    const accounts = await provider.request({ method: 'eth_requestAccounts', params: [] });
+    const accounts = await requestAccountsWithTimeout(provider, REQUEST_ACCOUNTS_TIMEOUT_MS);
     const address = accounts?.[0];
     if (!address) throw new Error('Wallet not connected');
 
@@ -244,8 +333,7 @@ window.baseInvadersGetLastCheckInDayFromChain = async function () {
             if (!sdk) return null;
             let provider = null;
             try {
-                const p = sdk?.wallet?.getEthereumProvider?.();
-                provider = (p && typeof p.then === 'function') ? await p : p;
+                provider = await getEthereumProviderForRead(sdk);
             } catch (_) {}
             if (!provider) provider = window.farcasterProvider || null;
             if (provider && typeof provider.request === 'function') {
@@ -297,13 +385,8 @@ window.baseInvadersOnchainCheckIn = async function () {
         console.log('[miniapp] SDK:', !!sdk, 'wallet:', !!sdk.wallet);
         console.log('[miniapp] sdk.version:', sdk?.version || sdk?.sdkVersion || 'unknown');
 
-        if (typeof sdk.ready === 'function') {
-            await sdk.ready();
-            console.log('[miniapp] sdk.ready() done');
-        } else if (sdk.actions && typeof sdk.actions.ready === 'function') {
-            await sdk.actions.ready({ disableNativeGestures: false });
-            console.log('[miniapp] sdk.actions.ready() done');
-        }
+        await callMiniAppReady(sdk);
+        console.log('[miniapp] callMiniAppReady() done');
 
         const { provider, account } = await ensureWalletProvider(sdk);
         console.log('[miniapp] Provider:', provider);
@@ -343,8 +426,7 @@ window.baseInvadersSubmitScore = async function (score, wave, streak, name) {
         const sdk = getSdk();
         if (!sdk) throw new Error('Farcaster SDK not loaded');
         console.log('[miniapp] submitScore — SDK ready, contract:', LEADERBOARD_ADDR);
-        if (typeof sdk.ready === 'function') await sdk.ready();
-        else if (sdk.actions && typeof sdk.actions.ready === 'function') await sdk.actions.ready({ disableNativeGestures: false });
+        await callMiniAppReady(sdk);
         let displayName = (name != null && name !== '') ? String(name).trim() : '';
         if (!displayName || displayName === 'Player') {
             if (typeof window.baseInvadersGetUserName === 'function') {
@@ -416,10 +498,7 @@ window.baseInvadersClearLeaderboard = async function () {
         const sdk = getSdk();
         if (!sdk) throw new Error('Farcaster SDK not loaded');
 
-        if (typeof sdk.ready === 'function') await sdk.ready();
-        else if (sdk.actions && typeof sdk.actions.ready === 'function') {
-            await sdk.actions.ready({ disableNativeGestures: false });
-        }
+        await callMiniAppReady(sdk);
 
         const { provider, account } = await ensureWalletProvider(sdk);
         if (!provider || !account) throw new Error('Wallet not connected');
@@ -467,8 +546,7 @@ window.baseInvadersGetCurrentUserStreakFromLeaderboard = async function () {
             if (!sdk) return null;
             let provider = null;
             try {
-                const p = sdk?.wallet?.getEthereumProvider?.();
-                provider = (p && typeof p.then === 'function') ? await p : p;
+                provider = await getEthereumProviderForRead(sdk);
             } catch (_) {}
             if (!provider) provider = window.farcasterProvider || null;
             if (provider && typeof provider.request === 'function') {
@@ -567,13 +645,8 @@ window.baseInvadersGetLeaderboard = async function () {
 window.baseInvadersMarkMiniAppReady = async function () {
     const sdk = getSdk();
     if (!sdk) return;
-    try {
-        if (typeof sdk.ready === 'function') await sdk.ready();
-        else if (sdk.actions && typeof sdk.actions.ready === 'function') await sdk.actions.ready({ disableNativeGestures: false });
-        console.log('[miniapp] SDK ready OK');
-    } catch (e) {
-        console.error('[miniapp] ready failed', e?.message);
-    }
+    await callMiniAppReady(sdk);
+    console.log('[miniapp] SDK ready OK (or skipped after timeout)');
 };
 window.baseInvadersMiniAppSdk = getSdk();
 
@@ -596,9 +669,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const sdk = getSdk();
         if (sdk) {
-            if (typeof sdk.ready === 'function') await sdk.ready();
-            else if (sdk.actions && typeof sdk.actions.ready === 'function') await sdk.actions.ready({ disableNativeGestures: false });
-            console.log('[miniapp] DOMContentLoaded – SDK ready');
+            await callMiniAppReady(sdk);
+            console.log('[miniapp] DOMContentLoaded – SDK ready (or Base App timeout)');
             const ctx = await getContext(sdk);
             if (ctx?.user?.fid != null) {
                 window.__baseInvadersCheckInFid = String(ctx.user.fid);
