@@ -50,9 +50,11 @@
     
     <link rel="stylesheet" href="style.css">
     <style>
-        html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; }
-        #game-container { position: relative; z-index: 0; }
-        canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+        /* Фон під меню й до першого кадру WebGL (Base / iOS WebView) — інакше «чорний екран» до дотику */
+        html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; background: #0a0a18; }
+        #game-container { position: relative; z-index: 0; width: 100%; height: 100%; }
+        /* object-fit:contain ламав відповідність координат тач ↔ Phaser при RESIZE */
+        canvas { display: block; width: 100%; height: 100%; max-width: 100vw; max-height: 100vh; touch-action: none; }
         @keyframes menu-title-glow-pulse {
             0%, 100% { opacity: 0.85; transform: scale(0.98); }
             50% { opacity: 1; transform: scale(1.02); }
@@ -73,7 +75,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: transparent;
+            background: radial-gradient(ellipse at 50% 30%, #1a1a3a 0%, #0a0a18 55%);
             box-sizing: border-box;
             padding: 12px;
             gap: clamp(8px, 2.5vh, 14px);

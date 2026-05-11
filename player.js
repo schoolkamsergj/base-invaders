@@ -205,25 +205,29 @@ class Player {
         // Keyboard movement
         let moveSpeed = (stats.speed || 300) * (delta / 1000);
         
+        const bx = (typeof window !== 'undefined' && window.baseInvadersGetPlayerXBounds)
+            ? window.baseInvadersGetPlayerXBounds(this.scene.scale.width)
+            : { minX: 30, maxX: Math.max(60, this.scene.scale.width - 30) };
+        const by = (typeof window !== 'undefined' && window.baseInvadersGetPlayerYBounds)
+            ? window.baseInvadersGetPlayerYBounds(this.scene.scale.height)
+            : { minY: 100, maxY: Math.max(150, this.scene.scale.height - 100) };
+
         // Horizontal movement (left/right)
         if (cursors.left.isDown || wasd.A.isDown) {
-            this.sprite.x = Phaser.Math.Clamp(this.sprite.x - moveSpeed, 30, this.scene.scale.width - 30);
-            // Tilt effect
+            this.sprite.x = Phaser.Math.Clamp(this.sprite.x - moveSpeed, bx.minX, bx.maxX);
             this.sprite.setRotation(-0.1);
         } else if (cursors.right.isDown || wasd.D.isDown) {
-            this.sprite.x = Phaser.Math.Clamp(this.sprite.x + moveSpeed, 30, this.scene.scale.width - 30);
-            // Tilt effect
+            this.sprite.x = Phaser.Math.Clamp(this.sprite.x + moveSpeed, bx.minX, bx.maxX);
             this.sprite.setRotation(0.1);
         } else {
-            // Return to center rotation
             this.sprite.setRotation(Phaser.Math.Linear(this.sprite.rotation, 0, 0.1));
         }
-        
-        // Vertical movement (up/down)
+
+        // Vertical movement (up/down) — ті самі межі, що й для тачу (без «зламаного» clamp)
         if (cursors.up.isDown || wasd.W.isDown) {
-            this.sprite.y = Phaser.Math.Clamp(this.sprite.y - moveSpeed, 100, this.scene.scale.height - 100);
+            this.sprite.y = Phaser.Math.Clamp(this.sprite.y - moveSpeed, by.minY, by.maxY);
         } else if (cursors.down.isDown || wasd.S.isDown) {
-            this.sprite.y = Phaser.Math.Clamp(this.sprite.y + moveSpeed, 100, this.scene.scale.height - 100);
+            this.sprite.y = Phaser.Math.Clamp(this.sprite.y + moveSpeed, by.minY, by.maxY);
         }
         
         // Update shadow position (glow is disabled to prevent ghost artifacts)

@@ -3,6 +3,28 @@
 const TEST_FID = 'test_user_12345';
 console.log('MenuScene and GameScene classes defined');
 
+/** Уникаємо Phaser.Math.Clamp(min>max) коли height ще 0 / нестабільний (WebView) — корабель «втікає» вгору. */
+function getPlayerXBoundaries(width) {
+    const w = Math.max(120, Number(width) || 0);
+    let minX = 30;
+    let maxX = w - 30;
+    if (maxX <= minX) {
+        minX = w * 0.2;
+        maxX = w * 0.8;
+    }
+    return { minX, maxX };
+}
+function getPlayerYBoundaries(height) {
+    const h = Math.max(200, Number(height) || 0);
+    const minY = Math.max(72, Math.floor(h * 0.42));
+    const maxY = Math.max(minY + 48, h - 64);
+    return { minY, maxY };
+}
+if (typeof window !== 'undefined') {
+    window.baseInvadersGetPlayerXBounds = getPlayerXBoundaries;
+    window.baseInvadersGetPlayerYBounds = getPlayerYBoundaries;
+}
+
 // Menu Scene - Start Screen
 class MenuScene extends Phaser.Scene {
     constructor() {
@@ -735,9 +757,21 @@ class GameScene extends Phaser.Scene {
             window.addEventListener('base-invaders:lang-changed', this._langChangedCallback);
 
             this._resizeCallback = () => {
+                if (this.physics && this.physics.world) {
+                    this.physics.world.setBounds(0, 0, this.scale.width, this.scale.height);
+                }
+                if (this.player && this.player.sprite) {
+                    const { minX, maxX } = getPlayerXBoundaries(this.scale.width);
+                    const { minY, maxY } = getPlayerYBoundaries(this.scale.height);
+                    this.player.setPosition(
+                        Phaser.Math.Clamp(this.player.sprite.x, minX, maxX),
+                        Phaser.Math.Clamp(this.player.sprite.y, minY, maxY)
+                    );
+                }
                 if (this.updateMuteButtonPosition) this.updateMuteButtonPosition();
             };
             this.scale.on('resize', this._resizeCallback);
+            this.physics.world.setBounds(0, 0, this.scale.width, this.scale.height);
 
             // Initialize Sound System
             // Sounds will start after first user interaction (browser autoplay policy)
@@ -1329,27 +1363,20 @@ class GameScene extends Phaser.Scene {
 
         this.input.on('pointermove', (pointer) => {
             if (this.isDragging && !this.gameState.paused && !this.gameState.gameOver && this.player) {
-                // Calculate delta (relative movement)
                 const deltaX = pointer.x - this.touchStartX;
                 const deltaY = pointer.y - this.touchStartY;
-                
-                // Move player by delta from initial position
-                const newX = Phaser.Math.Clamp(
-                    this.playerStartX + deltaX,
-                    30,
-                    this.scale.width - 30
-                );
-                const newY = Phaser.Math.Clamp(
-                    this.playerStartY + deltaY,
-                    100,
-                    this.scale.height - 100
-                );
-                
+                const { minX, maxX } = getPlayerXBoundaries(this.scale.width);
+                const { minY, maxY } = getPlayerYBoundaries(this.scale.height);
+                const newX = Phaser.Math.Clamp(this.playerStartX + deltaX, minX, maxX);
+                const newY = Phaser.Math.Clamp(this.playerStartY + deltaY, minY, maxY);
                 this.player.setPosition(newX, newY);
             }
         });
 
         this.input.on('pointerup', () => {
+            this.isDragging = false;
+        });
+        this.input.on('pointerupoutside', () => {
             this.isDragging = false;
         });
 
@@ -2705,6 +2732,22 @@ if (typeof Phaser === 'undefined') {
     window.addEventListener('resize', () => {
         game.scale.resize(window.innerWidth, window.innerHeight);
     });
+    // Після першого кадру в WebView (Base App) інколи innerHeight=0; повторний resize знімає «чорний екран» до дотику
+    requestAnimationFrame(() => {
+        try {
+            game.scale.resize(window.innerWidth, window.innerHeight);
+        } catch (e) { /* ignore */ }
+    });
+    setTimeout(() => {
+        try {
+            game.scale.resize(window.innerWidth, window.innerHeight);
+        } catch (e) { /* ignore */ }
+    }, 100);
+    setTimeout(() => {
+        try {
+            game.scale.resize(window.innerWidth, window.innerHeight);
+        } catch (e) { /* ignore */ }
+    }, 500);
 }
 
 // UI Event Handlers (wait for DOM to be ready)
