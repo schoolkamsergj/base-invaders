@@ -1,17 +1,13 @@
 /**
  * Vercel Serverless API: Farcaster Snap endpoint.
- * Повертає інтерактивну кнопку "Play Base Invaders" всередині Farcaster-касту.
+ * CommonJS format — required because package.json has "type": "module"
+ * but Vercel Serverless Functions need .js files in CJS or explicit .mjs
  *
- * Docs: https://docs.farcaster.xyz/snap
- *
- * Як використати:
- * 1. Задеплой на Vercel (відбудеться автоматично при пуші в main)
- * 2. Зроби каст у Farcaster і додай embed: https://base-invaders.vercel.app/api/snap
- * 3. Farcaster розпізнає URL → покаже кнопку прямо в касті
+ * Endpoint: GET/POST /api/snap
+ * Returns: Farcaster Frame HTML embed with Play button
  */
 
-export default async function handler(req, res) {
-  // CORS headers — дозволяємо Farcaster клієнтам звертатися до endpoint
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -20,13 +16,6 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // Підтримуємо як GET (перший рендер касту), так і POST (натискання кнопки)
-  if (req.method !== 'GET' && req.method !== 'POST') {
-    res.setHeader('Allow', ['GET', 'POST', 'OPTIONS']);
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  // Витягуємо FID (Farcaster User ID) якщо є — передається при POST (взаємодія)
   let fid = null;
   if (req.method === 'POST' && req.body) {
     let body = req.body;
@@ -36,29 +25,34 @@ export default async function handler(req, res) {
     fid = body?.untrustedData?.fid ?? null;
   }
 
-  // URL гри — використовується як ціль кнопки
-  const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://base-invaders.vercel.app';
+  const APP_URL = process.env.APP_URL || 'https://base-invaders.vercel.app';
+  const OG_IMAGE = `${APP_URL}/og-image.png`;
+  const GAME_TARGET = fid ? `${APP_URL}?fid=${fid}` : APP_URL;
+  const BTN_LABEL = fid ? `\u25B6 Play as FID ${fid}` : '\u25B6 Play Base Invaders';
 
-  // Відповідь у форматі Farcaster Snap
-  return res.status(200).json({
-    type: 'snap',
-    snap: {
-      version: '1',
-      components: [
-        {
-          // OG-зображення гри як превью у касті
-          type: 'image',
-          src: `${APP_URL}/og-image.png`,
-          aspectRatio: '1.91:1',
-        },
-        {
-          // Кнопка запуску гри — відкриває Base Invaders з FID якщо є
-          type: 'button',
-          label: fid ? `\u25B6 Play as FID ${fid}` : '\u25B6 Play Base Invaders',
-          action: 'link',
-          target: fid ? `${APP_URL}?fid=${fid}` : APP_URL,
-        },
-      ],
-    },
-  });
-}
+  // Return Farcaster Frame HTML — this is what Farcaster reads from the cast URL
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Base Invaders</title>
+  <meta property="fc:frame" content="next" />
+  <meta property="fc:frame:image" content="${OG_IMAGE}" />
+  <meta property="fc:frame:image:aspect_ratio" content="1.91:1" />
+  <meta property="fc:frame:button:1" content="${BTN_LABEL}" />
+  <meta property="fc:frame:button:1:action" content="link" />
+  <meta property="fc:frame:button:1:target" content="${GAME_TARGET}" />
+  <meta property="og:title" content="Base Invaders" />
+  <meta property="og:description" content="Shoot enemies, earn on-chain score on Base mainnet. Built with Phaser 3." />
+  <meta property="og:image" content="${OG_IMAGE}" />
+  <meta property="og:url" content="${APP_URL}" />
+</head>
+<body>
+  <h1>Base Invaders \uD83D\uDE80</h1>
+  <a href="${GAME_TARGET}">Play now</a>
+</body>
+</html>`;
+
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  return res.status(200).send(html);
+};
