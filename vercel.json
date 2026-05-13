@@ -1,11 +1,6 @@
 {
-  "functions": {
-    "api/snap.js": {
-      "memory": 128,
-      "maxDuration": 10
-    }
-  },
-  "rewrites": [
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  "routes": [
+    { "src": "/api/snap", "dest": "/api/snap.js" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
