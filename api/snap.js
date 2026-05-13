@@ -1,10 +1,13 @@
 /**
  * Vercel Serverless Function: Farcaster Frame (Snap) endpoint.
- * GET /api/snap — returns HTML with fc:frame meta tags
+ * GET/POST /api/snap — returns HTML with fc:frame meta tags
  * Farcaster reads these tags and renders a Play button in the cast
+ *
+ * IMPORTANT: uses ES module syntax (export default) because
+ * package.json has "type":"module" — CommonJS module.exports won't work.
  */
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -51,4 +54,4 @@ module.exports = async (req, res) => {
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   return res.status(200).send(html);
-};
+}
