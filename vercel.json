@@ -1,5 +1,0 @@
-{
-  "rewrites": [
-    { "source": "/api/snap", "destination": "/api/snap.js" }
-  ]
-}
