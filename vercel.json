@@ -1,6 +1,5 @@
 {
-  "routes": [
-    { "src": "/api/snap", "dest": "/api/snap.js" },
-    { "src": "/(.*)", "dest": "/index.html" }
+  "rewrites": [
+    { "source": "/api/snap", "destination": "/api/snap.js" }
   ]
 }
