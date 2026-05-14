@@ -8,21 +8,9 @@
     <meta name="description" content="Cosmic Arcade Shooter on Base blockchain">
     <meta name="base:app_id" content="69751e8e3a92926b661fd3d0" />
     
-    <!-- Farcaster Mini App Embed (version: next, launch_miniapp — required for Base App) -->
-    <meta name="fc:miniapp" content='{
-      "version":"next",
-      "imageUrl":"https://base-invaders-nine.vercel.app/og-image.png",
-      "button":{
-        "title":"Play Game 🚀",
-        "action":{
-          "type":"launch_miniapp",
-          "name":"Base Invaders",
-          "url":"https://base-invaders-nine.vercel.app",
-          "splashImageUrl":"https://base-invaders-nine.vercel.app/splash.png",
-          "splashBackgroundColor":"#000000"
-        }
-      }
-    }' />
+    <!-- Farcaster Mini App Embed (v2 spec): https://docs.farcaster.xyz/developers/frames/v2/spec -->
+    <meta name="fc:miniapp" content='{"version":"1","imageUrl":"https://base-invaders-nine.vercel.app/og-image.png","button":{"title":"Грати в Base Invaders","action":{"type":"launch_frame","name":"Base Invaders","url":"https://base-invaders-nine.vercel.app","splashImageUrl":"https://base-invaders-nine.vercel.app/splash.png","splashBackgroundColor":"#000000"}}}' />
+    <meta name="fc:frame" content='{"version":"1","imageUrl":"https://base-invaders-nine.vercel.app/og-image.png","button":{"title":"Грати в Base Invaders","action":{"type":"launch_frame","name":"Base Invaders","url":"https://base-invaders-nine.vercel.app","splashImageUrl":"https://base-invaders-nine.vercel.app/splash.png","splashBackgroundColor":"#000000"}}}' />
     
     <!-- Open Graph -->
     <meta property="og:title" content="Base Invaders">
